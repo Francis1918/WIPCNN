@@ -4,9 +4,9 @@
 [submodule "submodules/SAE_boardGame"]
 	path = submodules/SAE_boardGame
 	url = https://github.com/adamkarvonen/SAE_BoardGameEval
-[submodule "submodules/QuartoGPT"]
-	path = submodules/QuartoGPT
-	url = https://github.com/Davandres/Quarto_Game_Console
 [submodule "submodules/OthelloGPT"]
 	path = submodules/OthelloGPT
 	url = https://github.com/ztjona/OthelloGPT
+[submodule "submodules/QuartoGPT"]
+	path = submodules/QuartoGPT
+	url = https://github.com/Davandres/Quarto_Game_Console
