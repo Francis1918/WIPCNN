@@ -1,0 +1,1 @@
+In this folder are configured the architectures of the AI bots. 
