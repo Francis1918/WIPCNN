@@ -13,11 +13,15 @@ Python 3
 -Donald E. Knuth
 """
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
 # ----------------------------- logging --------------------------
 import logging
 from sys import stdout
 from datetime import datetime
-
+from os import path, makedirs
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,11 +30,6 @@ logging.basicConfig(
     datefmt="%m-%d %H:%M:%S",
 )
 logging.info(datetime.now())
-
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 
 class QuartoCNN(nn.Module):
@@ -48,8 +47,18 @@ class QuartoCNN(nn.Module):
         super().__init__()
         # Input shape: (batch_size, 16, 4, 4)
         # (batch_size, dims, height, width)
+        self.name = "QuartoCNN1"
+        fc_inpiece_size = 16  # must be multiple of 16
+
+        assert fc_inpiece_size % 16 == 0, "fc_inpiece_size must be a multiple of 16"
+        self.fc_in_piece = nn.Linear(
+            16, fc_inpiece_size
+        )  # Input layer for piece features
+
         k1_size = 16
-        self.conv1 = nn.Conv2d(16, k1_size, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(
+            16 + fc_inpiece_size // 16, k1_size, kernel_size=3, padding=1
+        )
         k2_size = 32
         self.conv2 = nn.Conv2d(k1_size, k2_size, kernel_size=3, padding=1)
         n_neurons = 128
@@ -62,8 +71,23 @@ class QuartoCNN(nn.Module):
         self.fc2_piece = nn.Linear(n_neurons, 4 * 4)
         self.dropout = nn.Dropout(0.3)
 
-    def forward(self, x):
+    def forward(self, x_board: torch.Tensor, x_piece: torch.Tensor):
+        """Forward pass of the model.
+        Args:
+            x_board: Input tensor of the board with placed pieces (batch_size, 16, 4, 4).
+            x_piece: Input tensor of selected piece to place (batch_size, 16).
+        Returns:
+            logits_board: Output tensor of the board position to place piece (batch_size, 16).
+            logits_piece: Output tensor of selected piece (batch_size, 16).
+        """
+        piece_feat = F.relu(self.fc_in_piece(x_piece))
+        piece_map = piece_feat.view(-1, 1, 4, 4)
+        print(piece_map.shape)
+        print(x_board.shape)
+        x = torch.cat([x_board, piece_map], dim=1)
+        print(x.shape)  # (batch_size, 16 + fc_inpiece_size // 16, 4, 4)
         x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
         x = F.relu(self.conv2(x))
         x = x.flatten(start_dim=1)
         x = F.relu(self.fc1(x))
@@ -76,12 +100,19 @@ class QuartoCNN(nn.Module):
         logits_piece = self.fc2_piece(x)
         return logits_board, logits_piece
 
-    def predict(self, x, TEMPERATURE: float = 1.0, DETERMINISTIC: bool = True):
+    def predict(
+        self,
+        x_board: torch.Tensor,
+        x_piece: torch.Tensor,
+        TEMPERATURE: float = 1.0,
+        DETERMINISTIC: bool = True,
+    ):
         """
         Predict the board position and piece from the input tensor, with optional ``TEMPERATURE`` for randomness.
 
         Args:
-            ``x``: Input tensor of shape (batch_size, 16, 4, 4).
+            ``x_board``: Input tensor of shape (batch_size, 16, 4, 4).
+            ``x_piece``: Input tensor of shape (batch_size, 16).
             ``TEMPERATURE``: Sampling temperature (>0). Lower values make predictions more deterministic.
             ``DETERMINISTIC``: If True, use argmax instead of sampling.
 
@@ -89,14 +120,19 @@ class QuartoCNN(nn.Module):
             board_position: Predicted board position (batch_size, 4, 4).
             predicted_piece: Sampled piece indices (batch_size, 16).
         """
-        assert x.shape[1:] == (
+        assert x_board.shape[1:] == (
             16,
             4,
             4,
         ), "Input tensor must have shape (batch_size, 16, 4, 4)"
+        assert x_piece.shape[1] == 16, "Input tensor must have shape (batch_size, 16)"
+        assert (
+            x_board.shape[0] == x_piece.shape[0]
+        ), "Input tensors must have the same batch size"
+
         self.eval()
         with torch.no_grad():
-            logits_board_position, logits_piece = self.forward(x)
+            logits_board_position, logits_piece = self.forward(x_board, x_piece)
             # Apply softmax to get probabilities
             board_position_probs = F.softmax(logits_board_position / TEMPERATURE, dim=1)
             piece_probs = F.softmax(logits_piece / TEMPERATURE, dim=1)
@@ -125,6 +161,46 @@ class QuartoCNN(nn.Module):
             board_indices = preds // 16
             piece_indices = preds % 16
             return board_indices, piece_indices
+
+    def export(
+        self,
+        checkpoint_suffix: str,
+        checkpoint_folder: str = "weights/",
+    ) -> str:
+        """
+        Export the model to a file with the datetime and suffix in the filename.
+
+        Args:
+            checkpoint_suffix: Suffix for the checkpoint file name. Usually the epoch number.
+            checkpoint_folder: Folder to save the model weights.
+        """
+        checkpoint_name = (
+            f"{datetime.now().strftime('%Y%m%d_%H%M')}-{checkpoint_suffix}.pt"
+        )
+
+        file_path = path.join(checkpoint_folder, self.name, checkpoint_name)
+
+        makedirs(path.dirname(file_path), exist_ok=True)
+        torch.save(self.state_dict(), file_path)
+        logging.info(f"Model exported to {path}")
+
+        return file_path
+
+    # ####################################################################
+    @classmethod
+    def from_file(cls, weights_path: str):
+        """
+        Load the model from a file.
+
+        Returns:
+            QuartoCNN instance with loaded weights.
+        """
+        model = cls()
+
+        model.load_state_dict(torch.load(weights_path))
+        logging.info(f"Model loaded from {weights_path}")
+
+        return model
 
 
 def train(
