@@ -37,7 +37,8 @@ class QuartoCNN(nn.Module):
     """
     QuartoCNN is a Convolutional Neural Network (CNN) model for the Quarto board game.
     # Input:
-    * batchx4x4x4 input tensors representing different positions of the game board
+    * batchx16x4x4 input tensors representing different positions of the game board. 16 dims for each piece, 4x4 grid.
+
     # Output:
     * batchx4x4 logits tensor representing the board position
     * batch-by-16 logits tensor representing the piece
@@ -45,10 +46,10 @@ class QuartoCNN(nn.Module):
 
     def __init__(self):
         super().__init__()
-        # Input shape: (batch_size, 4, 4, 4)
-        # (batch_size, channels, height, width)
+        # Input shape: (batch_size, 16, 4, 4)
+        # (batch_size, dims, height, width)
         k1_size = 16
-        self.conv1 = nn.Conv2d(4, k1_size, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(16, k1_size, kernel_size=3, padding=1)
         k2_size = 32
         self.conv2 = nn.Conv2d(k1_size, k2_size, kernel_size=3, padding=1)
         n_neurons = 128
@@ -80,7 +81,7 @@ class QuartoCNN(nn.Module):
         Predict the board position and piece from the input tensor, with optional ``TEMPERATURE`` for randomness.
 
         Args:
-            ``x``: Input tensor of shape (batch_size, 4, 4, 4).
+            ``x``: Input tensor of shape (batch_size, 16, 4, 4).
             ``TEMPERATURE``: Sampling temperature (>0). Lower values make predictions more deterministic.
             ``DETERMINISTIC``: If True, use argmax instead of sampling.
 
@@ -88,6 +89,11 @@ class QuartoCNN(nn.Module):
             board_position: Predicted board position (batch_size, 4, 4).
             predicted_piece: Sampled piece indices (batch_size, 16).
         """
+        assert x.shape[1:] == (
+            16,
+            4,
+            4,
+        ), "Input tensor must have shape (batch_size, 16, 4, 4)"
         self.eval()
         with torch.no_grad():
             logits_board_position, logits_piece = self.forward(x)
@@ -176,14 +182,3 @@ def train(
                 )
         avg_loss = total_loss / len(dataloader)
         logging.info(f"Epoch [{epoch+1}/{epochs}] Average Loss: {avg_loss:.4f}")
-
-
-# Example usage (assuming you have your dataset and dataloader ready):
-# from torch.utils.data import DataLoader, TensorDataset
-# model = QuartoCNN()
-# optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-# criterion_board = nn.MSELoss()  # or nn.CrossEntropyLoss()
-# criterion_piece = nn.BCELoss()
-# dataset = TensorDataset(inputs, board_targets, piece_targets)
-# dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
-# train_quarto_cnn(model, dataloader, optimizer, criterion_board, criterion_piece, device="cuda", epochs=20)
