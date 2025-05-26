@@ -7,6 +7,6 @@
 [submodule "submodules/OthelloGPT"]
 	path = submodules/OthelloGPT
 	url = https://github.com/ztjona/OthelloGPT
-[submodule "submodules/QuartoGPT"]
-	path = submodules/QuartoGPT
-	url = https://github.com/Davandres/Quarto_Game_Console
+[submodule "submodules/Quartopy"]
+	path = submodules/Quartopy
+	url = https://github.com/ztjona/Quartopy
