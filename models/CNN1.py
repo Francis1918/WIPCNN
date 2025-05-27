@@ -23,7 +23,6 @@ import numpy as np
 import logging
 from sys import stdout
 from datetime import datetime
-from os import path, makedirs
 
 logging.basicConfig(
     level=logging.INFO,
@@ -147,7 +146,6 @@ class QuartoCNN(NN_abstract):
             # Output: (batch_size, 16, 16) where [i, j, k] = prob(board=j, piece=k)
             batch_size = logits_board_position.shape[0]
             combo_matrix = torch.einsum("bi,bj->bij", board_position_probs, piece_probs)
-            logging.debug(combo_matrix)
             combo_matrix = combo_matrix.view(batch_size, -1)
 
             if DETERMINISTIC:

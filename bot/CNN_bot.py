@@ -17,7 +17,6 @@ from models.CNN1 import QuartoCNN
 from quartopy import BotAI, Piece, QuartoGame
 
 from utils.logger import logger
-from torch import Tensor
 import numpy as np
 import torch
 
