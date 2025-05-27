@@ -13,23 +13,15 @@ Python 3
 -Donald E. Knuth
 """
 
-from ..models.CNN1 import QuartoCNN
+from models.CNN1 import QuartoCNN
+from quartopy import BotAI, Piece, QuartoGame
 
-# ----------------------------- logging --------------------------
-import logging
-from sys import stdout
-from datetime import datetime
+from utils.logger import logger
+from torch import Tensor
+import numpy as np
+import torch
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s][%(levelname)s] %(message)s",
-    stream=stdout,
-    datefmt="%m-%d %H:%M:%S",
-)
-logging.info(datetime.now())
-
-
-from quartopy import logger, BotAI, Piece, QuartoGame
+logger.info("Loading CNN_bot...")
 
 
 class Quarto_bot(BotAI):
@@ -55,48 +47,72 @@ class Quarto_bot(BotAI):
             self.model = QuartoCNN()
         logger.debug("Model loaded successfully")
 
-    def select(self, game: QuartoGame, _, *args, **kwargs) -> Piece:
-        """Selects a piece from the storage."""
-        board_matrix = game.game_board.encode()
+        self.recalculate = True  # Recalculate the model on each turn
+        self.selected_piece: Piece
+        self.board_position: tuple[int, int]
 
-        valid_moves: list[tuple[int, int]] = game.storage_board.get_valid_moves()  # type: ignore
-        valid_pieces = game.storage_board.get_valid_pieces()
+    # ####################################################################
+    def calculate(self, game: QuartoGame, ith_try: int = 0):
+        """Calculates the best move for the bot based on the current board state and selected piece.
+        ## Parameters
+        ``game``: QuartoGame
+            The current game instance.
+        ``ith_try``: int
+            The index of the current attempt to select or place a piece.
+        """
+        if self.recalculate:
 
-        assert valid_moves, "No valid moves available in storage."
+            board_matrix = game.game_board.encode()
+            if isinstance(game.selected_piece, Piece):
+                piece_onehot = game.selected_piece.vectorize_onehot()
+                piece_onehot = piece_onehot.reshape(1, -1)  # Reshape to (1, 16)
+            else:
+                piece_onehot = np.zeros((1, 16), dtype=float)
 
-        print(*zip(range(len(valid_pieces)), valid_pieces), sep="\n")
-        option = input(f"Select a piece by number [0-{len(valid_moves)-1}]: ")
-        try:
-            option = int(option)
-            if option < 0 or option >= len(valid_moves):
-                raise ValueError("Invalid option selected.")
-        except ValueError as e:
-            logger.error(f"Invalid input: {e}. Defaulting to first valid piece.")
-            option = 0
-        r, c = valid_moves[option]
-        selected_piece = game.storage_board.get_piece(r, c)
-        logger.debug(f"RandomBot selected piece: {selected_piece} from storage.")
+            self.board_pos_onehot_cached, self.select_piece_onehot_cached = (
+                self.model.predict(
+                    torch.from_numpy(board_matrix).float(),
+                    torch.from_numpy(piece_onehot).float(),
+                    TEMPERATURE=5,
+                    DETERMINISTIC=False,
+                )
+            )
+
+            batch_size = self.board_pos_onehot_cached.shape[0]
+            assert batch_size == 1, f"Expected batch size of 1, got {batch_size}."
+
+            # in first call select first option
+            _idx_piece: int = self.select_piece_onehot_cached[0, 0]  # type: ignore
+            self.selected_piece = Piece.from_index(_idx_piece)
+
+            _idx_board_pos: int = self.board_pos_onehot_cached[0, 0]  # type: ignore
+            self.board_position = game.game_board.get_position_index(_idx_board_pos)
+
+            self.recalculate = False  # Do not recalculate until the next turn
+        elif ith_try > 0:
+            # load from cached values
+            _idx_piece: int = self.select_piece_onehot_cached[0, ith_try]  # type: ignore
+            self.selected_piece = Piece.from_index(_idx_piece)
+
+            _idx_board_pos: int = self.board_pos_onehot_cached[0, ith_try]  # type: ignore
+            self.board_position = game.game_board.get_position_index(_idx_board_pos)
+        else:
+            logger.debug("Skipping calculation as recalculate is set to False.")
+        return self.board_position, self.selected_piece
+
+    def select(self, game: QuartoGame, ith_option: int = 0, *args, **kwargs) -> Piece:
+        """Selects a piece for the other player."""
+
+        _, selected_piece = self.calculate(game, ith_option)
+        self.recalculate = True  # Recalculate for the next turn
+
         return selected_piece
 
     def place_piece(
         self, game: QuartoGame, piece: Piece, ith_option: int = 0, *args, **kwargs
     ) -> tuple[int, int]:
         """Places the selected piece on the game board at a random valid position."""
-        valid_moves = game.game_board.get_valid_moves()
 
-        assert valid_moves, "No valid moves available on the game board."
+        board_position, _ = self.calculate(game, ith_option)
 
-        print(*zip(range(len(valid_moves)), valid_moves), sep="\n")
-        option = input(f"Select a coordinate [0-{len(valid_moves)-1}]: ")
-        try:
-            option = int(option)
-            if option < 0 or option >= len(valid_moves):
-                raise ValueError("Invalid option selected.")
-        except ValueError as e:
-            logger.error(f"Invalid input: {e}. Defaulting to first valid piece.")
-            option = 0
-        position: tuple[int, int] = valid_moves[option]  # type: ignore
-        logger.debug(
-            f"RandomBot placed piece {piece} at position {position} on the game board."
-        )
-        return position
+        return board_position

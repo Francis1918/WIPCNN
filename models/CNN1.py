@@ -12,10 +12,12 @@ Python 3
 "I find that I don't understand things unless I try to program them."
 -Donald E. Knuth
 """
+from .NN_abstract import NN_abstract
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 # ----------------------------- logging --------------------------
 import logging
@@ -32,7 +34,7 @@ logging.basicConfig(
 logging.info(datetime.now())
 
 
-class QuartoCNN(nn.Module):
+class QuartoCNN(NN_abstract):
     """
     QuartoCNN is a Convolutional Neural Network (CNN) model for the Quarto board game.
     # Input:
@@ -43,11 +45,14 @@ class QuartoCNN(nn.Module):
     * batch-by-16 logits tensor representing the piece
     """
 
+    @property
+    def name(self) -> str:
+        return "QuartoCNN1"
+
     def __init__(self):
         super().__init__()
         # Input shape: (batch_size, 16, 4, 4)
         # (batch_size, dims, height, width)
-        self.name = "QuartoCNN1"
         fc_inpiece_size = 16  # must be multiple of 16
 
         assert fc_inpiece_size % 16 == 0, "fc_inpiece_size must be a multiple of 16"
@@ -71,7 +76,9 @@ class QuartoCNN(nn.Module):
         self.fc2_piece = nn.Linear(n_neurons, 4 * 4)
         self.dropout = nn.Dropout(0.3)
 
-    def forward(self, x_board: torch.Tensor, x_piece: torch.Tensor):
+    def forward(
+        self, x_board: torch.Tensor | np.ndarray, x_piece: torch.Tensor | np.ndarray
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward pass of the model.
         Args:
             x_board: Input tensor of the board with placed pieces (batch_size, 16, 4, 4).
@@ -82,12 +89,8 @@ class QuartoCNN(nn.Module):
         """
         piece_feat = F.relu(self.fc_in_piece(x_piece))
         piece_map = piece_feat.view(-1, 1, 4, 4)
-        print(piece_map.shape)
-        print(x_board.shape)
-        x = torch.cat([x_board, piece_map], dim=1)
-        print(x.shape)  # (batch_size, 16 + fc_inpiece_size // 16, 4, 4)
+        x = torch.cat([x_board, piece_map], dim=1)  # type: ignore
         x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
         x = F.relu(self.conv2(x))
         x = x.flatten(start_dim=1)
         x = F.relu(self.fc1(x))
@@ -102,8 +105,8 @@ class QuartoCNN(nn.Module):
 
     def predict(
         self,
-        x_board: torch.Tensor,
-        x_piece: torch.Tensor,
+        x_board: torch.Tensor | np.ndarray,
+        x_piece: torch.Tensor | np.ndarray,
         TEMPERATURE: float = 1.0,
         DETERMINISTIC: bool = True,
     ):
@@ -117,8 +120,9 @@ class QuartoCNN(nn.Module):
             ``DETERMINISTIC``: If True, use argmax instead of sampling.
 
         Returns:
-            board_position: Predicted board position (batch_size, 4, 4).
-            predicted_piece: Sampled piece indices (batch_size, 16).
+            ``board_position``: Predicted board position (batch_size, 4, 4).
+
+            ``predicted_piece``: Sampled piece indices (batch_size, 16).
         """
         assert x_board.shape[1:] == (
             16,
@@ -160,47 +164,8 @@ class QuartoCNN(nn.Module):
             # Each index corresponds to (board_idx * 16 + piece_idx)
             board_indices = preds // 16
             piece_indices = preds % 16
+
             return board_indices, piece_indices
-
-    def export(
-        self,
-        checkpoint_suffix: str,
-        checkpoint_folder: str = "weights/",
-    ) -> str:
-        """
-        Export the model to a file with the datetime and suffix in the filename.
-
-        Args:
-            checkpoint_suffix: Suffix for the checkpoint file name. Usually the epoch number.
-            checkpoint_folder: Folder to save the model weights.
-        """
-        checkpoint_name = (
-            f"{datetime.now().strftime('%Y%m%d_%H%M')}-{checkpoint_suffix}.pt"
-        )
-
-        file_path = path.join(checkpoint_folder, self.name, checkpoint_name)
-
-        makedirs(path.dirname(file_path), exist_ok=True)
-        torch.save(self.state_dict(), file_path)
-        logging.info(f"Model exported to {path}")
-
-        return file_path
-
-    # ####################################################################
-    @classmethod
-    def from_file(cls, weights_path: str):
-        """
-        Load the model from a file.
-
-        Returns:
-            QuartoCNN instance with loaded weights.
-        """
-        model = cls()
-
-        model.load_state_dict(torch.load(weights_path))
-        logging.info(f"Model loaded from {weights_path}")
-
-        return model
 
 
 def train(
