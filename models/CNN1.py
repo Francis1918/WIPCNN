@@ -35,13 +35,17 @@ logging.info(datetime.now())
 
 class QuartoCNN(NN_abstract):
     """
-    QuartoCNN is a Convolutional Neural Network (CNN) model for the Quarto board game.
+    QuartoCNN is a Convolutional Neural Network (CNN) model for the Quarto board game that predicts the action value function.
+    It has a sequencial output architecture:
+        * The first output predicts the board position to place a piece,
+        * The second output uses the information of first output to predict the piece to place.
     # Input:
-    * batchx16x4x4 input tensors representing different positions of the game board. 16 dims for each piece, 4x4 grid.
+    * batchx16x4x4 input tensors representing different positions of the game board.
+    * batchx16 dims for each piece
 
     # Output:
-    * batchx4x4 logits tensor representing the board position
-    * batch-by-16 logits tensor representing the piece
+    * batchx4x4 [-1,1] tensor representing the action value of the board position
+    * batch-by-16 [-1,1] tensor representing the action value of the piece
     """
 
     @property
@@ -72,8 +76,8 @@ class QuartoCNN(NN_abstract):
         self.fc2_board = nn.Linear(n_neurons, 4 * 4)
 
         # piece: in softmax
-        self.fc2_piece = nn.Linear(n_neurons, 4 * 4)
-        self.dropout = nn.Dropout(0.3)
+        self.fc2_piece = nn.Linear(n_neurons + 16, 4 * 4)
+        self.dropout = nn.Dropout(0.5)  # 0.3 before
 
     def forward(
         self, x_board: torch.Tensor | np.ndarray, x_piece: torch.Tensor | np.ndarray
@@ -83,8 +87,8 @@ class QuartoCNN(NN_abstract):
             x_board: Input tensor of the board with placed pieces (batch_size, 16, 4, 4).
             x_piece: Input tensor of selected piece to place (batch_size, 16).
         Returns:
-            logits_board: Output tensor of the board position to place piece (batch_size, 16).
-            logits_piece: Output tensor of selected piece (batch_size, 16).
+            qav_board: Onehot tensor [-1, 1] of the action value for the board position to place piece (batch_size, 16).
+            qav_piece: Onehot tensor [-1, 1] of the action value for the selected piece (batch_size, 16).
         """
         piece_feat = F.relu(self.fc_in_piece(x_piece))
         piece_map = piece_feat.view(-1, 1, 4, 4)
@@ -93,14 +97,17 @@ class QuartoCNN(NN_abstract):
         x = F.relu(self.conv2(x))
         x = x.flatten(start_dim=1)
         x = F.relu(self.fc1(x))
-        x = self.dropout(x)
+        x = self.dropout(x)  # Bx128
 
         # output 1: board position (batch, 16)
         logits_board = self.fc2_board(x)
+        qav_board = F.tanh(logits_board)
 
         # output 2: selected piece (batch, 16)
-        logits_piece = self.fc2_piece(x)
-        return logits_board, logits_piece
+        x_qav = torch.cat([x, qav_board], dim=1)
+        logits_piece = self.fc2_piece(x_qav)
+        qav_piece = F.tanh(logits_piece)
+        return qav_board, qav_piece
 
     def predict(
         self,
@@ -110,7 +117,7 @@ class QuartoCNN(NN_abstract):
         DETERMINISTIC: bool = True,
     ):
         """
-        Predict the board position and piece from the input tensor, with optional ``TEMPERATURE`` for randomness.
+        Predicts the preferred order of the all the board positions and pieces, with optional ``TEMPERATURE`` for randomness.
 
         Args:
             ``x_board``: Input tensor of shape (batch_size, 16, 4, 4).
@@ -119,9 +126,8 @@ class QuartoCNN(NN_abstract):
             ``DETERMINISTIC``: If True, use argmax instead of sampling.
 
         Returns:
-            ``board_position``: Predicted board position (batch_size, 4, 4).
-
-            ``predicted_piece``: Sampled piece indices (batch_size, 16).
+            * ``board_position``: Predicted idx board position (batch_size, 4, 4).
+            * ``predicted_piece``: Sampled idx piece indices (batch_size, 16).
         """
         assert x_board.shape[1:] == (
             16,
@@ -135,35 +141,28 @@ class QuartoCNN(NN_abstract):
 
         self.eval()
         with torch.no_grad():
-            logits_board_position, logits_piece = self.forward(x_board, x_piece)
-            # Apply softmax to get probabilities
-            board_position_probs = F.softmax(logits_board_position / TEMPERATURE, dim=1)
-            piece_probs = F.softmax(logits_piece / TEMPERATURE, dim=1)
+            qav_board, qav_piece = self.forward(x_board, x_piece)
 
-            # Compute the outer product for each batch to get all possible combinations
-            # board_position_probs: (batch_size, 16)
-            # piece_probs: (batch_size, 16)
-            # Output: (batch_size, 16, 16) where [i, j, k] = prob(board=j, piece=k)
-            batch_size = logits_board_position.shape[0]
-            combo_matrix = torch.einsum("bi,bj->bij", board_position_probs, piece_probs)
-            combo_matrix = combo_matrix.view(batch_size, -1)
-
+            # Use tanh outputs directly for deterministic prediction
             if DETERMINISTIC:
-                preds = torch.argsort(combo_matrix, dim=1, descending=True)
+                board_indices = torch.argmax(qav_board, dim=1)
+                piece_indices = torch.argmax(qav_piece, dim=1)
+                return board_indices, piece_indices
             else:
-                # Sample from the multinomial distribution
-                preds = torch.multinomial(
-                    combo_matrix,
-                    num_samples=combo_matrix.shape[1],  # all possible combinations
+                # For stochastic prediction, use softmax over tanh outputs and sample
+                board_probs = F.softmax(qav_board / TEMPERATURE, dim=1)
+                piece_probs = F.softmax(qav_piece / TEMPERATURE, dim=1)
+                board_indices = torch.multinomial(
+                    board_probs,
+                    board_probs.shape[1],  # all possible combinations
                     replacement=False,
                 )
-
-            # Convert the flat indices in preds to (board, piece) indices
-            # Each index corresponds to (board_idx * 16 + piece_idx)
-            board_indices = preds // 16
-            piece_indices = preds % 16
-
-            return board_indices, piece_indices
+                piece_indices = torch.multinomial(
+                    piece_probs,
+                    piece_probs.shape[1],  # all possible combinations
+                    replacement=False,
+                )
+                return board_indices, piece_indices
 
 
 def train(
