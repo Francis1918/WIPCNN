@@ -76,34 +76,34 @@ class Quarto_bot(BotAI):
                     DETERMINISTIC=False,
                 )
             )
-
             batch_size = self.board_pos_onehot_cached.shape[0]
             assert batch_size == 1, f"Expected batch size of 1, got {batch_size}."
 
             # in first call select first option
-            _idx_piece: int = self.select_piece_onehot_cached[0, 0]  # type: ignore
+            _idx_piece: int = self.select_piece_onehot_cached[0, 0].item()  # type: ignore
             self.selected_piece = Piece.from_index(_idx_piece)
 
-            _idx_board_pos: int = self.board_pos_onehot_cached[0, 0]  # type: ignore
+            _idx_board_pos: int = self.board_pos_onehot_cached[0, 0].item()  # type: ignore
             self.board_position = game.game_board.get_position_index(_idx_board_pos)
 
             self.recalculate = False  # Do not recalculate until the next turn
         elif ith_try > 0:
             # load from cached values
-            _idx_piece: int = self.select_piece_onehot_cached[0, ith_try]  # type: ignore
+            _idx_piece: int = self.select_piece_onehot_cached[0, ith_try].item()  # type: ignore
             self.selected_piece = Piece.from_index(_idx_piece)
 
-            _idx_board_pos: int = self.board_pos_onehot_cached[0, ith_try]  # type: ignore
+            _idx_board_pos: int = self.board_pos_onehot_cached[0, ith_try].item()  # type: ignore
             self.board_position = game.game_board.get_position_index(_idx_board_pos)
         else:
             logger.debug("Skipping calculation as recalculate is set to False.")
+            pass
+
         return self.board_position, self.selected_piece
 
     def select(self, game: QuartoGame, ith_option: int = 0, *args, **kwargs) -> Piece:
         """Selects a piece for the other player."""
 
         _, selected_piece = self.calculate(game, ith_option)
-        self.recalculate = True  # Recalculate for the next turn
 
         return selected_piece
 
@@ -111,7 +111,7 @@ class Quarto_bot(BotAI):
         self, game: QuartoGame, piece: Piece, ith_option: int = 0, *args, **kwargs
     ) -> tuple[int, int]:
         """Places the selected piece on the game board at a random valid position."""
-
+        if ith_option == 0:
+            self.recalculate = True
         board_position, _ = self.calculate(game, ith_option)
-
         return board_position
