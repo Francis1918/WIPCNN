@@ -12,7 +12,7 @@ play_games(
     player2=player2,
 )
 
-player1.model
+player1.model.
 # go_quarto(
 #     10,
 #     "CNN_bot",
