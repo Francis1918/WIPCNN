@@ -60,7 +60,6 @@ class Quarto_bot(BotAI):
             The index of the current attempt to select or place a piece.
         """
         if self.recalculate:
-
             board_matrix = game.game_board.encode()
             if isinstance(game.selected_piece, Piece):
                 piece_onehot = game.selected_piece.vectorize_onehot()
@@ -79,26 +78,16 @@ class Quarto_bot(BotAI):
             batch_size = self.board_pos_onehot_cached.shape[0]
             assert batch_size == 1, f"Expected batch size of 1, got {batch_size}."
 
-            # in first call select first option
-            _idx_piece: int = self.select_piece_onehot_cached[0, 0].item()  # type: ignore
-            self.selected_piece = Piece.from_index(_idx_piece)
-
-            _idx_board_pos: int = self.board_pos_onehot_cached[0, 0].item()  # type: ignore
-            self.board_position = game.game_board.get_position_index(_idx_board_pos)
-
             self.recalculate = False  # Do not recalculate until the next turn
-        elif ith_try > 0:
-            # load from cached values
-            _idx_piece: int = self.select_piece_onehot_cached[0, ith_try].item()  # type: ignore
-            self.selected_piece = Piece.from_index(_idx_piece)
 
-            _idx_board_pos: int = self.board_pos_onehot_cached[0, ith_try].item()  # type: ignore
-            self.board_position = game.game_board.get_position_index(_idx_board_pos)
-        else:
-            logger.debug("Skipping calculation as recalculate is set to False.")
-            pass
+        # load from cached values
+        _idx_piece: int = self.select_piece_onehot_cached[0, ith_try].item()  # type: ignore
+        selected_piece = Piece.from_index(_idx_piece)
 
-        return self.board_position, self.selected_piece
+        _idx_board_pos: int = self.board_pos_onehot_cached[0, ith_try].item()  # type: ignore
+        board_position = game.game_board.get_position_index(_idx_board_pos)
+
+        return board_position, selected_piece
 
     def select(self, game: QuartoGame, ith_option: int = 0, *args, **kwargs) -> Piece:
         """Selects a piece for the other player."""
