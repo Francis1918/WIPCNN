@@ -5,93 +5,97 @@ import numpy as np
 from torchrl.data.replay_buffers import ReplayBuffer
 from torchrl.data.replay_buffers.storages import LazyTensorStorage
 from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
-from torchrl.collectors import SyncDataCollector
 
-from collections import defaultdict
-from tqdm import tqdm
+from bot.CNN_bot import Quarto_bot
+from models.CNN1 import QuartoCNN
+from QuartoRL import get_SAR
+from tqdm import trange
 
-steps_per_batch = 1_600
-total_steps = 50_000
+torch.manual_seed(15)
+
+# epochs = 100
+# matches_per_epoch = 1000
+# steps_per_batch = 10_000  # ~x10 of matches_per_epoch
+# replay_size = 50_000  # ~x5 last epochs
+epochs = 6
+steps_per_epoch = 10
+
+matches_per_epoch = 10
+steps_per_match = 10_0  # ~x10 of matches_per_epoch
+replay_size = 50_0  # ~x5 last epochs
+
+batch_size = 64
+
+# ###########################
+max_grad_norm = 1.0
+LR = 1e-4
+TAU = 0.005
+
+# ###########################
+policy_net = QuartoCNN()
+target_net = QuartoCNN()
+target_net.load_state_dict(policy_net.state_dict())
 
 
+# ###########################
 replay_buffer = ReplayBuffer(
-    storage=LazyTensorStorage(max_size=steps_per_batch),
+    storage=LazyTensorStorage(max_size=steps_per_match),
     sampler=SamplerWithoutReplacement(),
 )
 
-logs = defaultdict(list)
-pbar = tqdm(total=total_steps)
-eval_str = ""
+# ###########################
+optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
+
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs, 0.0)
 
 
-collector = SyncDataCollector(
-    env,
-    policy_module,
-    frames_per_batch=steps_per_batch,
-    total_frames=total_steps,
-    split_trajs=False,
-)
+# The Huber loss acts like the mean squared error when the error is small, but like the mean absolute error when the error is large - this makes it more robust to outliers when the estimates of Q are very noisy.
+loss_fcn = nn.SmoothL1Loss()
 
 
-# We iterate over the collector until it reaches the total number of frames it was designed to collect:
-for i, tensordict_data in enumerate(collector):
-    # we now have a batch of data to work with. Let's learn something from it.
-    for _ in range(num_epochs):
-        # We'll need an "advantage" signal to make PPO work.
-        # We re-compute it at each epoch as its value depends on the value
-        # network which is updated in the inner loop.
-        advantage_module(tensordict_data)
-        data_view = tensordict_data.reshape(-1)
-        replay_buffer.extend(data_view.cpu())
-        for _ in range(frames_per_batch // sub_batch_size):
-            subdata = replay_buffer.sample(sub_batch_size)
-            loss_vals = loss_module(subdata.to(device))
-            loss_value = (
-                loss_vals["loss_objective"]
-                + loss_vals["loss_critic"]
-                + loss_vals["loss_entropy"]
-            )
+# ###########################
+for e in trange(epochs, desc="Epochs\n", leave=True):
+    p1 = Quarto_bot(model=policy_net)
+    p2 = Quarto_bot(model=policy_net)  # self play
 
-            # Optimization: backward, grad clipping and optimization step
-            loss_value.backward()
-            # this is not strictly mandatory but it's good practice to keep
-            # your gradient norm bounded
-            torch.nn.utils.clip_grad_norm_(loss_module.parameters(), max_grad_norm)
-            optim.step()
-            optim.zero_grad()
-
-    logs["reward"].append(tensordict_data["next", "reward"].mean().item())
-    pbar.update(tensordict_data.numel())
-    cum_reward_str = (
-        f"average reward={logs['reward'][-1]: 4.4f} (init={logs['reward'][0]: 4.4f})"
+    exp = get_SAR(
+        p1_bot=p1,
+        p2_bot=p2,
+        number_of_matches=matches_per_epoch,
+        steps_per_batch=steps_per_match,
+        experiment_name=f"epoch_{e + 1}",
     )
-    logs["step_count"].append(tensordict_data["step_count"].max().item())
-    stepcount_str = f"step count (max): {logs['step_count'][-1]}"
-    logs["lr"].append(optim.param_groups[0]["lr"])
-    lr_str = f"lr policy: {logs['lr'][-1]: 4.4f}"
-    if i % 10 == 0:
-        # We evaluate the policy once every 10 batches of data.
-        # Evaluation is rather simple: execute the policy without exploration
-        # (take the expected value of the action distribution) for a given
-        # number of steps (1000, which is our ``env`` horizon).
-        # The ``rollout`` method of the ``env`` can take a policy as argument:
-        # it will then execute this policy at each step.
-        with set_exploration_type(ExplorationType.DETERMINISTIC), torch.no_grad():
-            # execute a rollout with the trained policy
-            eval_rollout = env.rollout(1000, policy_module)
-            logs["eval reward"].append(eval_rollout["next", "reward"].mean().item())
-            logs["eval reward (sum)"].append(
-                eval_rollout["next", "reward"].sum().item()
-            )
-            logs["eval step_count"].append(eval_rollout["step_count"].max().item())
-            eval_str = (
-                f"eval cumulative reward: {logs['eval reward (sum)'][-1]: 4.4f} "
-                f"(init: {logs['eval reward (sum)'][0]: 4.4f}), "
-                f"eval step-count: {logs['eval step_count'][-1]}"
-            )
-            del eval_rollout
-    pbar.set_description(", ".join([eval_str, cum_reward_str, stepcount_str, lr_str]))
 
+    replay_buffer.extend(exp)  # type: ignore
+
+    for i in range(steps_per_epoch):
+        data = replay_buffer.sample(batch_size)
+
+        loss = loss_fcn(state_action_values, expected_state_action_values.unsqueeze(1))
+
+        # Optimize the model
+        optimizer.zero_grad()
+        loss.backward()
+
+        # Optimization: grad clipping and optimization step
+        # this is not strictly mandatory but it's good practice to keep
+        # your gradient norm bounded
+        torch.nn.utils.clip_grad_norm_(policy_net.parameters(), max_grad_norm)
+        optimizer.step()
+        # optimizer.zero_grad() # in PPO
+
+    # Update the target network
+    target_net_state_dict = target_net.state_dict()
+    policy_net_state_dict = policy_net.state_dict()
+    for key in policy_net_state_dict:
+        target_net_state_dict[key] = policy_net_state_dict[
+            key
+        ] * TAU + target_net_state_dict[key] * (1 - TAU)
+    target_net.load_state_dict(target_net_state_dict)
+
+    if i % 10 == 0:
+        pass
     # We're also using a learning rate scheduler. Like the gradient clipping,
     # this is a nice-to-have but nothing necessary for PPO to work.
     scheduler.step()
+    print(f"Current learning rate: {scheduler.get_last_lr()[0]}")

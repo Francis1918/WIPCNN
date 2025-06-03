@@ -28,7 +28,9 @@ class Quarto_bot(BotAI):
     def name(self) -> str:
         return "CNN_bot"
 
-    def __init__(self, model_path: str | None = None):
+    def __init__(
+        self, *, model_path: str | None = None, model: QuartoCNN | None = None
+    ):
         """
         Initializes the CNN bot.
         ## Parameters
@@ -37,10 +39,16 @@ class Quarto_bot(BotAI):
         """
         super().__init__()  # aunque no hace nada
         logger.debug(f"CNN_bot initialized")
+        assert (
+            model_path is None or model is None
+        ), "Either ``model_path`` or ``model`` must be provided, but not both."
 
         if model_path:
             logger.info(f"Loading model from {model_path}")
             self.model = QuartoCNN.from_file(model_path)
+        elif model:
+            self.model = model
+            logger.info("Using provided model instance")
         else:
             logger.info("Loading model with random weights")
             self.model = QuartoCNN()

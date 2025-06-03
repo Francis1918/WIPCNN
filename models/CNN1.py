@@ -44,7 +44,7 @@ class QuartoCNN(NN_abstract):
     * batchx16 dims for each piece
 
     # Output:
-    * batchx4x4 [-1,1] tensor representing the action value of the board position
+    * batch-16 [-1,1] tensor representing the action value of the board position
     * batch-by-16 [-1,1] tensor representing the action value of the piece
     """
 
@@ -163,60 +163,3 @@ class QuartoCNN(NN_abstract):
                     replacement=False,
                 )
                 return board_indices, piece_indices
-
-
-def train(
-    model,
-    dataloader,
-    optimizer,
-    criterion_board,
-    criterion_piece,
-    device="cpu",
-    epochs=10,
-    log_interval=10,
-):
-    """
-    Train the QuartoCNN model.
-
-    Args:
-        model: QuartoCNN instance.
-        dataloader: DataLoader yielding (input, board_target, piece_target).
-        optimizer: torch optimizer.
-        criterion_board: loss function for board position (e.g., nn.CrossEntropyLoss or nn.MSELoss).
-        criterion_piece: loss function for piece prediction (e.g., nn.BCELoss).
-        device: 'cpu' or 'cuda'.
-        epochs: number of epochs.
-        log_interval: batches per log.
-    """
-    model.to(device)
-    model.train()
-    for epoch in range(epochs):
-        total_loss = 0.0
-        for batch_idx, (inputs, board_targets, piece_targets) in enumerate(dataloader):
-            inputs = inputs.to(device)
-            board_targets = board_targets.to(device)
-            piece_targets = piece_targets.to(device)
-
-            optimizer.zero_grad()
-            board_pred, piece_pred = model(inputs)
-
-            # Flatten board_targets if using CrossEntropyLoss
-            if isinstance(criterion_board, nn.CrossEntropyLoss):
-                board_pred_flat = board_pred.view(-1, 16)
-                board_targets_flat = board_targets.view(-1)
-                loss_board = criterion_board(board_pred_flat, board_targets_flat)
-            else:
-                loss_board = criterion_board(board_pred, board_targets)
-
-            loss_piece = criterion_piece(piece_pred, piece_targets)
-            loss = loss_board + loss_piece
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-
-            if (batch_idx + 1) % log_interval == 0:
-                logging.info(
-                    f"Epoch [{epoch+1}/{epochs}], Batch [{batch_idx+1}/{len(dataloader)}], Loss: {loss.item():.4f}"
-                )
-        avg_loss = total_loss / len(dataloader)
-        logging.info(f"Epoch [{epoch+1}/{epochs}] Average Loss: {avg_loss:.4f}")
