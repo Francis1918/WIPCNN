@@ -18,43 +18,43 @@ import matplotlib.pyplot as plt
 
 plt.ion()  # Enable interactive mode
 
-torch.manual_seed(15)
+torch.manual_seed(50)
 EXPERIMENT_NAME = "aaGoArq"
 
-# BATCH_SIZE = 64
-
-# # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
-# EPOCHS = 50
-
-# # number of times the network is updated per epoch
-# ITER_PER_EPOCH = 100
-# MATCHES_PER_EPOCH = 1000
-# STEPS_PER_EPOCH = 10_000  # ~x10 of matches_per_epoch, used to generate experience
-
-# REPLAY_SIZE = 30_000  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
-
-# # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
-# N_BATCHS_2_UPDATE_TARGET = 30
-
-# N_MATCHES_EVAL = 50  # number of matches to evaluate the bot at the end of each epoch for every previous rival
-
+BATCH_SIZE = 256
 
 # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
-
-BATCH_SIZE = 16
-EPOCHS = 5
+EPOCHS = 50
 
 # number of times the network is updated per epoch
-ITER_PER_EPOCH = 5
-MATCHES_PER_EPOCH = 10
-STEPS_PER_EPOCH = 10_0  # ~x10 of matches_per_epoch, used to generate experience
+ITER_PER_EPOCH = 100
+MATCHES_PER_EPOCH = 1000
+STEPS_PER_EPOCH = 10_000  # ~x10 of matches_per_epoch, used to generate experience
 
-REPLAY_SIZE = 3_00  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+REPLAY_SIZE = 30_000  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
 
 # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
 N_BATCHS_2_UPDATE_TARGET = 30
 
-N_MATCHES_EVAL = 5  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+N_MATCHES_EVAL = 50  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+
+
+# # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
+
+# BATCH_SIZE = 16
+# EPOCHS = 5
+
+# # number of times the network is updated per epoch
+# ITER_PER_EPOCH = 5
+# MATCHES_PER_EPOCH = 10
+# STEPS_PER_EPOCH = 10_0  # ~x10 of matches_per_epoch, used to generate experience
+
+# REPLAY_SIZE = 3_00  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+
+# # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
+# N_BATCHS_2_UPDATE_TARGET = 30
+
+# N_MATCHES_EVAL = 5  # number of matches to evaluate the bot at the end of each epoch for every previous rival
 
 
 # ###########################
@@ -113,6 +113,11 @@ for e in range(EPOCHS):
     for i in range(ITER_PER_EPOCH):
         pbar.update(1)
         data = replay_buffer.sample(BATCH_SIZE)
+        if data.shape[0] < BATCH_SIZE:
+            logger.warning(
+                f"Not enough data to sample a full batch. Expected {BATCH_SIZE}, got {data.shape[0]}"
+            )
+            continue
 
         state_board = data["state_board"]
         state_piece = data["state_piece"]
