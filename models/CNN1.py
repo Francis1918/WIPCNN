@@ -84,8 +84,8 @@ class QuartoCNN(NN_abstract):
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward pass of the model.
         Args:
-            x_board: Input tensor of the board with placed pieces (batch_size, 16, 4, 4).
-            x_piece: Input tensor of selected piece to place (batch_size, 16).
+            ``x_board``: Input tensor of the board with placed pieces (batch_size, 16, 4, 4).
+            ``x_piece``: Input tensor of selected piece to place (batch_size, 16).
         Returns:
             qav_board: Onehot tensor [-1, 1] of the action value for the board position to place piece (batch_size, 16).
             qav_piece: Onehot tensor [-1, 1] of the action value for the selected piece (batch_size, 16).

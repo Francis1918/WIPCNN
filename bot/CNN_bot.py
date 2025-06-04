@@ -47,6 +47,10 @@ class Quarto_bot(BotAI):
             logger.info(f"Loading model from {model_path}")
             self.model = QuartoCNN.from_file(model_path)
         elif model:
+            assert isinstance(
+                model, QuartoCNN
+            ), "Provided model must be an instance of QuartoCNN."
+
             self.model = model
             logger.info("Using provided model instance")
         else:

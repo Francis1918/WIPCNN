@@ -1,1 +1,2 @@
-from .RL_functions import process_match, get_SAR
+from .RL_functions import process_match, gen_experience
+from .contest import run_contest

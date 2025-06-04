@@ -45,47 +45,104 @@ def process_match(match_path: str, result: int):
     p1 = pd.DataFrame()
     p2 = pd.DataFrame()
 
-    p1_obs = pd.concat([pd.Series(["0"]), df["Tablero"][3::4]], ignore_index=True)
-    # p1["observation"] = p1_obs.apply(Board.deserialize)  # type: ignore
-    # p2["observation"] = df["Tablero"][1::4].apply(Board.deserialize)  # type: ignore
-    p1["observation"] = p1_obs
-    p2["observation"] = df["Tablero"][1::4].reset_index(drop=True)
+    # --- States
+    p1["state_board"] = pd.concat(
+        [pd.Series(["0"]), df["Tablero"][3::4]], ignore_index=True
+    )
+    p2["state_board"] = df["Tablero"][1::4].reset_index(drop=True)
 
+    # p1 no recibió pieza en el primer estado, por lo que se pone -1.
+    assert (p1.shape[0] - 1) == p2_selected.shape[0]
+    p1["state_piece"] = pd.concat([pd.Series([-1]), p2_selected], ignore_index=True)
+
+    # p2 recibió pieza en el primer estado, por lo que se pone la pieza seleccionada.
+    assert (p2.shape[0]) == p1_selected.shape[0]
+    p2["state_piece"] = p1_selected.reset_index(drop=True)
+
+    # -- next state
+    # el estado siguiente de p1 es el estado de p2
+    # el estado siguiente de p2 es el estado de p1 pero desde el índice 1.
+    if result == 1 or result == 0:
+        # p1 gana o empata, hay que añadir un estado vacío en el estado siguiente de p1
+        p1["next_state_board"] = pd.concat(
+            [p2["state_board"], pd.Series([-1])], ignore_index=True
+        )
+        p1["next_state_piece"] = pd.concat(
+            [p2["state_piece"], pd.Series([-1])], ignore_index=True
+        )
+
+        p2["next_state_board"] = p1["state_board"][1:].reset_index(drop=True)
+        p2["next_state_piece"] = p1["state_piece"][1:].reset_index(drop=True)
+    else:
+        # p2 gana
+        # ambos jugadores hicieron el mismo número de movimientos
+        p1["next_state_board"] = p2["state_board"].reset_index(drop=True)
+        # el segundo jugador no seleccionó pieza en el último movimiento, por lo que se pone -1.
+        p1["next_state_piece"] = pd.concat(
+            [p2["state_piece"], pd.Series([-1])], ignore_index=True
+        )
+
+        # no hay siguiente estado siguiente para p2 al finalizar el juego.
+        p2["next_state_board"] = pd.concat(
+            [p1["state_board"][1:], pd.Series([-1])], ignore_index=True
+        )
+        p2["next_state_piece"] = pd.concat(
+            [p1["state_piece"][1:], pd.Series([-1])], ignore_index=True
+        )
+
+    # --- Actions
+    # The first move does not put piece in a ``position``. There is no piece to place.
     p1_position = pd.concat([pd.Series([-1]), p1_position], ignore_index=True)
 
-    if len(p2_position) == len(p2_selected):
+    # Last-winning move does not select a piece, so we add -1 to the end of the selected pieces.
+    if result == 1 or result == 0:
+        # Cuando p1 gana o empata, no alcanzó a seleccionar pieza.
         p1_selected = pd.concat([p1_selected, pd.Series([-1])], ignore_index=True)
     else:
+        # Cuando p2 gana, no alcanzó a seleccionar pieza.
         p2_selected = pd.concat([p2_selected, pd.Series([-1])], ignore_index=True)
 
-    p1["action_pos"] = p1_position
-    p1["action_sel"] = p1_selected
-    p2["action_pos"] = p2_position
-    p1["action_sel"] = p1_selected
+    p1["action_pos"] = p1_position.reset_index(drop=True)
+    p1["action_sel"] = p1_selected.reset_index(drop=True)
+    p2["action_pos"] = p2_position.reset_index(drop=True)
+    p2["action_sel"] = p2_selected.reset_index(drop=True)
+
+    # --- End
+    p1["done"] = False
+    p2["done"] = False
 
     # Función de recompensa
     p1["reward"] = result
-    p2["reward"] = -1 if result == 1 else 1 if result == -1 else 0
+    if result == 1:
+        p2["reward"] = -1
+        p1.loc[p1.index[-1], "done"] = True
+
+    elif result == -1:
+        p2["reward"] = 1
+        p2.loc[p2.index[-1], "done"] = True
+
+    else:
+        p2["reward"] = 0
+        p1.loc[p1.index[-1], "done"] = True
 
     return p1, p2
 
 
 # ####################################################################
-def get_SAR(
+def gen_experience(
     *,
     p1_bot: BotAI,
     p2_bot: BotAI,
     experiment_name: str,
     number_of_matches: int = 1000,
     steps_per_batch: int = 10_000,
+    verbose: bool = False,
 ) -> TensorDict:
     """
     steps_per_batch: int = must be greater than ``number_of_matches`` ~ 10x.
     It takes the last ``steps_per_batch`` steps of the matches played.
     """
-    logger.info(
-        "Creating SyncDataCollector imitator instance for QuartoRL board game..."
-    )
+    logger.debug("Generating experience...")
 
     batch_size = steps_per_batch
 
@@ -96,12 +153,12 @@ def get_SAR(
         player1=p1_bot,
         player2=p2_bot,
         delay=0,
-        verbose=True,
+        verbose=verbose,
         match_dir=match_dir,
     )
 
     logger.info(
-        f"SyncDataCollector imitator instance created successfully. Matches played: {number_of_matches}, Steps per batch: {steps_per_batch}"
+        f"Generated experience. Matches played: {number_of_matches}, Steps per batch: {steps_per_batch}"
     )
 
     p_all = pd.DataFrame()
@@ -121,10 +178,20 @@ def get_SAR(
     with set_list_to_stack(False):
         experience = TensorDict(
             {
-                "observation": np.stack(p_all["observation"].apply(Board.deserialize)),  # type: ignore
-                "action_pos": np.stack(p_all["action_pose"].apply(Board.get_position_index)),  # type: ignore
-                "action_sel": np.stack(p_all["action_sel"].apply(Board.get_position_index)),  # type: ignore
+                "state_board": np.stack(p_all["state_board"].apply(Board.deserialize)),  # type: ignore
+                "state_piece": np.stack(p_all["state_piece"].apply(Board.pos_index2vector)),  # type: ignore
+                # "action_pos": np.stack(p_all["action_pos"].apply(Board.pos_index2vector)),  # type: ignore
+                # "action_sel": np.stack(p_all["action_sel"].apply(Board.pos_index2vector)),  # type: ignore
+                "action_pos": np.stack(p_all["action_pos"]),  # type: ignore
+                "action_sel": np.stack(p_all["action_sel"]),  # type: ignore
                 "reward": np.stack(p_all["reward"]),  # type: ignore
+                "done": np.stack(p_all["done"]),  # type: ignore
+                "next_state_board": np.stack(
+                    p_all["next_state_board"].apply(Board.deserialize)  # type: ignore
+                ),
+                "next_state_piece": np.stack(
+                    p_all["next_state_piece"].apply(Board.pos_index2vector)  # type: ignore
+                ),
             },
             batch_size=[p_all.shape[0]],
         )
