@@ -20,17 +20,7 @@ import torch.nn.functional as F
 import numpy as np
 
 # ----------------------------- logging --------------------------
-import logging
-from sys import stdout
-from datetime import datetime
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s][%(levelname)s] %(message)s",
-    stream=stdout,
-    datefmt="%m-%d %H:%M:%S",
-)
-logging.info(datetime.now())
+from utils.logger import logger
 
 
 class QuartoCNN(NN_abstract):
