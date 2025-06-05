@@ -13,36 +13,39 @@ from utils.logger import logger
 from tqdm import tqdm
 import pprint
 import pickle
+from colorama import init, Fore, Style
 
 import matplotlib.pyplot as plt
 
 plt.ion()  # Enable interactive mode
 
 torch.manual_seed(50)
-EXPERIMENT_NAME = "aaGoArq"
+EXPERIMENT_NAME = "ab_GoBig"
 
-BATCH_SIZE = 256
+BATCH_SIZE = 1024
 
 # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
-EPOCHS = 50
+EPOCHS = 100_000
 
 # number of times the network is updated per epoch
-ITER_PER_EPOCH = 100
-MATCHES_PER_EPOCH = 1000
-STEPS_PER_EPOCH = 10_000  # ~x10 of matches_per_epoch, used to generate experience
+MATCHES_PER_EPOCH = 3000
+# ~x10 of matches_per_epoch, used to generate experience
+STEPS_PER_EPOCH = 10 * MATCHES_PER_EPOCH
+ITER_PER_EPOCH = STEPS_PER_EPOCH // BATCH_SIZE
 
-REPLAY_SIZE = 30_000  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+REPLAY_SIZE = 10 * STEPS_PER_EPOCH  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
 
 # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
-N_BATCHS_2_UPDATE_TARGET = 30
+N_BATCHS_2_UPDATE_TARGET = ITER_PER_EPOCH // 3
 
-N_MATCHES_EVAL = 50  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+N_MATCHES_EVAL = 100  # number of matches to evaluate the bot at the end of each epoch for every previous rival
 
 
-# # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
+# # # ########################### DEBUG
+# # # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
 
 # BATCH_SIZE = 16
-# EPOCHS = 5
+# EPOCHS = 10
 
 # # number of times the network is updated per epoch
 # ITER_PER_EPOCH = 5
@@ -94,9 +97,16 @@ loss_fcn = nn.SmoothL1Loss()
 
 epochs_results = []  # to store the results of each epoch
 # ###########################
-pbar = tqdm(total=EPOCHS * ITER_PER_EPOCH, desc="Training Progress\n", leave=True)
+init(autoreset=True)
 
-for e in range(EPOCHS):
+pbar = tqdm(
+    total=EPOCHS * ITER_PER_EPOCH,
+    desc=f"{Fore.CYAN}\nProgress{Style.RESET_ALL}",
+    leave=True,
+    unit="Iter.",
+)
+
+for e in tqdm(range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", leave=False):
     p1 = Quarto_bot(model=policy_net)
     p2 = Quarto_bot(model=policy_net)  # self play
     logger.debug("Generating experience for epoch %d", e + 1)
@@ -211,9 +221,10 @@ for e in range(EPOCHS):
     _f_fname = policy_net.export_model(_fname)
     checkpoints_files.append(_f_fname)
 
+    # Ignore the last epoch, as it is the
     contest_results = run_contest(
         player=p1,
-        rivals=checkpoints_files,
+        rivals=checkpoints_files[:-1],  # rivals are the previous epochs
         rival_class=Quarto_bot,
         matches=N_MATCHES_EVAL,
         verbose=False,
@@ -260,7 +271,7 @@ for e in range(EPOCHS):
     # We're also using a learning rate scheduler. Like the gradient clipping,
     # this is a nice-to-have but nothing necessary for PPO to work.
     scheduler.step()
-    print(f"Current learning rate: {scheduler.get_last_lr()[0]}")
+    logger.info(f"Current learning rate: {scheduler.get_last_lr()[0]}")
 
 # Prevent matplotlib from closing figures at the end of the script
 plt.ioff()

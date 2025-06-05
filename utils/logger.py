@@ -9,18 +9,40 @@ Python 3
 "I find that I don't understand things unless I try to program them."
 -Donald E. Knuth
 """
-
 # ----------------------------- logging --------------------------
 import logging
 from sys import stdout
 from datetime import datetime
+from colorama import Fore, Style, Back, init as colorama_init
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="[%(asctime)s][%(levelname)s] %(message)s",
-    stream=stdout,
+
+colorama_init(autoreset=True)
+
+
+class ColorFormatter(logging.Formatter):
+    COLORS = {
+        logging.DEBUG: Fore.CYAN,
+        logging.INFO: Fore.GREEN,
+        logging.WARNING: Fore.YELLOW,
+        logging.ERROR: Fore.RED,
+        logging.CRITICAL: Fore.MAGENTA + Style.BRIGHT,
+    }
+
+    def format(self, record):
+        color = self.COLORS.get(record.levelno, "")
+        message = super().format(record)
+        return f"{color}{message}{Style.RESET_ALL}"
+
+
+handler = logging.StreamHandler(stdout)
+handler.setLevel(logging.DEBUG)
+formatter = ColorFormatter(
+    f"{Fore.GREEN + Back.RED}[%(asctime)s]{Back.RESET}[%(levelname)s]{Back.WHITE}[%(filename)s]{Back.RESET} %(message)s",
     datefmt="%m-%d %H:%M:%S",
 )
+handler.setFormatter(formatter)
 
-logger = logging.getLogger("Quartopy")
-logger.info(datetime.now())
+logging.basicConfig(handlers=[handler], level=logging.INFO)
+logger = logging.getLogger("TrainRL")
+logger.debug("Creating logger for TrainRL")
+logger.debug(datetime.now())
