@@ -20,7 +20,7 @@ from utils.logger import logger
 import numpy as np
 import torch
 
-logger.info("Loading CNN_bot...")
+logger.debug("Loading CNN_bot...")
 
 
 class Quarto_bot(BotAI):
@@ -44,7 +44,7 @@ class Quarto_bot(BotAI):
         ), "Either ``model_path`` or ``model`` must be provided, but not both."
 
         if model_path:
-            logger.info(f"Loading model from {model_path}")
+            logger.debug(f"Loading model from {model_path}")
             self.model = QuartoCNN.from_file(model_path)
         elif model:
             assert isinstance(
@@ -52,9 +52,9 @@ class Quarto_bot(BotAI):
             ), "Provided model must be an instance of QuartoCNN."
 
             self.model = model
-            logger.info("Using provided model instance")
+            logger.debug("Using provided model instance")
         else:
-            logger.info("Loading model with random weights")
+            logger.debug("Loading model with random weights")
             self.model = QuartoCNN()
         logger.debug("Model loaded successfully")
 
