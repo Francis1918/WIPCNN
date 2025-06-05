@@ -21,11 +21,14 @@ import pandas as pd
 
 
 # ####################################################################
-def process_match(match_path: str, result: int):
+def process_match(
+    match_path: str, result: int, n_last_states: int = 10
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Reads a match file and extracts: observation, action, and reward for both players.
     ## Args:
         * match_path (str): Path to the match file.
         * result (int): Result of the match, where 1 is a win for player 1, -1 is a win for player 2, and 0 is a draw.
+        * n_last_states (int): Number of last states to consider for the match. Default is 10.
     ## Returns:
         * p1 (pd.DataFrame): DataFrame containing player 1's observations, actions, and rewards.
         * p2 (pd.DataFrame): DataFrame containing player 2's observations, actions, and rewards.
@@ -125,6 +128,9 @@ def process_match(match_path: str, result: int):
         p2["reward"] = 0
         p1.loc[p1.index[-1], "done"] = True
 
+    # --- Last n states
+    p1 = p1.tail(n_last_states).reset_index(drop=True)
+    p2 = p2.tail(n_last_states).reset_index(drop=True)
     return p1, p2
 
 
@@ -134,6 +140,7 @@ def gen_experience(
     p1_bot: BotAI,
     p2_bot: BotAI,
     experiment_name: str,
+    n_last_states: int = 10,
     number_of_matches: int = 1000,
     steps_per_batch: int = 10_000,
     verbose: bool = False,
@@ -164,7 +171,7 @@ def gen_experience(
     p_all = pd.DataFrame()
     for match_path, result in results.items():
         logger.debug(f"Processing match: {match_path}, Result: {result}")
-        p1, p2 = process_match(match_path, result)
+        p1, p2 = process_match(match_path, result, n_last_states=n_last_states)
 
         p_all = pd.concat([p_all, p1], ignore_index=True)
         p_all = pd.concat([p_all, p2], ignore_index=True)
