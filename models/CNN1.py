@@ -135,8 +135,8 @@ class QuartoCNN(NN_abstract):
 
             # Use tanh outputs directly for deterministic prediction
             if DETERMINISTIC:
-                board_indices = torch.argmax(qav_board, dim=1)
-                piece_indices = torch.argmax(qav_piece, dim=1)
+                board_indices = torch.argsort(qav_board, descending=True, dim=1)
+                piece_indices = torch.argsort(qav_piece, descending=True, dim=1)
                 return board_indices, piece_indices
             else:
                 # For stochastic prediction, use softmax over tanh outputs and sample

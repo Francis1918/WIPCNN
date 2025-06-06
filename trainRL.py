@@ -1,3 +1,7 @@
+from utils.logger import logger
+
+logger.info("Starting. Importing...")
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,56 +13,82 @@ from bot.CNN_bot import Quarto_bot
 from models.CNN1 import QuartoCNN
 from QuartoRL import gen_experience, run_contest
 
-from utils.logger import logger
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import pprint
 import pickle
 from colorama import init, Fore, Style
 
 import matplotlib.pyplot as plt
 
+logger.info("Imports done.")
+
 plt.ion()  # Enable interactive mode
 
 torch.manual_seed(50)
-EXPERIMENT_NAME = "ab_GoBig"
+EXPERIMENT_NAME = "ac_2last_states"
 
 BATCH_SIZE = 1024
 
-# every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
-EPOCHS = 100_000
+# if True, will use smaller batch size and fewer epochs for debugging
+DEBUG_PARAMS = False  # Real training parameters
+# DEBUG_PARAMS = True  # Debugging parameters
 
-# number of times the network is updated per epoch
-MATCHES_PER_EPOCH = 3000
-# ~x10 of matches_per_epoch, used to generate experience
-STEPS_PER_EPOCH = 10 * MATCHES_PER_EPOCH
-ITER_PER_EPOCH = STEPS_PER_EPOCH // BATCH_SIZE
+if not DEBUG_PARAMS:
+    logger.info("Using real training parameters.")
+    BATCH_SIZE = 1024
+    EPOCHS = 1_000
 
-REPLAY_SIZE = 10 * STEPS_PER_EPOCH  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+    # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
+    EPOCHS = 100_000
 
-# update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
-N_BATCHS_2_UPDATE_TARGET = ITER_PER_EPOCH // 3
+    # number of times the network is updated per epoch
+    MATCHES_PER_EPOCH = 1_000
+    # ~x10 of matches_per_epoch, used to generate experience
+    STEPS_PER_EPOCH = 10 * MATCHES_PER_EPOCH
+    ITER_PER_EPOCH = STEPS_PER_EPOCH // BATCH_SIZE
 
-N_MATCHES_EVAL = 100  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+    REPLAY_SIZE = 10 * STEPS_PER_EPOCH  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
 
+    # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
+    N_BATCHS_2_UPDATE_TARGET = ITER_PER_EPOCH // 3
 
-# # # ########################### DEBUG
-# # # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
+    N_MATCHES_EVAL = 300  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+    N_LAST_STATES = 2  # number of last states to consider in the experience generation
 
-# BATCH_SIZE = 16
-# EPOCHS = 10
+    # temperature for exploration, higher values lead to more exploration
+    TEMPERATURE_EXPLORE = 2
 
-# # number of times the network is updated per epoch
-# ITER_PER_EPOCH = 5
-# MATCHES_PER_EPOCH = 10
-# STEPS_PER_EPOCH = 10_0  # ~x10 of matches_per_epoch, used to generate experience
+    # temperature for exploitation, lower values lead to more exploitation
+    TEMPERATURE_EXPLOIT = 0.1
+else:
+    logger.warning(
+        "DEBUG MODE: Using smaller batch size and fewer epochs for debugging purposes."
+    )
+    # ########################### DEBUG
 
-# REPLAY_SIZE = 3_00  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+    # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
+    BATCH_SIZE = 16
+    EPOCHS = 10
 
-# # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
-# N_BATCHS_2_UPDATE_TARGET = 30
+    # number of times the network is updated per epoch
+    ITER_PER_EPOCH = 5
+    MATCHES_PER_EPOCH = 10
+    STEPS_PER_EPOCH = 10_0  # ~x10 of matches_per_epoch, used to generate experience
 
-# N_MATCHES_EVAL = 5  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+    REPLAY_SIZE = 3_00  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
 
+    # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
+    N_BATCHS_2_UPDATE_TARGET = 30
+
+    N_MATCHES_EVAL = 5  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+
+    N_LAST_STATES = 2  # number of last states to consider in the experience generation
+
+    # temperature for exploration, higher values lead to more exploration
+    TEMPERATURE_EXPLORE = 2
+
+    # temperature for exploitation, lower values lead to more exploitation
+    TEMPERATURE_EXPLOIT = 0.1
 
 # ###########################
 MAX_GRAD_NORM = 1.0
@@ -101,18 +131,34 @@ init(autoreset=True)
 
 pbar = tqdm(
     total=EPOCHS * ITER_PER_EPOCH,
-    desc=f"{Fore.CYAN}\nProgress{Style.RESET_ALL}",
+    desc=f"{Fore.CYAN}\n Update network{Style.RESET_ALL}",
     leave=True,
+    position=1,
     unit="Iter.",
 )
 
-for e in tqdm(range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", leave=False):
+logger.info("Hyperparameters loaded.")
+logger.info("Starting training...")
+
+for e in tqdm(
+    range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", position=1, leave=False
+):
+    # load models
     p1 = Quarto_bot(model=policy_net)
     p2 = Quarto_bot(model=policy_net)  # self play
+
+    # modify the bots to use different temperatures for exploration and exploitation
+    p1.DETERMINISTIC = False
+    p1.TEMPERATURE = TEMPERATURE_EXPLORE
+    p2.DETERMINISTIC = False
+    p2.TEMPERATURE = TEMPERATURE_EXPLORE
+    logger.debug(f"Using temperatures: p1={p1.TEMPERATURE}, p2={p2.TEMPERATURE}")
+
     logger.debug("Generating experience for epoch %d", e + 1)
     exp = gen_experience(
         p1_bot=p1,
         p2_bot=p2,
+        n_last_states=N_LAST_STATES,
         number_of_matches=MATCHES_PER_EPOCH,
         steps_per_batch=STEPS_PER_EPOCH,
         experiment_name=f"epoch_{e + 1}",
@@ -221,7 +267,9 @@ for e in tqdm(range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", leave=
     _f_fname = policy_net.export_model(_fname)
     checkpoints_files.append(_f_fname)
 
-    # Ignore the last epoch, as it is the
+    # Ignore the last epoch, as it is the current model
+    p1.DETERMINISTIC = True
+    p1.TEMPERATURE = TEMPERATURE_EXPLOIT
     contest_results = run_contest(
         player=p1,
         rivals=checkpoints_files[:-1],  # rivals are the previous epochs
@@ -262,7 +310,7 @@ for e in tqdm(range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", leave=
     plt.xlabel("Epoch")
     plt.ylabel("Win Rate")
     plt.title("Win Rate vs Previous Rivals")
-    plt.legend()
+    # plt.legend()
     plt.grid(True)
     plt.tight_layout()
     plt.draw()
@@ -273,6 +321,7 @@ for e in tqdm(range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", leave=
     scheduler.step()
     logger.info(f"Current learning rate: {scheduler.get_last_lr()[0]}")
 
+logger.info("Training completed.")
 # Prevent matplotlib from closing figures at the end of the script
 plt.ioff()
 plt.show(block=True)

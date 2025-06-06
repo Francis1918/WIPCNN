@@ -36,6 +36,15 @@ class Quarto_bot(BotAI):
         ## Parameters
         ``model_path``: str | None
             Path to the pre-trained model. If None, random weights are loaded.
+
+        ``model``: QuartoCNN | None
+            An instance of QuartoCNN. If provided, it will be used instead of loading from a file.
+
+        ## Attributes
+        ``DETERMINISTIC``: bool
+            If True, the model will select the most probable action.
+        ``TEMPERATURE``: float
+            Controls the randomness of the selection. Higher values lead to more exploration. Only applicable if ``DETERMINISTIC`` is False.
         """
         super().__init__()  # aunque no hace nada
         logger.debug(f"CNN_bot initialized")
@@ -61,15 +70,27 @@ class Quarto_bot(BotAI):
         self.recalculate = True  # Recalculate the model on each turn
         self.selected_piece: Piece
         self.board_position: tuple[int, int]
+        # If True, the model will select the most probable action
+        self.DETERMINISTIC: bool = True
+
+        # Controls the randomness of the selection. Higher values lead to more exploration.
+        # Only applicable if ``DETERMINISTIC`` is False.
+        self.TEMPERATURE: float = 0.1
 
     # ####################################################################
-    def calculate(self, game: QuartoGame, ith_try: int = 0):
-        """Calculates the best move for the bot based on the current board state and selected piece.
+    def calculate(
+        self,
+        game: QuartoGame,
+        ith_try: int = 0,
+    ):
+        """Calculates the move for the bot based on the current board state and selected piece.
         ## Parameters
         ``game``: QuartoGame
             The current game instance.
         ``ith_try``: int
             The index of the current attempt to select or place a piece.
+        ## Returns
+
         """
         if self.recalculate:
             board_matrix = game.game_board.encode()
@@ -83,8 +104,8 @@ class Quarto_bot(BotAI):
                 self.model.predict(
                     torch.from_numpy(board_matrix).float(),
                     torch.from_numpy(piece_onehot).float(),
-                    TEMPERATURE=5,
-                    DETERMINISTIC=False,
+                    TEMPERATURE=self.TEMPERATURE,
+                    DETERMINISTIC=self.DETERMINISTIC,
                 )
             )
             batch_size = self.board_pos_onehot_cached.shape[0]
@@ -101,7 +122,13 @@ class Quarto_bot(BotAI):
 
         return board_position, selected_piece
 
-    def select(self, game: QuartoGame, ith_option: int = 0, *args, **kwargs) -> Piece:
+    def select(
+        self,
+        game: QuartoGame,
+        ith_option: int = 0,
+        *args,
+        **kwargs,
+    ) -> Piece:
         """Selects a piece for the other player."""
 
         _, selected_piece = self.calculate(game, ith_option)
@@ -109,7 +136,12 @@ class Quarto_bot(BotAI):
         return selected_piece
 
     def place_piece(
-        self, game: QuartoGame, piece: Piece, ith_option: int = 0, *args, **kwargs
+        self,
+        game: QuartoGame,
+        piece: Piece,
+        ith_option: int = 0,
+        *args,
+        **kwargs,
     ) -> tuple[int, int]:
         """Places the selected piece on the game board at a random valid position."""
         if ith_option == 0:

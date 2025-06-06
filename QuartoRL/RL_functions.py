@@ -18,7 +18,7 @@ from quartopy import play_games, BotAI, Board
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 # ####################################################################
@@ -170,7 +170,14 @@ def gen_experience(
     )
 
     p_all = pd.DataFrame()
-    for match_path, result in tqdm(results.items(), desc="\nProcessing matches"):
+    for match_path, result in tqdm(
+        results.items(),
+        desc="Processing matches",
+        mininterval=0.3,
+        miniters=20,
+        position=0,
+        leave=False,
+    ):
         logger.debug(f"Processing match: {match_path}, Result: {result}")
         p1, p2 = process_match(match_path, result, n_last_states=n_last_states)
 
