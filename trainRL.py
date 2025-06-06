@@ -2,6 +2,7 @@ from utils.logger import logger
 
 logger.info("Starting. Importing...")
 
+from collections import defaultdict
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -25,9 +26,8 @@ logger.info("Imports done.")
 plt.ion()  # Enable interactive mode
 
 torch.manual_seed(50)
-EXPERIMENT_NAME = "ac_2last_states"
+EXPERIMENT_NAME = "ba_increasing_n_last_states"
 
-BATCH_SIZE = 1024
 
 # if True, will use smaller batch size and fewer epochs for debugging
 DEBUG_PARAMS = False  # Real training parameters
@@ -35,31 +35,44 @@ DEBUG_PARAMS = False  # Real training parameters
 
 if not DEBUG_PARAMS:
     logger.info("Using real training parameters.")
-    BATCH_SIZE = 1024
-    EPOCHS = 1_000
+    BATCH_SIZE = 256
+
+    RIVALS_IN_TOURNAMENT = 100  # number of rivals to evaluate the bot against in the contest at the end of each epoch
+    N_MATCHES_EVAL = 10  # number of matches to evaluate the bot at the end of each epoch for the selected previous rival
 
     # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
     EPOCHS = 100_000
 
-    # number of times the network is updated per epoch
-    MATCHES_PER_EPOCH = 1_000
+    MATCHES_PER_EPOCH = 300  # number self-play matches per epoch
     # ~x10 of matches_per_epoch, used to generate experience
     STEPS_PER_EPOCH = 10 * MATCHES_PER_EPOCH
+    # number of times the network is updated per epoch
     ITER_PER_EPOCH = STEPS_PER_EPOCH // BATCH_SIZE
 
-    REPLAY_SIZE = 10 * STEPS_PER_EPOCH  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+    # ~x100 STEPS_PER_EPOCH, info from last epochs
+    REPLAY_SIZE = 100 * STEPS_PER_EPOCH
 
-    # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
+    # update target network every n batches processed, ~x3/epoch
     N_BATCHS_2_UPDATE_TARGET = ITER_PER_EPOCH // 3
 
-    N_MATCHES_EVAL = 300  # number of matches to evaluate the bot at the end of each epoch for every previous rival
-    N_LAST_STATES = 2  # number of last states to consider in the experience generation
+    # number of last states to consider in the experience generation at the beginning of training
+    N_LAST_STATES_INIT: int = 2
+    # number of last states to consider in the experience generation at the end of training. -1 means all states
+    N_LAST_STATES_FINAL: int = -1
 
     # temperature for exploration, higher values lead to more exploration
-    TEMPERATURE_EXPLORE = 2
+    TEMPERATURE_EXPLORE = 0.5  # view test of temperature
 
     # temperature for exploitation, lower values lead to more exploitation
     TEMPERATURE_EXPLOIT = 0.1
+
+    # number of players to plot in the win rate graph, -1 means all players
+    N_PLAYERS_PLOT = 7
+
+    # number of rival points to plot for each player in the win rate graph
+    POINTS_BY_RIVAL = 50  # must be less than or equal to RIVALS_IN_TOURNAMENT
+
+
 else:
     logger.warning(
         "DEBUG MODE: Using smaller batch size and fewer epochs for debugging purposes."
@@ -68,7 +81,7 @@ else:
 
     # every epoch experience is generated with a new bot instance, models are saved at the end of each epoch
     BATCH_SIZE = 16
-    EPOCHS = 10
+    EPOCHS = 1000
 
     # number of times the network is updated per epoch
     ITER_PER_EPOCH = 5
@@ -80,15 +93,23 @@ else:
     # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
     N_BATCHS_2_UPDATE_TARGET = 30
 
-    N_MATCHES_EVAL = 5  # number of matches to evaluate the bot at the end of each epoch for every previous rival
+    N_MATCHES_EVAL = 5  # number of matches to evaluate the bot at the end of each epoch for the selected previous rival
 
-    N_LAST_STATES = 2  # number of last states to consider in the experience generation
-
+    # number of last states to consider in the experience generation at the beginning of training
+    N_LAST_STATES_INIT: int = 2
+    # number of last states to consider in the experience generation at the end of training. -1 means all states
+    N_LAST_STATES_FINAL: int = -1
     # temperature for exploration, higher values lead to more exploration
     TEMPERATURE_EXPLORE = 2
 
     # temperature for exploitation, lower values lead to more exploitation
     TEMPERATURE_EXPLOIT = 0.1
+
+    N_PLAYERS_PLOT = 4
+
+    RIVALS_IN_TOURNAMENT = 15  # number of rivals to evaluate the bot against in the contest at the end of each epoch
+    POINTS_BY_RIVAL = 6
+
 
 # ###########################
 MAX_GRAD_NORM = 1.0
@@ -155,13 +176,24 @@ for e in tqdm(
     logger.debug(f"Using temperatures: p1={p1.TEMPERATURE}, p2={p2.TEMPERATURE}")
 
     logger.debug("Generating experience for epoch %d", e + 1)
+
+    if N_LAST_STATES_FINAL == -1:
+        n_last_states = 100  # inf
+    else:
+        # Linearly interpolate n_last_states from N_LAST_STATES_INIT to N_LAST_STATES_FINAL over EPOCHS
+        n_last_states = round(
+            N_LAST_STATES_INIT
+            + (N_LAST_STATES_FINAL - N_LAST_STATES_INIT) * (e / (EPOCHS - 1))
+        )
+
     exp = gen_experience(
         p1_bot=p1,
         p2_bot=p2,
-        n_last_states=N_LAST_STATES,
+        n_last_states=n_last_states,
         number_of_matches=MATCHES_PER_EPOCH,
         steps_per_batch=STEPS_PER_EPOCH,
         experiment_name=f"epoch_{e + 1}",
+        PROGRESS_MESSAGE=f"{Fore.YELLOW}Generating experience for epoch {e + 1}{Style.RESET_ALL}",
     )
 
     replay_buffer.extend(exp)  # type: ignore
@@ -274,9 +306,11 @@ for e in tqdm(
         player=p1,
         rivals=checkpoints_files[:-1],  # rivals are the previous epochs
         rival_class=Quarto_bot,
+        rivals_clip=RIVALS_IN_TOURNAMENT,  # limit the number of rivals for evaluation, -1 means no limit
         matches=N_MATCHES_EVAL,
         verbose=False,
         match_dir=f"./partidas_guardadas/{EXPERIMENT_NAME}/{_fname}/",
+        PROGRESS_MESSAGE=f"{Fore.MAGENTA}Running contest for epoch {e + 1}{Style.RESET_ALL}",
     )
     logger.info(f"Contest results after epoch {e + 1}")
     logger.info(pprint.pformat(contest_results))
@@ -285,32 +319,56 @@ for e in tqdm(
     with open(f"{EXPERIMENT_NAME}.pkl", "wb") as f:
         pickle.dump(epochs_results, f)
 
-    # Extract win rates for each epoch and each rival
-    # Build a win rate dictionary by rival
-    win_rate_by_rival = {}
-    for epoch_idx, epoch_result in enumerate(epochs_results):
-        for rival_name, rival_result in epoch_result.items():
+    # Extract win rates for each player epoch and each rival
+    win_rate_by_epoch: defaultdict[int, dict[int, float]] = defaultdict(lambda: dict())
+    for player_id, player_results in enumerate(epochs_results):
+        for player_name, result_vs_rival in player_results.items():
             total = (
-                rival_result["wins"] + rival_result["draws"] + rival_result["losses"]
+                result_vs_rival["wins"]
+                + result_vs_rival["draws"]
+                + result_vs_rival["losses"]
             )
-            win_rate = (rival_result["wins"] + rival_result["draws"]) / total
-            if rival_name not in win_rate_by_rival:
-                win_rate_by_rival[rival_name] = []
-            win_rate_by_rival[rival_name].append(win_rate)
+            win_rate = (
+                result_vs_rival["wins"] + 0.5 * result_vs_rival["draws"]
+            ) / total
 
-    # Plot win rate by rival without halting execution
+            win_rate_by_epoch[player_id][player_name] = win_rate
+
+    # Plot win rate by rival without halting execution, limit to POINTS_BY_RIVAL points but cover whole range
     plt.figure(1, figsize=(10, 6), clear=True)
-    for rival_name, win_rates in win_rate_by_rival.items():
+
+    # ############ PLOTTING
+    # Only plot N_PLAYERS_PLOT equally spaced players (or all if N_PLAYERS_PLOT < 0 or more players than available)
+    if N_PLAYERS_PLOT < 0 or N_PLAYERS_PLOT >= e + 1:
+        players_to_plot = range(e + 1)  # Plot all players
+    else:
+        players_to_plot = torch.linspace(0, e, steps=N_PLAYERS_PLOT).long().tolist()
+
+    for player_name in players_to_plot:
+        win_rates = win_rate_by_epoch[player_name]
+        n = len(win_rates)  # Number of rivals found for this player (epochs)
+        if n > POINTS_BY_RIVAL:
+            # Select POINTS_BY_RIVAL indices spaced across the whole range
+            idx_rival_names = (
+                torch.linspace(0, n - 1, steps=POINTS_BY_RIVAL).long().tolist()
+            )
+            x_rival_names = [list(win_rates.keys())[i] for i in idx_rival_names]
+        else:
+            # If fewer than POINTS_BY_RIVAL, plot all available points
+            x_rival_names = win_rates.keys()
+
+        y_win_rates = [win_rates[i] for i in x_rival_names]
         plt.plot(
-            range(rival_name + 1, rival_name + 1 + len(win_rates)),
-            win_rates,
+            x_rival_names,
+            y_win_rates,
             ".:",
-            label=f"Rival epoch {rival_name}",
+            label=f"Rival epoch {player_name}",
         )
-    plt.xlabel("Epoch")
+    plt.xlabel("Rival from epoch")
     plt.ylabel("Win Rate")
     plt.title("Win Rate vs Previous Rivals")
-    # plt.legend()
+    plt.legend()
+    plt.xticks([int(x) for x in plt.gca().get_xticks() if float(x).is_integer()])
     plt.grid(True)
     plt.tight_layout()
     plt.draw()

@@ -145,6 +145,7 @@ def gen_experience(
     number_of_matches: int = 1000,
     steps_per_batch: int = 10_000,
     verbose: bool = False,
+    PROGRESS_MESSAGE: str = "Generating experience...",
 ) -> TensorDict:
     """
     steps_per_batch: int = must be greater than ``number_of_matches`` ~ 10x.
@@ -163,6 +164,7 @@ def gen_experience(
         delay=0,
         verbose=verbose,
         match_dir=match_dir,
+        PROGRESS_MESSAGE=PROGRESS_MESSAGE,
     )
 
     logger.debug(
