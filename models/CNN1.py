@@ -12,7 +12,21 @@ Python 3
 "I find that I don't understand things unless I try to program them."
 -Donald E. Knuth
 """
-from .NN_abstract import NN_abstract
+
+# Handle both relative and absolute imports for better compatibility
+try:
+    from .NN_abstract import NN_abstract
+except ImportError:
+    # Fallback for direct execution
+    try:
+        from NN_abstract import NN_abstract
+    except ImportError:
+        # Alternative path resolution
+        import sys
+        from pathlib import Path
+        current_dir = Path(__file__).parent
+        sys.path.insert(0, str(current_dir))
+        from NN_abstract import NN_abstract
 
 import torch
 import torch.nn as nn
@@ -20,22 +34,29 @@ import torch.nn.functional as F
 import numpy as np
 
 # ----------------------------- logging --------------------------
-from utils.logger import logger
+try:
+    from utils.logger import logger
+except ImportError:
+    # Fallback for direct execution - create a simple logger
+    import logging
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
 
 
 class QuartoCNN(NN_abstract):
     """
     QuartoCNN is a Convolutional Neural Network (CNN) model for the Quarto board game that predicts the action value function.
-    It has a sequencial output architecture:
-        * The first output predicts the board position to place a piece,
-        * The second output uses the information of first output to predict the piece to place.
+    It has a dual-head parallel output architecture:
+        * Both outputs use the same backbone features for consistent processing
+        * The first output predicts the board position to place a piece
+        * The second output predicts the piece to select (independent of board prediction)
     # Input:
     * batchx16x4x4 input tensors representing different positions of the game board.
     * batchx16 dims for each piece
 
     # Output:
     * batch-16 [-1,1] tensor representing the action value of the board position
-    * batch-by-16 [-1,1] tensor representing the action value of the piece
+    * batch-16 [-1,1] tensor representing the action value of the piece selection
     """
 
     @property
@@ -62,15 +83,16 @@ class QuartoCNN(NN_abstract):
         n_neurons = 128
         self.fc1 = nn.Linear(k2_size * 4 * 4, n_neurons)
 
-        # Predicts board position
+        # Both heads now receive the same input size for architectural consistency
+        # Predicts board position - normalized input (128 dimensions)
         self.fc2_board = nn.Linear(n_neurons, 4 * 4)
 
-        # piece: in softmax
-        self.fc2_piece = nn.Linear(n_neurons + 16, 4 * 4)
+        # Predicts piece selection - normalized input (same 128 dimensions as board)
+        self.fc2_piece = nn.Linear(n_neurons, 4 * 4)
         self.dropout = nn.Dropout(0.5)  # 0.3 before
 
     def forward(
-        self, x_board: torch.Tensor | np.ndarray, x_piece: torch.Tensor | np.ndarray
+        self, x_board: torch.Tensor, x_piece: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """Forward pass of the model.
         Args:
@@ -89,20 +111,23 @@ class QuartoCNN(NN_abstract):
         x = F.relu(self.fc1(x))
         x = self.dropout(x)  # Bx128
 
+        # Both outputs now use the same backbone features for consistency
+        # This eliminates the architectural inconsistency and allows parallel computation
+
         # output 1: board position (batch, 16)
         logits_board = self.fc2_board(x)
         qav_board = F.tanh(logits_board)
 
-        # output 2: selected piece (batch, 16)
-        x_qav = torch.cat([x, qav_board], dim=1)
-        logits_piece = self.fc2_piece(x_qav)
+        # output 2: selected piece (batch, 16) - now uses same input as board
+        logits_piece = self.fc2_piece(x)
         qav_piece = F.tanh(logits_piece)
+
         return qav_board, qav_piece
 
     def predict(
         self,
-        x_board: torch.Tensor | np.ndarray,
-        x_piece: torch.Tensor | np.ndarray,
+        x_board: torch.Tensor,
+        x_piece: torch.Tensor,
         TEMPERATURE: float = 1.0,
         DETERMINISTIC: bool = True,
     ):

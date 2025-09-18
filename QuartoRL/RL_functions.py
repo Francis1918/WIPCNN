@@ -14,7 +14,58 @@ from datetime import datetime
 
 from tensordict import set_list_to_stack, TensorDict
 
-from quartopy import play_games, BotAI, Board
+try:
+    from quartopy import play_games, BotAI, Board
+except ImportError:
+    # Fallback para ejecución directa o quartopy faltante
+    try:
+        import sys
+        from pathlib import Path
+
+        # Agregar directorio padre al path para setup_dependencies
+        parent_dir = Path(__file__).parent.parent
+        if str(parent_dir) not in sys.path:
+            sys.path.insert(0, str(parent_dir))
+
+        # Importar y ejecutar configuración de dependencias
+        import setup_dependencies
+
+        setup_dependencies.setup_quartopy(silent=False)
+
+        # Reintentar importación después de la configuración
+        from quartopy import play_games, BotAI, Board
+
+        logger.info("✅ Quartopy importado exitosamente después de configuración de dependencias")
+
+    except ImportError as e:
+        error_msg = (
+            "❌ ERROR DE DEPENDENCIA: No se puede importar quartopy\n\n"
+            "🔧 PASOS PARA SOLUCIONAR:\n"
+            "1. Asegúrate de que el proyecto 'quartopy' esté disponible en tu entorno\n"
+            "2. Verifica si quartopy está en alguna de estas ubicaciones:\n"
+            "   - ../quartopy (relativo a este proyecto)\n"
+            "   - ~/Documents/GitHub/Quartopy\n"
+            "   - C:/Users/bravo/Documents/quartopy\n"
+            "3. Si quartopy está en otro lugar, crea un archivo .env con:\n"
+            "   QUARTOPY_PATH=/ruta/a/tu/proyecto/quartopy\n"
+            "4. O instala quartopy como paquete: pip install quartopy\n\n"
+            f"📋 Error original: {e}\n\n"
+            "💡 Para más ayuda, revisa setup_dependencies.py"
+        )
+        logger.error(error_msg)
+        raise ImportError(error_msg) from e
+    except Exception as e:
+        error_msg = (
+            f"❌ ERROR INESPERADO durante configuración de quartopy: {e}\n\n"
+            "🔧 ACCIONES SUGERIDAS:\n"
+            "1. Verifica que setup_dependencies.py existe y es válido\n"
+            "2. Comprueba permisos de archivo en el directorio del proyecto\n"
+            "3. Intenta ejecutar el proyecto con privilegios de administrador\n"
+            "4. Revisa el archivo utils/logger.py por cualquier problema\n\n"
+            "💡 Considera agregar quartopy manualmente a tu ruta de Python"
+        )
+        logger.error(error_msg)
+        raise ImportError(error_msg) from e
 
 import numpy as np
 import pandas as pd

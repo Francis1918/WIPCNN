@@ -18,6 +18,7 @@ import torch
 
 from datetime import datetime
 from os import path, makedirs
+from pathlib import Path
 
 
 class NN_abstract(ABC, torch.nn.Module):
@@ -94,14 +95,21 @@ class NN_abstract(ABC, torch.nn.Module):
 
         if checkpoint_folder.startswith("$__filedir__$/"):
             # Replace the placeholder with the actual directory of this file
-            base_dir = path.dirname(path.abspath(__file__))
-            checkpoint_folder = checkpoint_folder.replace(
-                "$__filedir__$/", base_dir + "/"
-            )
-
+            # Replace the placeholder with the actual directory of this file using pathlib for cross-platform compatibility
+            base_dir = Path(__file__).parent
+            relative_part = checkpoint_folder.replace("$__filedir__$/", "")
+            # Remove leading/trailing slashes and convert to Path
+            relative_part = relative_part.strip("/\\")
+            checkpoint_folder = str(base_dir / relative_part) if relative_part else str(base_dir)
         file_path = path.join(checkpoint_folder, self.name, checkpoint_name)
-
+        # Use pathlib for robust cross-platform path handling
+        checkpoint_path = Path(checkpoint_folder)
+        file_path = checkpoint_path / self.name / checkpoint_name
         makedirs(path.dirname(file_path), exist_ok=True)
-        torch.save(self.state_dict(), file_path)
+        # Create directories if they don't exist
+        file_path.parent.mkdir(parents=True, exist_ok=True)
 
-        return file_path
+        # Save the model
+        torch.save(self.state_dict(), str(file_path))
+
+        return str(file_path)

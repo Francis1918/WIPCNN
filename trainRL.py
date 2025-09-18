@@ -86,9 +86,9 @@ else:
     # number of times the network is updated per epoch
     ITER_PER_EPOCH = 5
     MATCHES_PER_EPOCH = 10
-    STEPS_PER_EPOCH = 10_0  # ~x10 of matches_per_epoch, used to generate experience
+    STEPS_PER_EPOCH = 100  # ~x10 of matches_per_epoch, used to generate experience
 
-    REPLAY_SIZE = 3_00  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
+    REPLAY_SIZE = 300  # ~x3 STEPS_PER_EPOCH, info from last 3 epochs
 
     # update target network every n batches processed, ~1/3 of ITER_PER_EPOCH
     N_BATCHS_2_UPDATE_TARGET = 30
@@ -180,11 +180,16 @@ for e in tqdm(
     if N_LAST_STATES_FINAL == -1:
         n_last_states = 100  # inf
     else:
-        # Linearly interpolate n_last_states from N_LAST_STATES_INIT to N_LAST_STATES_FINAL over EPOCHS
-        n_last_states = round(
-            N_LAST_STATES_INIT
-            + (N_LAST_STATES_FINAL - N_LAST_STATES_INIT) * (e / (EPOCHS - 1))
-        )
+        # Handle division by zero risk when EPOCHS = 1
+        if EPOCHS == 1:
+            # For single epoch training, use final value directly
+            n_last_states = N_LAST_STATES_FINAL if N_LAST_STATES_FINAL != -1 else N_LAST_STATES_INIT
+        else:
+            # Linearly interpolate n_last_states from N_LAST_STATES_INIT to N_LAST_STATES_FINAL over EPOCHS
+            n_last_states = round(
+                N_LAST_STATES_INIT
+                + (N_LAST_STATES_FINAL - N_LAST_STATES_INIT) * (e / (EPOCHS - 1))
+            )
 
     exp = gen_experience(
         p1_bot=p1,
@@ -215,53 +220,62 @@ for e in tqdm(
         next_state_board = data["next_state_board"]
         next_state_piece = data["next_state_piece"]
 
-        # pred_board_pos, pred_piece = policy_net(state_board, state_piece)
-        _, pred_piece = policy_net(state_board, state_piece)
+        pred_board_pos, pred_piece = policy_net(state_board, state_piece)
 
-        # filter -1 actions, because they are not valid actions.
-        # se pone, como que si hubiese escogido la acción 0...???
-        # reemplazar por max
-        action_pos = torch.where(
-            action_pos == -1, torch.zeros_like(action_pos), action_pos
-        )
-        action_sel = torch.where(
-            action_sel == -1, torch.zeros_like(action_sel), action_sel
-        )
+        # Filter out experiences with invalid actions (-1) instead of replacing them with 0
+        # This prevents false signals in training
+        valid_pos_mask = action_pos != -1
+        valid_sel_mask = action_sel != -1
+        valid_mask = valid_pos_mask & valid_sel_mask
+
+        # Skip this batch if no valid actions
+        if torch.sum(valid_mask) == 0:
+            logger.warning("No valid actions in batch, skipping...")
+            continue
+
+        # Filter all data to only include valid actions
+        state_board = state_board[valid_mask]
+        state_piece = state_piece[valid_mask]
+        action_pos = action_pos[valid_mask]
+        action_sel = action_sel[valid_mask]
+        done_batch = done_batch[valid_mask]
+        next_state_board = next_state_board[valid_mask]
+        next_state_piece = next_state_piece[valid_mask]
+        reward = data["reward"][valid_mask]
+
+        # Recalculate predictions for filtered data
+        pred_board_pos, pred_piece = policy_net(state_board, state_piece)
 
         # se necesita hacer reshape para que gather funcione correctamente
         # gather requiere que el tensor de acciones tenga la misma cantidad de dimensiones que el tensor de valores
-        # dim_reshape = [-1] + [1] * (pred_board_pos.dim() - 1)
         dim_reshape = [-1] + [1] * (pred_piece.dim() - 1)
         # toma los valores de las acciones seleccionadas
-        # state_pos_action_values = pred_board_pos.gather(
-        #     1, action_pos.reshape(dim_reshape).type(torch.int64)  # solo acepta int64...
-        # )
+        state_pos_action_values = pred_board_pos.gather(
+             1, action_pos.reshape(dim_reshape).type(torch.int64)  # solo acepta int64...
+         )
 
         # pred_piece debe tener mismo tamaño que pred_board_pos
         state_sel_action_values = pred_piece.gather(
             1, action_sel.reshape(dim_reshape).type(torch.int64)
         )
 
-        # Prealloc with 0 because final states have 0 value
-        # next_state_pos_values = torch.zeros(BATCH_SIZE)
-        next_state_sel_values = torch.zeros(BATCH_SIZE)
+        # Prealloc with 0 because final states have 0 value - adjusted for filtered data
+        valid_batch_size = torch.sum(valid_mask).item()
+        next_state_sel_values = torch.zeros(valid_batch_size)
 
-        # mask for non-final states
-        non_final_mask = torch.where(~done_batch)
+        # mask for non-final states in filtered data - use boolean mask directly
+        non_final_mask = ~done_batch
 
         with torch.no_grad():
-            # _next_state_pos, _
             _, _next_state_piece = target_net(
                 next_state_board[non_final_mask], next_state_piece[non_final_mask]
             )
         # OJO: solo se va a usar la segunda cabeza de salida, que es la de la pieza seleccionada
-        # _v1 = _next_state_pos.max(dim=1).values
         _v2 = _next_state_piece.max(dim=1).values
-        # next_state_pos_values[non_final_mask] = _v1
         next_state_sel_values[non_final_mask] = _v2
 
-        # Compute the expected Q values
-        expected_state_action_values = (next_state_sel_values * GAMMA) + data["reward"]
+        # Compute the expected Q values using filtered rewards
+        expected_state_action_values = (next_state_sel_values * GAMMA) + reward
 
         loss = loss_fcn(
             state_sel_action_values, expected_state_action_values.unsqueeze(1)
@@ -282,8 +296,7 @@ for e in tqdm(
                 f"Gradient clipping activated! Total norm before clipping: {total_norm:.4f}"
             )
         optimizer.step()
-        # optimizer.zero_grad() # in PPO
-
+#optimizar zero.grad en caso que se use en POO
         if i % N_BATCHS_2_UPDATE_TARGET == 0:
             # ----------- Update the target network
             target_net_state_dict = target_net.state_dict()
