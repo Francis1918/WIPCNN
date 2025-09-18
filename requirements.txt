@@ -10,3 +10,4 @@ tensordict
 torch
 torchrl
 tqdm
+gym

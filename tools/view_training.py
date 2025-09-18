@@ -21,13 +21,59 @@ Python 3
 -Donald E. Knuth
 """
 
-from quartopy import logger
+from utils.logger import logger as utils_logger
+
+# Función para validar e importar quartopy
+def _validate_and_import_quartopy():
+    """
+    Validates and imports quartopy logger with clear error messages.
+
+    Returns:
+        logger from quartopy
+    """
+    try:
+        from quartopy import logger
+        utils_logger.debug("✅ Quartopy importado correctamente")
+        return logger
+
+    except ImportError as initial_error:
+        utils_logger.warning("⚠️ Error al importar quartopy, intentando configurar dependencias...")
+
+        try:
+            import sys
+            from pathlib import Path
+
+            # Añadir directorio padre al path para setup_dependencies
+            parent_dir = Path(__file__).parent.parent
+            if str(parent_dir) not in sys.path:
+                sys.path.insert(0, str(parent_dir))
+
+            # Importar y ejecutar configuración de dependencias
+            import setup_dependencies
+            setup_dependencies.setup_quartopy(silent=False)
+
+            # Reintentar importación después de configuración
+            from quartopy import logger
+            utils_logger.info("✅ Quartopy importado correctamente después de configurar dependencias")
+            return logger
+
+        except ImportError as final_error:
+            error_msg = (
+                "❌ ERROR DE DEPENDENCIA: No se puede importar quartopy. "
+                "Asegúrese de que quartopy esté correctamente instalado."
+            )
+            utils_logger.error(error_msg)
+            raise ImportError(error_msg) from final_error
+
+# Importar componentes de quartopy
+quartopy_logger = _validate_and_import_quartopy()
+
 import numpy as np
 import pandas as pd
 
 
 # ----------------------------- #### --------------------------
-from docopt import docopt
+from docopt import docopt, DocoptExit
 
 from collections import Counter
 
@@ -94,66 +140,87 @@ def bradley_terry_analysis(text_data, max_iters=1000, error_tol=1e-3):
 # ####################################################################
 def main(args):
     """
+    Analiza los resultados de un torneo y calcula las puntuaciones Bradley-Terry.
 
     ## Parameters
-
-    ``a``:
-
-    ``b``:
+    ``args``: Argumentos de línea de comandos, debe contener un parámetro '<tournament_file>'
+              que es la ruta al archivo pickle con los resultados del torneo.
 
     ## Return
-
-    ``a``:
-
+    Imprime las puntuaciones Bradley-Terry para cada jugador.
     """
     import pickle
 
-    pickle_file = args["<tournament_file>"]
+    try:
+        pickle_file = args["<tournament_file>"]
 
-    with open(pickle_file, "rb") as f:
-        data = pickle.load(f)
+        # Verificar que el archivo existe
+        if not os.path.exists(pickle_file):
+            utils_logger.error(f"❌ ERROR: El archivo {pickle_file} no existe.")
+            return 1
 
-    data
-    n_epochs = len(data)
-    total = 300
+        with open(pickle_file, "rb") as f:
+            data = pickle.load(f)
 
-    df = pd.DataFrame()
-    win_rate = np.full((n_epochs, n_epochs), np.nan)
-    unilateral = np.full((n_epochs, n_epochs), np.nan)
-    for epoch, results_epoch in enumerate(data):
-        for rival_epoch, results_vs_rival in results_epoch.items():
-            _in_favor = results_vs_rival["wins"] + (results_vs_rival["draws"]) * 0.5
-            in_contra = results_vs_rival["losses"] + (results_vs_rival["draws"]) * 0.5
+        utils_logger.info(f"Archivo cargado: {pickle_file}")
+        utils_logger.info(f"Número de épocas: {len(data)}")
 
-            win_rate[epoch, rival_epoch] = _in_favor
-            unilateral[epoch, rival_epoch] = _in_favor
-            total = _in_favor + in_contra
-            win_rate[rival_epoch, epoch] = in_contra
-            df = pd.concat(
-                [
-                    df,
-                    pd.DataFrame(
-                        [
-                            {
-                                "Excerpt A": epoch,
-                                "Excerpt B": rival_epoch,
-                                "Wins A": _in_favor,
-                                "Wins B": in_contra,
-                            }
-                        ]
-                    ),
-                ],
-                ignore_index=True,
-            )
+        n_epochs = len(data)
+        total = 300
 
-    scores = bradley_terry_analysis(df)
-    print(scores)
+        df = pd.DataFrame()
+        win_rate = np.full((n_epochs, n_epochs), np.nan)
+        unilateral = np.full((n_epochs, n_epochs), np.nan)
+        for epoch, results_epoch in enumerate(data):
+            for rival_epoch, results_vs_rival in results_epoch.items():
+                _in_favor = results_vs_rival["wins"] + (results_vs_rival["draws"]) * 0.5
+                in_contra = results_vs_rival["losses"] + (results_vs_rival["draws"]) * 0.5
+
+                win_rate[epoch, rival_epoch] = _in_favor
+                unilateral[epoch, rival_epoch] = _in_favor
+                total = _in_favor + in_contra
+                win_rate[rival_epoch, epoch] = in_contra
+                df = pd.concat(
+                    [
+                        df,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "Excerpt A": epoch,
+                                    "Excerpt B": rival_epoch,
+                                    "Wins A": _in_favor,
+                                    "Wins B": in_contra,
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
+
+        utils_logger.info("Calculando puntuaciones Bradley-Terry...")
+        scores = bradley_terry_analysis(df)
+        print("\nPuntuaciones Bradley-Terry:")
+        print(scores)
+        return 0
+
+    except Exception as e:
+        utils_logger.error(f"❌ ERROR durante el análisis: {e}")
+        return 1
 
 
 if __name__ == "__main__":
-    args = docopt(
-        doc=__doc__,
-        version="1",
-    )
-    logger.info(args)
-    main(args)
+    try:
+        args = docopt(
+            doc=__doc__,
+            version="1",
+        )
+        utils_logger.info(f"Argumentos: {args}")
+        exit_code = main(args)
+        exit(exit_code)
+    except DocoptExit:
+        utils_logger.error("❌ ERROR: Argumentos incorrectos.")
+        print(__doc__)
+        exit(1)
+    except Exception as e:
+        utils_logger.error(f"❌ ERROR inesperado: {e}")
+        exit(1)

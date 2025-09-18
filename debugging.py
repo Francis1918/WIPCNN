@@ -16,7 +16,7 @@
 from QuartoRL import process_match
 
 a, b = process_match(
-    "c:/Users/Jonathan Zea/Documents/GitHub/hierarchical-SAE/partidas_guardadas/delet/20250604_0130/2025-06-04_01-30-15_match019.csv",
+    "C:/Users/bravo/Documents/Metodos Numericos Pycharm/Mech Interp/hierarchical-SAE/partidas_guardadas/ba_increasing_n_last_states/ba_increasing_n_last_states_epoch_0001/2025-09-14_12-55-49_match001.csv",
     result=0,
 )
 b
