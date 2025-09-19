@@ -1,0 +1,119 @@
+{
+    "20250918_1840-ba_increasing_n_last_states_epoch_0066.pt": {
+        "epoch": 66,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T18:49:52.679654",
+        "source_path": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0066.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0066.pt"
+    },
+    "20250918_1840-ba_increasing_n_last_states_epoch_0065.pt": {
+        "epoch": 65,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T18:49:52.683479",
+        "source_path": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0065.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0065.pt"
+    },
+    "20250918_1840-ba_increasing_n_last_states_epoch_0064.pt": {
+        "epoch": 64,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T18:49:52.689086",
+        "source_path": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0064.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0064.pt"
+    },
+    "20250918_2027-ba_increasing_n_last_states_epoch_0194.pt": {
+        "epoch": 194,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T20:27:47.324736",
+        "source_path": "models/checkpoints_monitored\\20250918_2027-ba_increasing_n_last_states_epoch_0194.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2027-ba_increasing_n_last_states_epoch_0194.pt"
+    },
+    "20250918_2027-ba_increasing_n_last_states_epoch_0193.pt": {
+        "epoch": 193,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T20:27:47.327578",
+        "source_path": "models/checkpoints_monitored\\20250918_2027-ba_increasing_n_last_states_epoch_0193.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2027-ba_increasing_n_last_states_epoch_0193.pt"
+    },
+    "20250918_2026-ba_increasing_n_last_states_epoch_0192.pt": {
+        "epoch": 192,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T20:27:47.330205",
+        "source_path": "models/checkpoints_monitored\\20250918_2026-ba_increasing_n_last_states_epoch_0192.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2026-ba_increasing_n_last_states_epoch_0192.pt"
+    },
+    "20250918_2025-ba_increasing_n_last_states_epoch_0191.pt": {
+        "epoch": 191,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T20:27:47.332915",
+        "source_path": "models/checkpoints_monitored\\20250918_2025-ba_increasing_n_last_states_epoch_0191.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2025-ba_increasing_n_last_states_epoch_0191.pt"
+    },
+    "20250918_2025-ba_increasing_n_last_states_epoch_0190.pt": {
+        "epoch": 190,
+        "metrics": {
+            "win_rate_vs_random": 0
+        },
+        "timestamp": "2025-09-18T20:27:47.335453",
+        "source_path": "models/checkpoints_monitored\\20250918_2025-ba_increasing_n_last_states_epoch_0190.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2025-ba_increasing_n_last_states_epoch_0190.pt"
+    },
+    "20250918_2031-ba_increasing_n_last_states_epoch_0201.pt": {
+        "epoch": 201,
+        "metrics": {
+            "win_rate_vs_random": 0.0
+        },
+        "timestamp": "2025-09-18T20:31:59.956232",
+        "source_path": "models/checkpoints_monitored\\20250918_2031-ba_increasing_n_last_states_epoch_0201.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2031-ba_increasing_n_last_states_epoch_0201.pt"
+    },
+    "20250918_2030-ba_increasing_n_last_states_epoch_0200.pt": {
+        "epoch": 200,
+        "metrics": {
+            "win_rate_vs_random": 0.0
+        },
+        "timestamp": "2025-09-18T20:31:59.958742",
+        "source_path": "models/checkpoints_monitored\\20250918_2030-ba_increasing_n_last_states_epoch_0200.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2030-ba_increasing_n_last_states_epoch_0200.pt"
+    },
+    "20250918_2030-ba_increasing_n_last_states_epoch_0199.pt": {
+        "epoch": 199,
+        "metrics": {
+            "win_rate_vs_random": 0.0
+        },
+        "timestamp": "2025-09-18T20:31:59.961108",
+        "source_path": "models/checkpoints_monitored\\20250918_2030-ba_increasing_n_last_states_epoch_0199.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2030-ba_increasing_n_last_states_epoch_0199.pt"
+    },
+    "20250918_2030-ba_increasing_n_last_states_epoch_0198.pt": {
+        "epoch": 198,
+        "metrics": {
+            "win_rate_vs_random": 0.0
+        },
+        "timestamp": "2025-09-18T20:31:59.963270",
+        "source_path": "models/checkpoints_monitored\\20250918_2030-ba_increasing_n_last_states_epoch_0198.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2030-ba_increasing_n_last_states_epoch_0198.pt"
+    },
+    "20250918_2029-ba_increasing_n_last_states_epoch_0197.pt": {
+        "epoch": 197,
+        "metrics": {
+            "win_rate_vs_random": 0.0
+        },
+        "timestamp": "2025-09-18T20:31:59.965696",
+        "source_path": "models/checkpoints_monitored\\20250918_2029-ba_increasing_n_last_states_epoch_0197.pt",
+        "target_path": "models/checkpoints_monitored\\20250918_2029-ba_increasing_n_last_states_epoch_0197.pt"
+    }
+}
