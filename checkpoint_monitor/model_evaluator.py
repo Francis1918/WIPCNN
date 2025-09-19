@@ -6,16 +6,17 @@ durante el entrenamiento y seleccionar los mejores.
 """
 
 import os
-import torch
 import json
 import logging
-from typing import Dict, Any, Optional, List, Tuple, Union
+from typing import Dict, Any, Optional, List, Tuple
+
+import torch
 
 # Importamos los módulos necesarios del proyecto original sin modificarlos
 from bot.CNN_bot import Quarto_bot
 from bot.random_bot import Quarto_random_bot
 from models.CNN1 import QuartoCNN
-from QuartoRL import run_contest
+from QuartoRL.contest import run_contest
 
 # Configuración de logging
 logging.basicConfig(
@@ -23,6 +24,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("ModelEvaluator")
+
 
 class ModelEvaluator:
     """
@@ -32,9 +34,11 @@ class ModelEvaluator:
     oponentes y determinar cuáles son los mejores según diferentes métricas.
     """
 
-    def __init__(self,
-                evaluation_results_dir: str = "models/evaluation_results",
-                num_evaluation_games: int = 10):
+    def __init__(
+        self,
+        evaluation_results_dir: str = "models/evaluation_results",
+        num_evaluation_games: int = 10,
+    ):
         """
         Inicializa el evaluador de modelos.
 
@@ -52,27 +56,38 @@ class ModelEvaluator:
         self.results_file = os.path.join(evaluation_results_dir, "evaluation_results.json")
 
         # Cargar resultados previos si existen
-        self.evaluation_results = self._load_evaluation_results()
+        self.evaluation_results: Dict[str, Dict[str, Any]] = self._load_evaluation_results()
 
         logger.info(f"ModelEvaluator inicializado. Directorio de resultados: {evaluation_results_dir}")
         logger.info(f"Número de juegos de evaluación: {num_evaluation_games}")
 
+    # -------------------------
+    # Utilidades de persistencia
+    # -------------------------
     def _load_evaluation_results(self) -> Dict[str, Dict[str, Any]]:
         """Carga los resultados de evaluación previos."""
         if os.path.exists(self.results_file):
             try:
                 with open(self.results_file, 'r') as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return data
+                    logger.warning("El archivo de resultados no tiene formato dict. Se re-creará.")
             except (json.JSONDecodeError, FileNotFoundError) as e:
                 logger.warning(f"Error al cargar resultados de evaluación: {e}. Creando nuevos resultados.")
-                return {}
         return {}
 
     def _save_evaluation_results(self) -> None:
         """Guarda los resultados de evaluación."""
-        with open(self.results_file, 'w') as f:
-            json.dump(self.evaluation_results, f, indent=4)
+        try:
+            with open(self.results_file, 'w') as f:
+                json.dump(self.evaluation_results, f, indent=4)
+        except Exception as e:
+            logger.error(f"No se pudieron guardar los resultados de evaluación: {e}")
 
+    # -------------------------
+    # Carga de modelos
+    # -------------------------
     def load_model(self, model_path: str) -> Optional[Quarto_bot]:
         """
         Carga un modelo desde un archivo checkpoint.
@@ -84,19 +99,27 @@ class ModelEvaluator:
             Bot de Quarto con el modelo cargado o None si hay error
         """
         try:
+            if not os.path.exists(model_path):
+                logger.error(f"El checkpoint no existe: {model_path}")
+                return None
+
             model = QuartoCNN()
             checkpoint = torch.load(model_path, map_location='cpu')
 
             # Extraer state_dict dependiendo del formato del checkpoint
             if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
-                model.load_state_dict(checkpoint['model_state_dict'])
+                state_dict = checkpoint['model_state_dict']
             else:
-                # Intentar cargar directamente asumiendo que es el state_dict
-                model.load_state_dict(checkpoint)
+                state_dict = checkpoint
 
-            # Crear bot con temperatura baja para evaluación (menos exploración)
-            model_bot = Quarto_bot(model, temperature=0.1)
-            model_bot.DETERMINISTIC = True  # Usar política determinista para evaluación
+            model.load_state_dict(state_dict)
+            model.eval()  # muy importante en evaluación
+
+            # Crear bot para evaluación
+            model_bot = Quarto_bot(model=model)
+            # Forzar política determinista si el bot lo soporta
+            if hasattr(model_bot, "DETERMINISTIC"):
+                setattr(model_bot, "DETERMINISTIC", True)
 
             logger.info(f"Modelo cargado correctamente desde: {model_path}")
             return model_bot
@@ -105,149 +128,148 @@ class ModelEvaluator:
             logger.error(f"Error al cargar el modelo {model_path}: {e}")
             return None
 
-    def evaluate_against_random(self,
-                              model_path: str,
-                              num_games: int = None) -> Dict[str, Any]:
+    # -------------------------
+    # Evaluaciones
+    # -------------------------
+    def evaluate_against_random(self, model_path: str, num_games: Optional[int] = None) -> Dict[str, Any]:
         """
-        Evalúa un modelo contra un bot aleatorio.
-
-        Args:
-            model_path: Ruta al archivo de checkpoint
-            num_games: Número de juegos para la evaluación (usa el valor por defecto si es None)
-
-        Returns:
-            Diccionario con resultados de la evaluación
+        Evalúa un modelo contra un bot aleatorio (formato Opción A: rivales como objetos y
+        resultados en dict por oponente).
         """
         if num_games is None:
             num_games = self.num_evaluation_games
 
-        # Cargar el modelo
-        model_bot = self.load_model(model_path)
-        if not model_bot:
-            return {'error': 'No se pudo cargar el modelo'}
+        try:
+            # Cargar el modelo
+            model_bot = self.load_model(model_path)
+            if model_bot is None:
+                return {'error': 'No se pudo cargar el modelo', 'win_rate': 0.0, 'wins': 0, 'draws': 0, 'losses': 0}
 
-        # Crear oponente aleatorio
-        random_bot = Quarto_random_bot()
+            # Ejecutar torneo contra bot aleatorio (sin wrappers; pasar objetos)
+            results = run_contest(
+                player=model_bot,
+                rivals={"random_bot": Quarto_random_bot()},
+                matches=num_games,
+                verbose=False,
+                match_dir=os.path.join(self.evaluation_results_dir, "vs_random"),
+            )
 
-        # Ejecutar torneo
-        results = run_contest(
-            player=model_bot,
-            rival=random_bot,
-            matches=num_games,
-            verbose=False,
-            match_dir=os.path.join(self.evaluation_results_dir, "vs_random"),
-        )
+            # Extraer resultados contra el rival aleatorio (asumimos dict por oponente)
+            random_results = results["random_bot"]
 
-        # Calcular tasa de victorias
-        total_games = results['wins'] + results['draws'] + results['losses']
-        win_rate = (results['wins'] + 0.5 * results['draws']) / total_games if total_games > 0 else 0
+            # Calcular tasa de victorias
+            wins = int(random_results.get('wins', 0))
+            draws = int(random_results.get('draws', 0))
+            losses = int(random_results.get('losses', 0))
+            total_games = wins + draws + losses
+            win_rate = (wins + 0.5 * draws) / total_games if total_games > 0 else 0.0
 
-        # Guardar resultados
-        model_name = os.path.basename(model_path)
-        evaluation_result = {
-            'model_path': model_path,
-            'opponent': 'random_bot',
-            'num_games': num_games,
-            'wins': results['wins'],
-            'draws': results['draws'],
-            'losses': results['losses'],
-            'win_rate': win_rate
-        }
+            # Guardar resultados
+            model_name = os.path.basename(model_path)
+            evaluation_result = {
+                'model_path': model_path,
+                'opponent': 'random_bot',
+                'num_games': num_games,
+                'wins': wins,
+                'draws': draws,
+                'losses': losses,
+                'win_rate': win_rate,
+            }
 
-        # Añadir a historial
-        if 'vs_random' not in self.evaluation_results:
-            self.evaluation_results['vs_random'] = {}
+            # Añadir a historial
+            self.evaluation_results.setdefault('vs_random', {})
+            self.evaluation_results['vs_random'][model_name] = evaluation_result
+            self._save_evaluation_results()
 
-        self.evaluation_results['vs_random'][model_name] = evaluation_result
-        self._save_evaluation_results()
+            logger.info(f"Evaluación contra bot aleatorio: {model_name}, win_rate={win_rate:.4f}")
+            return evaluation_result
 
-        logger.info(f"Evaluación contra bot aleatorio: {model_name}, win_rate={win_rate:.4f}")
-        return evaluation_result
+        except Exception as e:
+            logger.error(f"Error al evaluar el modelo {model_path} vs random: {e}")
+            return {'error': str(e), 'win_rate': 0.0, 'wins': 0, 'draws': 0, 'losses': 0}
 
-    def evaluate_against_checkpoint(self,
-                                  model_path: str,
-                                  opponent_path: str,
-                                  num_games: int = None) -> Dict[str, Any]:
+    def evaluate_against_checkpoint(
+        self,
+        model_path: str,
+        opponent_path: str,
+        num_games: Optional[int] = None
+    ) -> Dict[str, Any]:
         """
-        Evalúa un modelo contra otro modelo de checkpoint.
-
-        Args:
-            model_path: Ruta al archivo de checkpoint a evaluar
-            opponent_path: Ruta al archivo de checkpoint del oponente
-            num_games: Número de juegos para la evaluación
-
-        Returns:
-            Diccionario con resultados de la evaluación
+        Evalúa un modelo contra otro modelo de checkpoint (formato Opción A: rivales como objetos y
+        resultados en dict por oponente).
         """
         if num_games is None:
             num_games = self.num_evaluation_games
 
-        # Cargar el modelo principal
-        model_bot = self.load_model(model_path)
-        if not model_bot:
-            return {'error': 'No se pudo cargar el modelo principal'}
+        try:
+            # Cargar el modelo principal
+            model_bot = self.load_model(model_path)
+            if model_bot is None:
+                return {'error': 'No se pudo cargar el modelo principal', 'win_rate': 0.0, 'wins': 0, 'draws': 0, 'losses': 0}
 
-        # Cargar el modelo oponente
-        opponent_bot = self.load_model(opponent_path)
-        if not opponent_bot:
-            return {'error': 'No se pudo cargar el modelo oponente'}
+            # Cargar el modelo oponente
+            opponent_bot = self.load_model(opponent_path)
+            if opponent_bot is None:
+                return {'error': 'No se pudo cargar el modelo oponente', 'win_rate': 0.0, 'wins': 0, 'draws': 0, 'losses': 0}
 
-        # Nombres para identificación
-        model_name = os.path.basename(model_path)
-        opponent_name = os.path.basename(opponent_path)
+            # Nombres para identificación
+            model_name = os.path.basename(model_path)
+            opponent_name = os.path.basename(opponent_path)
 
-        # Ejecutar torneo
-        results = run_contest(
-            player=model_bot,
-            rival=opponent_bot,
-            matches=num_games,
-            verbose=False,
-            match_dir=os.path.join(self.evaluation_results_dir, f"{model_name}_vs_{opponent_name}"),
-        )
+            # Ejecutar torneo (pasar objetos directamente)
+            results = run_contest(
+                player=model_bot,
+                rivals={opponent_name: opponent_bot},
+                matches=num_games,
+                verbose=False,
+                match_dir=os.path.join(self.evaluation_results_dir, f"{model_name}_vs_{opponent_name}"),
+            )
 
-        # Calcular tasa de victorias
-        total_games = results['wins'] + results['draws'] + results['losses']
-        win_rate = (results['wins'] + 0.5 * results['draws']) / total_games if total_games > 0 else 0
+            # Extraer resultados
+            match_results = results[opponent_name]
 
-        # Guardar resultados
-        evaluation_result = {
-            'model_path': model_path,
-            'opponent_path': opponent_path,
-            'opponent': opponent_name,
-            'num_games': num_games,
-            'wins': results['wins'],
-            'draws': results['draws'],
-            'losses': results['losses'],
-            'win_rate': win_rate
-        }
+            # Calcular tasa de victorias
+            wins = int(match_results.get('wins', 0))
+            draws = int(match_results.get('draws', 0))
+            losses = int(match_results.get('losses', 0))
+            total_games = wins + draws + losses
+            win_rate = (wins + 0.5 * draws) / total_games if total_games > 0 else 0.0
 
-        # Añadir a historial
-        key = f"vs_{opponent_name}"
-        if key not in self.evaluation_results:
-            self.evaluation_results[key] = {}
+            # Guardar resultados
+            evaluation_result = {
+                'model_path': model_path,
+                'opponent_path': opponent_path,
+                'opponent': opponent_name,
+                'num_games': num_games,
+                'wins': wins,
+                'draws': draws,
+                'losses': losses,
+                'win_rate': win_rate
+            }
 
-        self.evaluation_results[key][model_name] = evaluation_result
-        self._save_evaluation_results()
+            # Añadir a historial
+            key = f"vs_{opponent_name}"
+            self.evaluation_results.setdefault(key, {})
+            self.evaluation_results[key][model_name] = evaluation_result
+            self._save_evaluation_results()
 
-        logger.info(f"Evaluación {model_name} vs {opponent_name}: win_rate={win_rate:.4f}")
-        return evaluation_result
+            logger.info(f"Evaluación {model_name} vs {opponent_name}: win_rate={win_rate:.4f}")
+            return evaluation_result
 
-    def evaluate_against_multiple(self,
-                                model_path: str,
-                                opponent_paths: List[str],
-                                num_games: int = None) -> Dict[str, Dict[str, Any]]:
+        except Exception as e:
+            logger.error(f"Error al evaluar modelo vs checkpoint: {e}")
+            return {'error': str(e), 'win_rate': 0.0, 'wins': 0, 'draws': 0, 'losses': 0}
+
+    def evaluate_against_multiple(
+        self,
+        model_path: str,
+        opponent_paths: List[str],
+        num_games: Optional[int] = None
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Evalúa un modelo contra múltiples oponentes.
-
-        Args:
-            model_path: Ruta al archivo de checkpoint a evaluar
-            opponent_paths: Lista de rutas a checkpoints oponentes
-            num_games: Número de juegos para cada evaluación
-
-        Returns:
-            Diccionario con resultados de todas las evaluaciones
         """
-        results = {}
+        results: Dict[str, Dict[str, Any]] = {}
 
         # Evaluar contra bot aleatorio primero
         results['random'] = self.evaluate_against_random(model_path, num_games)
@@ -261,16 +283,21 @@ class ModelEvaluator:
 
         return results
 
-    def get_best_model(self,
-                     models: List[str],
-                     metric: str = "win_rate_vs_random",
-                     higher_is_better: bool = True) -> Optional[Tuple[str, float]]:
+    # -------------------------
+    # Selección de mejores modelos
+    # -------------------------
+    def get_best_model(
+        self,
+        models: List[str],
+        metric: str = "win_rate_vs_random",
+        higher_is_better: bool = True
+    ) -> Optional[Tuple[str, float]]:
         """
         Obtiene el mejor modelo según una métrica específica.
 
         Args:
             models: Lista de rutas a modelos para evaluar
-            metric: Métrica para comparar (win_rate_vs_random, win_rate_vs_latest, etc.)
+            metric: Métrica para comparar (win_rate_vs_random por defecto)
             higher_is_better: True si valores más altos son mejores
 
         Returns:
@@ -280,39 +307,33 @@ class ModelEvaluator:
             logger.warning("No hay modelos para evaluar")
             return None
 
-        best_model = None
-        best_value = float('-inf') if higher_is_better else float('inf')
+        best_model: Optional[str] = None
+        best_value: float = float('-inf') if higher_is_better else float('inf')
 
         for model_path in models:
             model_name = os.path.basename(model_path)
 
-            # Determinar qué métrica usar
-            if metric == "win_rate_vs_random" and 'vs_random' in self.evaluation_results:
-                if model_name in self.evaluation_results['vs_random']:
-                    value = self.evaluation_results['vs_random'][model_name]['win_rate']
+            # Para Opción A, priorizamos vs_random. Si no existe, lo calculamos.
+            value: Optional[float] = None
+            if metric == "win_rate_vs_random":
+                if 'vs_random' in self.evaluation_results and model_name in self.evaluation_results['vs_random']:
+                    value = float(self.evaluation_results['vs_random'][model_name].get('win_rate', 0.0))
                 else:
-                    # Evaluar modelo si no se ha evaluado antes
                     result = self.evaluate_against_random(model_path)
-                    value = result['win_rate']
-            elif metric.startswith("win_rate_vs_") and metric[12:] in self.evaluation_results:
-                opponent_key = metric[12:]
-                if model_name in self.evaluation_results[f"vs_{opponent_key}"]:
-                    value = self.evaluation_results[f"vs_{opponent_key}"][model_name]['win_rate']
-                else:
-                    # No podemos evaluar sin el oponente específico
-                    logger.warning(f"No hay evaluación contra {opponent_key} para {model_name}")
-                    continue
+                    value = float(result.get('win_rate', 0.0))
             else:
-                logger.warning(f"Métrica {metric} no disponible para {model_name}")
+                logger.warning(f"Métrica {metric} no soportada en configuración Opción A (solo 'win_rate_vs_random').")
                 continue
 
-            # Actualizar mejor modelo si este es mejor
+            if value is None:
+                continue
+
             is_better = (value > best_value) if higher_is_better else (value < best_value)
             if is_better:
                 best_value = value
                 best_model = model_path
 
-        if best_model:
+        if best_model is not None:
             logger.info(f"Mejor modelo según {metric}: {os.path.basename(best_model)}, valor={best_value:.4f}")
             return best_model, best_value
 
