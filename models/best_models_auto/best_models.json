@@ -3,7 +3,7 @@
         "model_path": "models/best_models_auto\\best_win_rate_vs_random_0.0000_epoch_66.pt",
         "metric_value": 0,
         "epoch": 66,
-        "timestamp": "2025-09-18T20:51:51.651370",
+        "timestamp": "2025-09-19T09:13:47.345433",
         "checkpoint_source": "models/checkpoints_monitored\\20250918_1840-ba_increasing_n_last_states_epoch_0066.pt"
     }
 }
