@@ -396,3 +396,4 @@ logger.info("Training completed.")
 # Prevent matplotlib from closing figures at the end of the script
 plt.ioff()
 plt.show(block=True)
+
