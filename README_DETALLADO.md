@@ -1,4 +1,5 @@
 # Proyecto de Aprendizaje por Refuerzo para el Juego Quarto
+*Última actualización: 18 de septiembre de 2025*
 
 ## Descripción General
 
@@ -22,6 +23,9 @@ hierarchical-SAE/
 ├── trainRL.py                   # Script principal para entrenar el agente de RL
 ├── requirements.txt             # Dependencias del proyecto
 ├── setup_dependencies.py        # Configuración inicial de dependencias
+├── auto_checkpoint_monitor.py   # Monitor automático de puntos de control
+├── epoch_group_monitor.py       # Monitor de grupos de épocas
+├── run_checkpoint_monitor.py    # Ejecutor de monitoreo de puntos de control
 │
 ├── QuartoRL/                    # Módulo con funcionalidades de RL para Quarto
 │   ├── __init__.py
@@ -33,7 +37,11 @@ hierarchical-SAE/
 │   ├── CNN1.py                  # Implementación de la CNN para Quarto
 │   ├── NN_abstract.py           # Clase abstracta para redes neuronales
 │   ├── best_models/             # Almacena los mejores modelos entrenados
+│   ├── best_models_auto/        # Mejores modelos seleccionados automáticamente
+│   ├── best_models_by_group/    # Mejores modelos por grupo de épocas
 │   ├── checkpoints/             # Puntos de control durante el entrenamiento
+│   ├── checkpoints_monitored/   # Puntos de control bajo monitoreo
+│   ├── evaluation_results/      # Resultados de evaluación de modelos
 │   └── weights/                 # Pesos de los modelos
 │
 ├── bot/                         # Implementación de diferentes bots para Quarto
@@ -45,6 +53,20 @@ hierarchical-SAE/
 │
 ├── utils/                       # Utilidades generales
 │   └── __init__.py
+│   └── logger.py                # Sistema de registro personalizado
+│
+├── checkpoint_monitor/          # Sistema de monitoreo de puntos de control
+│   ├── __init__.py
+│   ├── checkpoint_manager.py    # Gestión de puntos de control
+│   ├── model_evaluator.py       # Evaluación de modelos
+│   ├── monitor.py               # Monitor principal
+│   ├── monitor.log              # Registro de monitoreo
+│   ├── visualize.py             # Visualización de resultados
+│   ├── logs/                    # Registros detallados
+│   └── visualizations/          # Visualizaciones generadas
+│
+├── chat/                        # Componente de chat o interfaz conversacional
+│   └── architecture.md          # Documentación de la arquitectura de chat
 │
 ├── tests/                       # Pruebas del sistema
 │   ├── test_architecture.ipynb
@@ -122,6 +144,43 @@ El archivo `trainRL.py` es el núcleo del proyecto, orquestando todo el proceso 
   - Aumento progresivo del número de estados considerados
   - Visualización de tasas de victoria contra versiones anteriores
 
+### 5. Sistema de Monitoreo de Checkpoints (checkpoint_monitor/)
+
+El directorio `checkpoint_monitor/` implementa un sistema avanzado para monitorear, evaluar y gestionar los puntos de control del modelo:
+
+- **checkpoint_manager.py**: Gestiona el ciclo de vida de los checkpoints, incluyendo su creación, selección y eliminación.
+
+- **model_evaluator.py**: Proporciona funcionalidades para evaluar el rendimiento de los modelos guardados mediante métricas como tasa de victoria.
+
+- **monitor.py**: Implementa el monitor principal que supervisa el proceso de entrenamiento y activa evaluaciones periódicas.
+
+- **visualize.py**: Genera visualizaciones para analizar el rendimiento de los modelos a lo largo del tiempo.
+
+### 6. Scripts de Monitoreo (archivos en la raíz)
+
+Varios scripts en el directorio raíz permiten diferentes modos de monitoreo:
+
+- **auto_checkpoint_monitor.py**: Implementa un monitoreo automático que selecciona los mejores checkpoints basado en criterios predefinidos.
+
+- **epoch_group_monitor.py**: Monitorea y evalúa grupos de épocas para identificar tendencias en el rendimiento.
+
+- **run_checkpoint_monitor.py**: Script para ejecutar el monitor de checkpoints de forma manual o programada.
+
+## Dependencias del Proyecto
+
+El proyecto utiliza las siguientes bibliotecas principales:
+
+- **PyTorch**: Framework principal para implementación y entrenamiento de redes neuronales
+- **TorchRL**: Biblioteca específica para aprendizaje por refuerzo con PyTorch
+- **TensorDict**: Manejo eficiente de tensores para experiencias de RL
+- **Gymnasium**: Entornos estandarizados para aprendizaje por refuerzo
+- **Matplotlib**: Visualización de resultados
+- **Numpy & Pandas**: Manipulación de datos y análisis
+- **TQDM**: Barras de progreso para monitoreo de entrenamiento
+- **Colorama**: Salida en consola con colores para mejor legibilidad
+
+Para instalar todas las dependencias: `pip install -r requirements.txt`
+
 ## Optimizaciones Técnicas
 
 1. **Gradiente Clipping**: Previene explosiones de gradiente durante el entrenamiento.
@@ -156,6 +215,10 @@ El proceso de entrenamiento se basa en:
 
 3. **Torneos Contra Versiones Anteriores**: El sistema evalúa el agente actual contra versiones anteriores, proporcionando una medida clara de mejora.
 
+4. **Sistema de Monitoreo Automático**: El proyecto incluye un sistema de monitoreo de checkpoints que evalúa continuamente los modelos guardados, selecciona los mejores según diversos criterios y genera visualizaciones para seguir el progreso.
+
+5. **Agrupación por Épocas**: La funcionalidad de monitoreo por grupos de épocas permite identificar tendencias y patrones en el aprendizaje a diferentes escalas temporales.
+
 ## Análisis y Herramientas
 
 El proyecto incluye varias herramientas para análisis:
@@ -177,6 +240,12 @@ Los parámetros de entrenamiento se pueden ajustar en el script `trainRL.py`, co
 - Modo de entrenamiento real (DEBUG_PARAMS = False)
 - Modo de depuración con parámetros reducidos (DEBUG_PARAMS = True)
 
+Para monitorear el entrenamiento y evaluar modelos:
+
+1. Durante el entrenamiento: `python auto_checkpoint_monitor.py`
+2. Para evaluar grupos de épocas: `python epoch_group_monitor.py`
+3. Para una evaluación manual: `python run_checkpoint_monitor.py`
+
 ## Resultados
 
 Los resultados del entrenamiento se almacenan en:
@@ -186,6 +255,24 @@ Los resultados del entrenamiento se almacenan en:
 - **Datos de entrenamiento**: Archivos `.pkl` en el directorio principal
 
 La visualización de resultados muestra cómo el agente mejora con el tiempo, aumentando su tasa de victoria contra versiones anteriores a medida que aprende mejores estrategias para jugar Quarto.
+
+## Estado Actual del Proyecto
+
+El proyecto se encuentra en desarrollo activo, con mejoras continuas en:
+
+1. **Arquitectura de Red**: Refinamiento de la CNN para capturar mejor las características del juego.
+2. **Estrategias de Entrenamiento**: Ajuste de hiperparámetros y experimentación con diferentes enfoques de autojuego.
+3. **Monitoreo y Evaluación**: Desarrollo de herramientas más sofisticadas para analizar el rendimiento de los modelos.
+4. **Interfaz de Usuario**: Mejora de la interfaz para facilitar las partidas contra los bots entrenados.
+
+## Contribuciones y Desarrollo Futuro
+
+Se están considerando las siguientes mejoras para futuras versiones:
+
+1. **Paralelización del Entrenamiento**: Implementar generación de experiencia en paralelo para acelerar el entrenamiento.
+2. **Técnicas de Aprendizaje más Avanzadas**: Explorar algoritmos como PPO, A3C o SAC.
+3. **Interpretabilidad**: Añadir herramientas para visualizar qué características del juego está aprendiendo la red.
+4. **Interfaz Web**: Desarrollar una interfaz web para jugar contra los bots entrenados.
 
 ## Conclusiones
 
