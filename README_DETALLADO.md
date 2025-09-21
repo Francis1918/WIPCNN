@@ -1,5 +1,5 @@
 # Proyecto de Aprendizaje por Refuerzo para el Juego Quarto
-*Última actualización: 18 de septiembre de 2025*
+*Última actualización: 20 de septiembre de 2025*
 
 ## Descripción General
 
@@ -26,6 +26,19 @@ hierarchical-SAE/
 ├── auto_checkpoint_monitor.py   # Monitor automático de puntos de control
 ├── epoch_group_monitor.py       # Monitor de grupos de épocas
 ├── run_checkpoint_monitor.py    # Ejecutor de monitoreo de puntos de control
+├── compare_agents.py            # Herramienta para comparar agentes de diferentes épocas
+├── tournament.py                # Torneo "todos contra todos" entre agentes
+├── tournament_parallel.py       # Versión paralela del torneo usando multiprocesamiento
+├── test_collector.py            # Pruebas del sistema de recolección de datos
+├── try_collector.py             # Experimentos con recolectores de TorchRL
+├── debugging.py                 # Script de depuración y pruebas rápidas
+├── actions.py                   # Definición de especificaciones de acciones para TorchRL
+├── cart_p0ole.py               # Ejemplo/prueba con el entorno CartPole
+├── board.csv                   # Datos del tablero de Quarto
+├── piece_map.csv               # Mapeo de características de las piezas
+├── .env                        # Variables de entorno
+├── .gitignore                  # Archivos ignorados por Git
+├── LICENSE                     # Licencia del proyecto
 │
 ├── QuartoRL/                    # Módulo con funcionalidades de RL para Quarto
 │   ├── __init__.py
@@ -52,8 +65,9 @@ hierarchical-SAE/
 │   └── readme.md                # Documentación de los bots
 │
 ├── utils/                       # Utilidades generales
-│   └── __init__.py
-│   └── logger.py                # Sistema de registro personalizado
+│   ├── __init__.py
+│   ├── logger.py                # Sistema de registro personalizado
+│   └── checkpoint_manager.py    # Gestión avanzada de checkpoints de modelos
 │
 ├── checkpoint_monitor/          # Sistema de monitoreo de puntos de control
 │   ├── __init__.py
@@ -78,7 +92,8 @@ hierarchical-SAE/
 │   └── test_temperature.ipynb
 │
 ├── analysis/                    # Análisis de resultados
-│   └── view_results_2last_states.ipynb
+│   ├── view_results_2last_states.ipynb
+│   └── agent_comparisons/       # Análisis comparativos entre agentes
 │
 ├── tools/                       # Herramientas auxiliares
 │   ├── format_matches.py
@@ -87,6 +102,7 @@ hierarchical-SAE/
 │
 └── partidas_guardadas/          # Registro de partidas jugadas durante el entrenamiento
     ├── ba_increasing_n_last_states/
+    ├── compare_*/               # Resultados de comparaciones entre agentes
     └── epoch_*/                 # Partidas organizadas por época
 ```
 
@@ -165,6 +181,78 @@ Varios scripts en el directorio raíz permiten diferentes modos de monitoreo:
 - **epoch_group_monitor.py**: Monitorea y evalúa grupos de épocas para identificar tendencias en el rendimiento.
 
 - **run_checkpoint_monitor.py**: Script para ejecutar el monitor de checkpoints de forma manual o programada.
+
+### 7. Herramientas de Comparación y Torneos
+
+El proyecto incluye herramientas avanzadas para evaluar y comparar agentes:
+
+- **compare_agents.py**: Herramienta de línea de comandos para enfrentar agentes de diferentes épocas. Permite:
+  - Comparar el rendimiento entre dos épocas específicas
+  - Configurar número de partidas y parámetros de temperatura
+  - Guardar partidas para análisis posterior
+  - Generar visualizaciones de los resultados
+
+- **tournament.py**: Implementa torneos "todos contra todos" entre múltiples agentes:
+  - Modo interactivo para seleccionar épocas
+  - Enfrentamientos exhaustivos entre todos los participantes
+  - Generación de tablas de clasificación
+  - Identificación del agente campeón
+
+- **tournament_parallel.py**: Versión optimizada del torneo que utiliza multiprocesamiento:
+  - Paralelización de enfrentamientos para mayor velocidad
+  - Soporte para configuración de núcleos físicos vs lógicos
+  - Optimización para sistemas con núcleos P y E (rendimiento y eficiencia)
+  - Escalabilidad para torneos grandes
+
+Para comparar agentes y realizar torneos:
+
+1. **Comparar dos agentes específicos**:
+   ```cmd
+   python compare_agents.py 1 100                   # Enfrentar época 1 vs época 100
+   python compare_agents.py 1 100 --matches 50      # Con 50 partidas
+   python compare_agents.py 1 100 --visualize       # Guardar partidas y generar visualización
+   python compare_agents.py 1 100 --temp 0.1        # Usar temperatura baja
+   ```
+
+2. **Realizar torneos entre múltiples agentes**:
+   ```cmd
+   python tournament.py                              # Modo interactivo
+   python tournament.py --epochs 1 50 100 150 200   # Épocas específicas
+   python tournament.py --all                        # Todas las épocas disponibles
+   ```
+
+3. **Torneos paralelos (más rápidos)**:
+   ```cmd
+   python tournament_parallel.py --all --workers 4  # 4 trabajadores
+   python tournament_parallel.py --physical-only    # Solo núcleos físicos
+   python tournament_parallel.py --p-cores-only     # Solo núcleos P (rendimiento)
+   ```
+### 8. Utilidades y Herramientas de Desarrollo
+
+- **debugging.py**: Script de depuración para pruebas rápidas y diagnósticos del sistema.
+
+- **test_collector.py**: Pruebas del sistema de recolección de datos usando TorchRL, validando la correcta integración con entornos de Gymnasium.
+
+- **try_collector.py**: Experimentos con diferentes configuraciones de recolectores de datos para optimizar la generación de experiencias.
+
+- **actions.py**: Define las especificaciones de acciones para TorchRL, estableciendo el espacio de acciones dual (selección de pieza y posición en tablero).
+
+- **cart_p0ole.py**: Ejemplo de implementación con el entorno CartPole para validar el pipeline de entrenamiento.
+
+- **utils/checkpoint_manager.py**: Clase `ModelCheckpointer` que proporciona gestión avanzada de checkpoints:
+  - Mantenimiento automático de los mejores modelos
+  - Limitación del número de checkpoints regulares
+  - Gestión de directorios y metadatos
+
+### 9. Archivos de Configuración y Datos
+
+- **board.csv** y **piece_map.csv**: Archivos de datos que contienen información estructurada sobre el tablero de Quarto y las características de las piezas.
+
+- **.env**: Variables de entorno para configuración del proyecto.
+
+- **.gitignore**: Configuración para excluir archivos temporales y datos sensibles del control de versiones.
+
+- **LICENSE**: Licencia del proyecto.
 
 ## Dependencias del Proyecto
 
@@ -246,6 +334,29 @@ Para monitorear el entrenamiento y evaluar modelos:
 2. Para evaluar grupos de épocas: `python epoch_group_monitor.py`
 3. Para una evaluación manual: `python run_checkpoint_monitor.py`
 
+Para comparar agentes y realizar torneos:
+
+1. **Comparar dos agentes específicos**:
+   ```cmd
+   python compare_agents.py 1 100                   # Enfrentar época 1 vs época 100
+   python compare_agents.py 1 100 --matches 50      # Con 50 partidas
+   python compare_agents.py 1 100 --visualize       # Guardar partidas y generar visualización
+   python compare_agents.py 1 100 --temp 0.1        # Usar temperatura baja
+   ```
+
+2. **Realizar torneos entre múltiples agentes**:
+   ```cmd
+   python tournament.py                              # Modo interactivo
+   python tournament.py --epochs 1 50 100 150 200   # Épocas específicas
+   python tournament.py --all                        # Todas las épocas disponibles
+   ```
+
+3. **Torneos paralelos (más rápidos)**:
+   ```cmd
+   python tournament_parallel.py --all --workers 4  # 4 trabajadores
+   python tournament_parallel.py --physical-only    # Solo núcleos físicos
+   python tournament_parallel.py --p-cores-only     # Solo núcleos P (rendimiento)
+   ```
 ## Resultados
 
 Los resultados del entrenamiento se almacenan en:
