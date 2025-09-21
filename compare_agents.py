@@ -157,14 +157,20 @@ def compare_agents(epoch1, epoch2, n_matches=10, temperature=0.5, visualize=Fals
             logger.info(f"Las partidas se guardarán en: {save_dir}")
 
         # Enfrentar los agentes usando la función existente
-        results = play_games(
-            player1=agent1,
-            player2=agent2,
-            matches=n_matches,
-            verbose=True,
-            match_dir=save_dir if save_dir else None,
-            return_file_paths=False
-        )
+        # Preparar argumentos para play_games
+        play_args = {
+            'player1': agent1,
+            'player2': agent2,
+            'matches': n_matches,
+            'verbose': True,
+            'return_file_paths': False
+        }
+
+        # Solo agregar match_dir si se va a guardar
+        if save_dir:
+            play_args['match_dir'] = save_dir
+
+        results = play_games(**play_args)
 
         # Mostrar resultados
         logger.info("\nResultados:")
