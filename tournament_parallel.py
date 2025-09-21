@@ -7,14 +7,13 @@ Utiliza multiprocesamiento para acelerar la ejecución de los enfrentamientos en
 
 Uso:
     python tournament_parallel.py [--epochs E1 E2 E3...] [--matches N] [--temp T] [--visualize] [--workers W]
-    python tournament_parallel.py [--physical-only] [--p-cores-only]
+    python tournament_parallel.py [--physical-only]
 
 Ejemplos:
     python tournament_parallel.py                                # Modo interactivo
     python tournament_parallel.py --epochs 1 50 100 150 200      # Torneo con épocas específicas
     python tournament_parallel.py --all --workers 4              # Usar todas las épocas y 4 trabajadores
     python tournament_parallel.py --physical-only                # Usar solo núcleos físicos
-    python tournament_parallel.py --p-cores-only                 # Usar solo núcleos P (rendimiento)
 """
 
 import argparse
@@ -189,7 +188,7 @@ def initialize_worker(cores):
         except (ImportError, AttributeError, NotImplementedError) as e:
             logger.warning(f"No se pudo establecer la afinidad de CPU: {e}")
 
-def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=False, n_workers=None, physical_only=False, p_cores_only=False, specific_cores=None):
+def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=False, n_workers=None, physical_only=False, specific_cores=None):
     """Ejecuta un torneo completo de todos contra todos entre las épocas especificadas
     utilizando multiprocesamiento.
 
@@ -200,7 +199,6 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         visualize (bool): Si se deben guardar visualizaciones
         n_workers (int): Número de trabajadores paralelos (default: número de CPUs)
         physical_only (bool): Si se deben usar solo núcleos físicos
-        p_cores_only (bool): Si se deben usar solo núcleos P (rendimiento)
         specific_cores (list): Lista de núcleos específicos a utilizar (ej: [0,1,2,5])
 
     Returns:
@@ -217,7 +215,7 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         cpu_affinity_str = f"específicos ({','.join(map(str, specific_cores))})"
     elif n_workers is None:
         # Si no se especificó, usar la función de detección de núcleos
-        n_workers = get_cores_for_parallelism(physical_only, p_cores_only)
+        n_workers = get_cores_for_parallelism(physical_only)
         cpu_affinity_str = ""
     else:
         # Si se especificó manualmente el número de trabajadores
@@ -231,8 +229,6 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         cpu_type_str = "específicos"
     elif physical_only:
         cpu_type_str = "físicos"
-    elif p_cores_only and cpu_info['has_hybrid_arch']:
-        cpu_type_str = "P (rendimiento)"
     else:
         cpu_type_str = "lógicos"
 
@@ -261,8 +257,6 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
 
     # Registrar información de CPU
     logger.info(f"Información de CPU: {cpu_info['logical_cores']} núcleos lógicos, {cpu_info['physical_cores']} núcleos físicos")
-    if cpu_info['has_hybrid_arch']:
-        logger.info(f"Arquitectura híbrida detectada: {cpu_info['p_cores']} núcleos P, {cpu_info['e_cores']} núcleos E")
 
     logger.info(f"Iniciando torneo con {len(epochs)} agentes")
     logger.info(f"Total de enfrentamientos: {total_matches}")
@@ -470,13 +464,6 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         f.write(f"Núcleos lógicos: {cpu_info['logical_cores']}\n")
         f.write(f"Núcleos físicos: {cpu_info['physical_cores']}\n")
 
-        if cpu_info['has_hybrid_arch']:
-            f.write(f"Arquitectura híbrida: Sí\n")
-            f.write(f"Núcleos P (rendimiento): {cpu_info['p_cores']}\n")
-            f.write(f"Núcleos E (eficiencia): {cpu_info['e_cores']}\n")
-        else:
-            f.write(f"Arquitectura híbrida: No\n")
-
         if matches_data:
             f.write(f"\nTiempo mínimo por enfrentamiento: {min([m['Duration'] for m in matches_data]):.2f} segundos\n")
             f.write(f"Tiempo máximo por enfrentamiento: {max([m['Duration'] for m in matches_data]):.2f} segundos\n")
@@ -486,25 +473,17 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
     return results_df
 
 def get_cpu_info():
-    """Obtiene información detallada sobre la CPU del sistema.
+    """Obtiene información básica sobre la CPU del sistema.
 
     Returns:
         dict: Diccionario con información de la CPU, incluyendo:
             - physical_cores: número de núcleos físicos
             - logical_cores: número de núcleos lógicos (físicos + virtuales)
-            - has_hybrid_arch: True si la CPU tiene arquitectura híbrida
-            - p_cores: número de núcleos P (rendimiento)
-            - e_cores: número de núcleos E (eficiencia)
     """
     info = {
         'physical_cores': 0,
-        'logical_cores': mp.cpu_count(),
-        'has_hybrid_arch': False,
-        'p_cores': 0,
-        'e_cores': 0
+        'logical_cores': mp.cpu_count()
     }
-
-    system = platform.system()
 
     # Detectar núcleos físicos (multiplataforma)
     if hasattr(os, "sched_getaffinity"):
@@ -524,6 +503,7 @@ def get_cpu_info():
 
     # Si aún no tenemos núcleos físicos, usar métodos específicos por plataforma
     if info['physical_cores'] == 0:
+        system = platform.system()
         if system == 'Windows':
             info['physical_cores'] = _get_physical_cores_windows()
         elif system == 'Darwin':  # macOS
@@ -534,14 +514,6 @@ def get_cpu_info():
     # Si no se pudo determinar, usar la mitad de los núcleos lógicos como estimación
     if info['physical_cores'] == 0:
         info['physical_cores'] = max(1, info['logical_cores'] // 2)
-
-    # Detectar arquitectura híbrida y contar núcleos P/E
-    if system == 'Windows':
-        info.update(_detect_hybrid_architecture_windows())
-    elif system == 'Darwin':  # macOS
-        info.update(_detect_hybrid_architecture_macos())
-    elif system == 'Linux':
-        info.update(_detect_hybrid_architecture_linux())
 
     return info
 
@@ -605,408 +577,11 @@ def _get_physical_cores_linux():
     except Exception:
         return 0
 
-def _detect_hybrid_architecture_windows():
-    """Detecta si el sistema tiene una arquitectura híbrida en Windows (P+E cores)."""
-    result = {
-        'has_hybrid_arch': False,
-        'p_cores': 0,
-        'e_cores': 0
-    }
-
-    try:
-        # Método 1: Usar ctypes para acceder a la información del sistema
-        # Este método no requiere WMI ni comandos externos como wmic
-        try:
-            # Importar ctypes
-            import ctypes
-            import platform
-
-            # Obtener información del procesador usando GetSystemInfo
-            class SYSTEM_INFO(ctypes.Structure):
-                _fields_ = [
-                    ("wProcessorArchitecture", ctypes.c_ushort),
-                    ("wReserved", ctypes.c_ushort),
-                    ("dwPageSize", ctypes.c_ulong),
-                    ("lpMinimumApplicationAddress", ctypes.c_void_p),
-                    ("lpMaximumApplicationAddress", ctypes.c_void_p),
-                    ("dwActiveProcessorMask", ctypes.c_ulong),
-                    ("dwNumberOfProcessors", ctypes.c_ulong),
-                    ("dwProcessorType", ctypes.c_ulong),
-                    ("dwAllocationGranularity", ctypes.c_ulong),
-                    ("wProcessorLevel", ctypes.c_ushort),
-                    ("wProcessorRevision", ctypes.c_ushort)
-                ]
-
-            # Crear una instancia de SYSTEM_INFO
-            system_info = SYSTEM_INFO()
-
-            # Llamar a GetSystemInfo
-            ctypes.windll.kernel32.GetSystemInfo(ctypes.byref(system_info))
-
-            # Obtener el número de procesadores lógicos
-            logical_cores = system_info.dwNumberOfProcessors
-
-            # Estimar el número de núcleos físicos (aproximado)
-            physical_cores = max(1, logical_cores // 2)
-
-            # Intentar obtener el nombre del procesador usando platform
-            processor_name = platform.processor().lower()
-
-            logger.info(f"Procesador detectado (método alternativo): {processor_name}")
-            logger.info(f"Núcleos lógicos detectados: {logical_cores}")
-
-            # Verificar si es un procesador con arquitectura híbrida conocida
-            hybrid_indicators = [
-                "alder lake", "12th gen", "13th gen", "14th gen",  # Intel generación
-                "raptor lake", "meteor lake", "arrow lake",        # Intel arquitectura
-                "13900", "14900", "13700", "14700", "13600", "14600",  # Intel serie alta desktop
-                "13500", "14500", "13400", "14400",               # Intel serie media desktop
-                "1340p", "1350p", "1360p", "1370p", "1380p",      # Intel serie P (móviles)
-                "1330h", "1340h", "1350h", "1360h", "1370h", "1380h", # Intel serie H (móviles)
-                "1330hx", "1350hx", "1370hx", "1390hx",           # Intel serie HX (móviles)
-                "14900hx", "13900hx",                             # Específicamente los i9-14900HX e i9-13900HX
-                "hx", "i9-14900", "i9-13900", "i9-1490",          # Más variantes de i9
-                "core i9", "i9-", "i7-1",                         # Series generales
-                "snapdragon", "exynos"                            # ARM
-            ]
-
-            # Comprobar si coincide con algún indicador de arquitectura híbrida
-            is_hybrid = False
-            matching_indicator = None
-
-            for indicator in hybrid_indicators:
-                if indicator in processor_name:
-                    is_hybrid = True
-                    matching_indicator = indicator
-                    break
-
-            # Si no podemos detectar por nombre pero es Intel de última generación
-            # y tiene muchos núcleos, probablemente sea híbrido
-            if not is_hybrid and "intel" in processor_name and "core" in processor_name:
-                if ("i9" in processor_name or "i7" in processor_name) and physical_cores >= 10:
-                    is_hybrid = True
-                    matching_indicator = "detección basada en núcleos"
-                    logger.info(f"Arquitectura híbrida detectada por número de núcleos: {physical_cores} núcleos físicos")
-
-            if is_hybrid:
-                logger.info(f"Arquitectura híbrida detectada por patrón: {matching_indicator}")
-                result['has_hybrid_arch'] = True
-
-                # Para modelos específicos, usar configuraciones conocidas
-                if "14900hx" in processor_name or "13900hx" in processor_name or "i9-14900" in processor_name:
-                    # i9-14900HX e i9-13900HX: 8P+16E cores
-                    result['p_cores'] = 8
-                    result['e_cores'] = 16
-                    logger.info(f"CPU específica detectada: 8P + 16E cores")
-                elif logical_cores >= 32 and physical_cores >= 20:
-                    # Probablemente un i9 con 8P+16E cores
-                    result['p_cores'] = 8
-                    result['e_cores'] = 16
-                    logger.info(f"CPU detectada por recuento: 8P + 16E cores (estimado)")
-                elif logical_cores >= 24 and physical_cores >= 16:
-                    # Probablemente un i7 con 8P+8E cores
-                    result['p_cores'] = 8
-                    result['e_cores'] = 8
-                    logger.info(f"CPU detectada por recuento: 8P + 8E cores (estimado)")
-                elif logical_cores >= 20 and physical_cores >= 14:
-                    # Probablemente un i5 con 6P+8E cores
-                    result['p_cores'] = 6
-                    result['e_cores'] = 8
-                    logger.info(f"CPU detectada por recuento: 6P + 8E cores (estimado)")
-                elif logical_cores >= 16 and physical_cores >= 10:
-                    # Probablemente un i5 con 6P+4E cores
-                    result['p_cores'] = 6
-                    result['e_cores'] = 4
-                    logger.info(f"CPU detectada por recuento: 6P + 4E cores (estimado)")
-                else:
-                    # Estimación general basada en el tipo de procesador
-                    if "i9" in processor_name:
-                        result['p_cores'] = 8
-                        result['e_cores'] = physical_cores - 8
-                    elif "i7" in processor_name:
-                        result['p_cores'] = 8
-                        result['e_cores'] = physical_cores - 8
-                    elif "i5" in processor_name:
-                        result['p_cores'] = 6
-                        result['e_cores'] = physical_cores - 6
-                    else:
-                        # Fallback: P-cores son aproximadamente 40% del total
-                        result['p_cores'] = max(1, int(physical_cores * 0.4))
-                        result['e_cores'] = physical_cores - result['p_cores']
-
-                    logger.info(f"Distribución de núcleos estimada: {result['p_cores']}P + {result['e_cores']}E")
-            else:
-                # No es arquitectura híbrida, todos son P-cores
-                result['p_cores'] = physical_cores
-                logger.info(f"CPU no híbrida: {physical_cores} núcleos P")
-
-        except Exception as e:
-            logger.warning(f"Error en método de detección alternativo: {e}")
-
-            # Forzar detección para procesadores Intel i9-14900HX
-            # Esto es un fallback específico para el caso mencionado por el usuario
-
-            # Intentar obtener el nombre del procesador de otra manera
-            try:
-                import platform
-                processor_name = platform.processor().lower()
-
-                if "14900" in processor_name or "13900" in processor_name or "i9" in processor_name:
-                    logger.info(f"Forzando detección de arquitectura híbrida para procesador: {processor_name}")
-                    result['has_hybrid_arch'] = True
-                    result['p_cores'] = 8  # i9-14900HX tiene 8 núcleos P
-                    result['e_cores'] = 16  # i9-14900HX tiene 16 núcleos E
-                else:
-                    # Obtener número de núcleos lógicos
-                    logical_cores = mp.cpu_count()
-
-                    # Estimar núcleos físicos
-                    physical_cores = max(1, logical_cores // 2)
-
-                    # Si tiene muchos núcleos, probablemente sea híbrido
-                    if logical_cores >= 24:
-                        result['has_hybrid_arch'] = True
-                        result['p_cores'] = 8
-                        result['e_cores'] = physical_cores - 8
-                        logger.info(f"Forzando detección híbrida basada en núcleos: {result['p_cores']}P + {result['e_cores']}E")
-                    else:
-                        # Sin arquitectura híbrida
-                        result['p_cores'] = physical_cores
-                        logger.info(f"CPU no híbrida (fallback): {physical_cores} núcleos")
-
-            except Exception as e2:
-                logger.warning(f"Error en método de fallback: {e2}")
-
-                # Último recurso: asumir valores basados en el número de núcleos lógicos
-                logical_cores = mp.cpu_count()
-                physical_cores = max(1, logical_cores // 2)
-
-                # Patrones comunes basados en número de núcleos lógicos
-                if logical_cores >= 32:  # Probablemente i9 con 8P+16E
-                    result['has_hybrid_arch'] = True
-                    result['p_cores'] = 8
-                    result['e_cores'] = 16
-                elif logical_cores >= 24:  # Probablemente i7 con 8P+8E
-                    result['has_hybrid_arch'] = True
-                    result['p_cores'] = 8
-                    result['e_cores'] = 8
-                elif logical_cores >= 20:  # Probablemente i5 con 6P+8E
-                    result['has_hybrid_arch'] = True
-                    result['p_cores'] = 6
-                    result['e_cores'] = 8
-                elif logical_cores >= 16:  # Probablemente i5 con 6P+4E
-                    result['has_hybrid_arch'] = True
-                    result['p_cores'] = 6
-                    result['e_cores'] = 4
-                else:
-                    # CPU no híbrida
-                    result['p_cores'] = physical_cores
-
-                logger.info(f"Usando valores predeterminados basados en núcleos lógicos: {logical_cores}")
-                if result['has_hybrid_arch']:
-                    logger.info(f"Arquitectura híbrida (último recurso): {result['p_cores']}P + {result['e_cores']}E")
-                else:
-                    logger.info(f"CPU no híbrida (último recurso): {result['p_cores']} núcleos P")
-
-    except Exception as e:
-        logger.warning(f"Error al detectar arquitectura híbrida en Windows: {e}")
-
-        # Valores predeterminados para i9-14900HX, como se menciona en la consulta del usuario
-        logical_cores = mp.cpu_count()
-        if logical_cores >= 24:
-            result['has_hybrid_arch'] = True
-            result['p_cores'] = 8
-            result['e_cores'] = 16
-            logger.info("Usando configuración predeterminada para i9-14900HX: 8P + 16E cores")
-        else:
-            # Estimación básica
-            physical_cores = max(1, logical_cores // 2)
-            result['p_cores'] = physical_cores
-            logger.info(f"Usando valores predeterminados: {physical_cores} núcleos P")
-
-    return result
-
-def _detect_hybrid_architecture_macos():
-    """Detecta si el sistema tiene una arquitectura híbrida en macOS (P+E cores)."""
-    result = {
-        'has_hybrid_arch': False,
-        'p_cores': 0,
-        'e_cores': 0
-    }
-
-    try:
-        # Comprobar si es un procesador con arquitectura híbrida (Apple Silicon)
-
-        # Determinar el tipo de procesador
-        processor_type = subprocess.check_output(['sysctl', '-n', 'machdep.cpu.brand_string']).decode().strip()
-
-        # Detectar Apple Silicon (M1, M2, etc.)
-        is_apple_silicon = "Apple" in processor_type
-
-        if is_apple_silicon:
-            result['has_hybrid_arch'] = True
-
-            # Obtener información de núcleos performante y eficientes
-            try:
-                # Obtener recuento de núcleos P (performante)
-                p_cores = int(subprocess.check_output(['sysctl', '-n', 'hw.perflevel0.physicalcpu']).decode().strip())
-                result['p_cores'] = p_cores
-
-                # Obtener recuento de núcleos E (eficientes)
-                e_cores = int(subprocess.check_output(['sysctl', '-n', 'hw.perflevel1.physicalcpu']).decode().strip())
-                result['e_cores'] = e_cores
-            except Exception:
-                # Patrones conocidos para chips Apple
-                total_cores = int(subprocess.check_output(['sysctl', '-n', 'hw.physicalcpu']).decode().strip())
-
-                # Patrón para Apple M1/M2/M3
-                if "M1" in processor_type or "M2" in processor_type or "M3" in processor_type:
-                    if total_cores == 8:  # M1/M2: 4P+4E
-                        result['p_cores'] = 4
-                        result['e_cores'] = 4
-                    elif total_cores == 10:  # M2 Pro/M2 Max base: 6P+4E
-                        result['p_cores'] = 6
-                        result['e_cores'] = 4
-                    elif total_cores == 12:  # M3 Pro/M3 Max: 6P+6E
-                        result['p_cores'] = 6
-                        result['e_cores'] = 6
-                    else:
-                        # Distribución general 60% P, 40% E
-                        result['p_cores'] = max(1, int(total_cores * 0.6))
-                        result['e_cores'] = total_cores - result['p_cores']
-        else:
-            # Intel Mac - no tiene arquitectura híbrida
-            physical_cores = int(subprocess.check_output(['sysctl', '-n', 'hw.physicalcpu']).decode().strip())
-            result['p_cores'] = physical_cores
-
-    except Exception as e:
-        logger.warning(f"Error al detectar arquitectura híbrida en macOS: {e}")
-
-    return result
-
-def _detect_hybrid_architecture_linux():
-    """Detecta si el sistema tiene una arquitectura híbrida en Linux (P+E cores)."""
-    result = {
-        'has_hybrid_arch': False,
-        'p_cores': 0,
-        'e_cores': 0
-    }
-
-    try:
-        # Método 1: Comprobar si hay diferentes tipos de CPU en /proc/cpuinfo
-        with open('/proc/cpuinfo', 'r') as f:
-            cpuinfo = f.read()
-
-        # Buscar indicadores de arquitectura híbrida
-        model_name = ""
-        for line in cpuinfo.split('\n'):
-            if line.startswith('model name'):
-                model_name = line.split(':')[1].strip()
-                break
-
-        # Detectar procesadores híbridos conocidos
-        hybrid_indicators = [
-            "alder lake", "12th gen", "13th gen", "14th gen",  # Intel
-            "raptor lake", "meteor lake", "arrow lake",        # Intel
-            "snapdragon", "exynos"                            # ARM
-        ]
-
-        if any(indicator in model_name.lower() for indicator in hybrid_indicators):
-            result['has_hybrid_arch'] = True
-
-            # Intentar determinar la cantidad de núcleos P y E
-            # Esto es complejo en Linux sin herramientas específicas del fabricante
-
-            # Método 2: Usar lscpu para obtener información más detallada
-            try:
-                lscpu_output = subprocess.check_output(['lscpu']).decode()
-
-                # Buscar información sobre grupos de CPU (pueden indicar diferentes tipos de núcleos)
-                core_types = {}
-                current_type = None
-
-                for line in lscpu_output.split('\n'):
-                    if 'CPU(s):' in line and 'NUMA' not in line and 'On-line' not in line:
-                        total_cores = int(line.split(':')[1].strip())
-                    elif 'Core(s) per socket:' in line:
-                        cores_per_socket = int(line.split(':')[1].strip())
-                    elif 'Socket(s):' in line:
-                        sockets = int(line.split(':')[1].strip())
-                    elif 'NUMA node' in line and 'CPU(s):' in line:
-                        node_cpus = line.split(':')[1].strip()
-                        # Almacenar la información de NUMA node que puede indicar diferentes tipos de núcleos
-                        if current_type is None:
-                            current_type = "p_cores"  # Asumir que el primer grupo es P-cores
-                            core_types[current_type] = len(node_cpus.split(','))
-                        else:
-                            current_type = "e_cores"  # Asumir que el segundo grupo es E-cores
-                            core_types[current_type] = len(node_cpus.split(','))
-
-                if 'p_cores' in core_types:
-                    result['p_cores'] = core_types['p_cores']
-
-                    if 'e_cores' in core_types:
-                        result['e_cores'] = core_types['e_cores']
-                    else:
-                        # Si solo detectamos P-cores pero sabemos que es híbrido,
-                        # estimar E-cores como la diferencia con el total
-                        physical_cores = cores_per_socket * sockets if 'cores_per_socket' in locals() and 'sockets' in locals() else 0
-                        if physical_cores > result['p_cores']:
-                            result['e_cores'] = physical_cores - result['p_cores']
-            except Exception:
-                pass
-
-            # Si no pudimos determinar P/E cores pero sabemos que es híbrido,
-            # hacer una estimación basada en patrones conocidos
-            if result['p_cores'] == 0 and result['e_cores'] == 0:
-                # Contar núcleos físicos
-                try:
-                    physical_cores = 0
-                    with open('/proc/cpuinfo', 'r') as f:
-                        for line in f:
-                            if line.startswith('processor'):
-                                physical_cores += 1
-
-                    # Patrones conocidos
-                    if physical_cores == 16:  # Probablemente 8P+8E
-                        result['p_cores'] = 8
-                        result['e_cores'] = 8
-                    elif physical_cores == 14:  # Probablemente 6P+8E
-                        result['p_cores'] = 6
-                        result['e_cores'] = 8
-                    elif physical_cores == 10:  # Probablemente 6P+4E
-                        result['p_cores'] = 6
-                        result['e_cores'] = 4
-                    else:
-                        # Estimación general: 60% P, 40% E
-                        result['p_cores'] = max(1, int(physical_cores * 0.6))
-                        result['e_cores'] = physical_cores - result['p_cores']
-                except Exception:
-                    pass
-        else:
-            # No es arquitectura híbrida, todos son P-cores
-            try:
-                physical_cores = 0
-                with open('/proc/cpuinfo', 'r') as f:
-                    for line in f:
-                        if line.startswith('processor'):
-                            physical_cores += 1
-
-                result['p_cores'] = physical_cores
-            except Exception:
-                pass
-
-    except Exception as e:
-        logger.warning(f"Error al detectar arquitectura híbrida en Linux: {e}")
-
-    return result
-
-def get_cores_for_parallelism(physical_only=False, p_cores_only=False):
+def get_cores_for_parallelism(physical_only=False):
     """Determina el número óptimo de núcleos a utilizar para paralelización.
 
     Args:
         physical_only (bool): Si True, usa solo núcleos físicos
-        p_cores_only (bool): Si True, usa solo núcleos P (rendimiento)
 
     Returns:
         int: Número de núcleos a utilizar
@@ -1017,9 +592,6 @@ def get_cores_for_parallelism(physical_only=False, p_cores_only=False):
     if physical_only:
         # Usar solo núcleos físicos
         cores_to_use = cpu_info['physical_cores']
-    elif p_cores_only and cpu_info['has_hybrid_arch']:
-        # Usar solo núcleos P en arquitecturas híbridas
-        cores_to_use = cpu_info['p_cores']
     else:
         # Usar todos los núcleos lógicos
         cores_to_use = cpu_info['logical_cores']
@@ -1046,7 +618,6 @@ def main():
                            help="Número de trabajadores paralelos (default: número de CPUs)")
         parser.add_argument("--cores", type=str, help="Lista de núcleos específicos a utilizar (ej: 0,1,2,5)")
         parser.add_argument("--physical-only", action="store_true", help="Usar solo núcleos físicos")
-        parser.add_argument("--p-cores-only", action="store_true", help="Usar solo núcleos P (rendimiento)")
 
         args = parser.parse_args()
 
@@ -1082,7 +653,6 @@ def main():
             visualize=args.visualize,
             n_workers=args.workers,
             physical_only=args.physical_only,
-            p_cores_only=args.p_cores_only,
             specific_cores=specific_cores
         )
     else:
@@ -1096,11 +666,6 @@ def main():
         print(f"\nInformación de CPU detectada:")
         print(f"- Núcleos lógicos: {cpu_info['logical_cores']}")
         print(f"- Núcleos físicos: {cpu_info['physical_cores']}")
-
-        if cpu_info['has_hybrid_arch']:
-            print(f"- Arquitectura híbrida detectada:")
-            print(f"  - Núcleos P (rendimiento): {cpu_info['p_cores']}")
-            print(f"  - Núcleos E (eficiencia): {cpu_info['e_cores']}")
 
         # Obtener épocas disponibles
         available_epochs = get_all_available_epochs()
@@ -1143,27 +708,28 @@ def main():
 
             option = input("\nSeleccione una opción [1]: ") or "1"
 
-            if option == "1":
-                # 5 épocas distribuidas
-                epochs = select_epochs_for_tournament(5)
-            elif option == "2":
-                # Modelos clave
-                indices = [0, len(available_epochs)//4, len(available_epochs)//2,
-                           3*len(available_epochs)//4, len(available_epochs)-1]
-                epochs = [available_epochs[i] for i in indices]
-            else:
-                # Selección manual
-                epochs_input = input("\nIngrese las épocas separadas por espacios (ej: 1 50 100 150 200): ")
-                try:
-                    epochs = [int(e) for e in epochs_input.split()]
-                    # Verificar que las épocas existan
-                    invalid_epochs = [e for e in epochs if e not in available_epochs]
-                    if invalid_epochs:
-                        print(f"Advertencia: Las siguientes épocas no están disponibles: {invalid_epochs}")
-                        epochs = [e for e in epochs if e in available_epochs]
-                except ValueError:
-                    print("Entrada inválida. Usando las primeras 5 épocas disponibles.")
-                    epochs = available_epochs[:5]
+            match option:
+                case "1":
+                    # 5 épocas distribuidas
+                    epochs = select_epochs_for_tournament(5)
+                case "2":
+                    # Modelos clave
+                    indices = [0, len(available_epochs)//4, len(available_epochs)//2,
+                               3*len(available_epochs)//4, len(available_epochs)-1]
+                    epochs = [available_epochs[i] for i in indices]
+                case _:
+                    # Selección manual (caso por defecto)
+                    epochs_input = input("\nIngrese las épocas separadas por espacios (ej: 1 50 100 150 200): ")
+                    try:
+                        epochs = [int(e) for e in epochs_input.split()]
+                        # Verificar que las épocas existan
+                        invalid_epochs = [e for e in epochs if e not in available_epochs]
+                        if invalid_epochs:
+                            print(f"Advertencia: Las siguientes épocas no están disponibles: {invalid_epochs}")
+                            epochs = [e for e in epochs if e in available_epochs]
+                    except ValueError:
+                        print("Entrada inválida. Usando las primeras 5 épocas disponibles.")
+                        epochs = available_epochs[:5]
 
             if len(epochs) < 2:
                 print("Se necesitan al menos 2 épocas para un torneo. Usando las primeras 2 épocas disponibles.")
@@ -1197,62 +763,44 @@ def main():
         print("\nOpciones de paralelización:")
         print("1. Usar todos los núcleos lógicos (máximo rendimiento)")
         print("2. Usar solo núcleos físicos (mayor estabilidad)")
-        if cpu_info['has_hybrid_arch']:
-            print("3. Usar solo núcleos P/Performance (mayor rendimiento por enfrentamiento)")
-        print("4. Especificar manualmente los núcleos a utilizar")
+        print("3. Especificar manualmente los núcleos a utilizar")
 
         cores_option = input("\nSeleccione una opción [1]: ") or "1"
 
         physical_only = False
-        p_cores_only = False
         workers = None
         specific_cores = None
 
-        if cores_option == "2":
-            physical_only = True
-            print(f"Se usarán solo los {cpu_info['physical_cores']} núcleos físicos")
-        elif cores_option == "3" and cpu_info['has_hybrid_arch']:
-            p_cores_only = True
-            print(f"Se usarán solo los {cpu_info['p_cores']} núcleos P/Performance")
-        elif cores_option == "4":
-            # Especificar manualmente los núcleos
-            total_cores = cpu_info['logical_cores']
-            print(f"\nSu sistema tiene {total_cores} núcleos lógicos (numerados del 0 al {total_cores-1}).")
-            cores_input = input("Ingrese los números de núcleos a utilizar, separados por comas (ej: 0,1,2,5): ")
+        match cores_option:
+            case "2":
+                physical_only = True
+                print(f"Se usarán solo los {cpu_info['physical_cores']} núcleos físicos")
+            case "3":
+                # Especificar manualmente los núcleos
+                total_cores = cpu_info['logical_cores']
+                print(f"\nSu sistema tiene {total_cores} núcleos lógicos (numerados del 0 al {total_cores-1}).")
+                cores_input = input("Ingrese los números de núcleos a utilizar, separados por comas (ej: 0,1,2,5): ")
 
-            try:
-                specific_cores = [int(c.strip()) for c in cores_input.split(',')]
-
-                # Validar que los núcleos estén en el rango correcto
-                invalid_cores = [c for c in specific_cores if c < 0 or c >= total_cores]
-                if invalid_cores:
-                    print(f"Advertencia: Los siguientes núcleos están fuera de rango: {invalid_cores}")
-                    specific_cores = [c for c in specific_cores if c >= 0 and c < total_cores]
-
-                if not specific_cores:
-                    print(f"No se especificaron núcleos válidos. Usando todos los núcleos lógicos.")
-                    specific_cores = None
-                else:
-                    print(f"Se utilizarán los siguientes núcleos: {specific_cores}")
-            except ValueError:
-                print("Formato inválido. Usando todos los núcleos lógicos.")
-                specific_cores = None
-        else:
-            print(f"Se usarán todos los {cpu_info['logical_cores']} núcleos lógicos")
-
-        # Preguntar si quiere especificar manualmente el número de núcleos (solo si no especificó núcleos concretos)
-        if not specific_cores:
-            manual_cores = input("\n¿Desea especificar manualmente el número de núcleos? (s/n) [n]: ").lower() or "n"
-            if manual_cores in ["s", "si", "sí", "y", "yes"]:
-                max_cores = get_cores_for_parallelism(physical_only, p_cores_only)
-                workers_input = input(f"Número de núcleos a utilizar (1-{max_cores}): ")
                 try:
-                    workers = int(workers_input)
-                    if workers < 1 or workers > max_cores:
-                        print(f"Error: El número de núcleos debe estar entre 1 y {max_cores}. Usando {max_cores} núcleos.")
-                        workers = max_cores
+                    specific_cores = [int(c.strip()) for c in cores_input.split(',')]
+
+                    # Validar que los núcleos estén en el rango correcto
+                    invalid_cores = [c for c in specific_cores if c < 0 or c >= total_cores]
+                    if invalid_cores:
+                        print(f"Advertencia: Los siguientes núcleos están fuera de rango: {invalid_cores}")
+                        specific_cores = [c for c in specific_cores if c >= 0 and c < total_cores]
+
+                    if not specific_cores:
+                        print(f"No se especificaron núcleos válidos. Usando todos los núcleos lógicos.")
+                        specific_cores = None
+                    else:
+                        print(f"Se utilizarán los siguientes núcleos: {specific_cores}")
                 except ValueError:
-                    print(f"Valor inválido. Usando el número automático de núcleos.")
+                    print("Formato inválido. Usando todos los núcleos lógicos.")
+                    specific_cores = None
+            case _:
+                # Caso por defecto: usar todos los núcleos lógicos
+                print(f"Se usarán todos los {cpu_info['logical_cores']} núcleos lógicos")
 
         visualize_input = input("\n¿Desea visualizar y guardar los resultados? (s/n) [s]: ").lower() or "s"
         visualize = visualize_input in ["s", "si", "sí", "y", "yes"]
@@ -1261,20 +809,10 @@ def main():
         if specific_cores:
             cores_to_use = len(specific_cores)
             core_type = "específicos"
-        elif workers is not None:
-            cores_to_use = workers
-            if physical_only:
-                core_type = "físicos"
-            elif p_cores_only and cpu_info['has_hybrid_arch']:
-                core_type = "P (rendimiento)"
-            else:
-                core_type = "lógicos"
         else:
-            cores_to_use = get_cores_for_parallelism(physical_only, p_cores_only)
+            cores_to_use = get_cores_for_parallelism(physical_only)
             if physical_only:
                 core_type = "físicos"
-            elif p_cores_only and cpu_info['has_hybrid_arch']:
-                core_type = "P (rendimiento)"
             else:
                 core_type = "lógicos"
 
@@ -1301,7 +839,6 @@ def main():
                 visualize=visualize,
                 n_workers=workers,
                 physical_only=physical_only,
-                p_cores_only=p_cores_only,
                 specific_cores=specific_cores
             )
         else:
