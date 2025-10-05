@@ -31,12 +31,159 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import time
 import platform
 import subprocess
-import re
-import ctypes
+import scipy.optimize
 
 # Importar funciones desde compare_agents.py
-from compare_agents import load_agent, show_available_models, compare_agents
+from compare_agents import compare_agents
 from utils.logger import logger
+
+def compute_bradley_terry_skills(results_df, epochs):
+    """
+    Calcula las habilidades Bradley-Terry de los agentes usando optimización iterativa.
+
+    Args:
+        results_df (pd.DataFrame): DataFrame con los resultados de los enfrentamientos
+        epochs (list): Lista de épocas/agentes
+
+    Returns:
+        dict: Diccionario con las habilidades estimadas por época
+    """
+    try:
+        n_agents = len(epochs)
+        epoch_to_idx = {epoch: i for i, epoch in enumerate(epochs)}
+
+        # Construir matriz de comparaciones
+        wins = np.zeros((n_agents, n_agents))
+
+        for i, epoch_i in enumerate(epochs):
+            for j, epoch_j in enumerate(epochs):
+                if i != j:
+                    wins[i, j] = results_df.at[epoch_i, epoch_j]
+
+        # Función objetivo para Bradley-Terry
+        def objective(skills):
+            """Función de log-verosimilitud negativa para Bradley-Terry"""
+            log_likelihood = 0
+            for i in range(n_agents):
+                for j in range(n_agents):
+                    if i != j and (wins[i, j] + wins[j, i]) > 0:
+                        # Probabilidad de que i gane contra j
+                        prob_i_beats_j = np.exp(skills[i]) / (np.exp(skills[i]) + np.exp(skills[j]))
+
+                        # Evitar log(0)
+                        prob_i_beats_j = max(prob_i_beats_j, 1e-15)
+                        prob_i_beats_j = min(prob_i_beats_j, 1 - 1e-15)
+
+                        # Agregar a la log-verosimilitud
+                        log_likelihood += wins[i, j] * np.log(prob_i_beats_j)
+
+            return -log_likelihood  # Negativo porque minimizamos
+
+        # Optimizar con restricción de que la suma de habilidades sea 0
+        def constraint(skills):
+            return np.sum(skills)
+
+        # Punto inicial aleatorio
+        initial_skills = np.random.normal(0, 1, n_agents)
+        initial_skills -= np.mean(initial_skills)  # Centrar en 0
+
+        # Optimización con restricciones
+        result = scipy.optimize.minimize(
+            objective,
+            initial_skills,
+            method='SLSQP',
+            constraints={'type': 'eq', 'fun': constraint},
+            options={'maxiter': 1000}
+        )
+
+        if result.success:
+            skills = result.x
+            # Convertir a diccionario con épocas como claves
+            skills_dict = {epochs[i]: skills[i] for i in range(n_agents)}
+            return skills_dict
+        else:
+            logger.warning("La optimización Bradley-Terry no convergió, usando método alternativo")
+            return compute_bradley_terry_simple(results_df, epochs)
+
+    except Exception as e:
+        logger.warning(f"Error en Bradley-Terry optimizado: {e}, usando método simple")
+        return compute_bradley_terry_simple(results_df, epochs)
+
+def compute_bradley_terry_simple(results_df, epochs):
+    """
+    Método simple de Bradley-Terry usando iteración de punto fijo.
+
+    Args:
+        results_df (pd.DataFrame): DataFrame con los resultados
+        epochs (list): Lista de épocas
+
+    Returns:
+        dict: Habilidades estimadas por época
+    """
+    try:
+        n_agents = len(epochs)
+
+        # Inicializar habilidades
+        skills = {epoch: 1.0 for epoch in epochs}
+
+        # Iteración de punto fijo
+        for iteration in range(100):  # Máximo 100 iteraciones
+            new_skills = {}
+
+            for epoch_i in epochs:
+                numerator = 0
+                denominator = 0
+
+                for epoch_j in epochs:
+                    if epoch_i != epoch_j:
+                        wins_i = results_df.at[epoch_i, epoch_j]
+                        wins_j = results_df.at[epoch_j, epoch_i]
+                        total_games = wins_i + wins_j
+
+                        if total_games > 0:
+                            numerator += wins_i
+                            denominator += total_games * skills[epoch_j] / (skills[epoch_i] + skills[epoch_j])
+
+                if denominator > 0:
+                    new_skills[epoch_i] = numerator / denominator
+                else:
+                    new_skills[epoch_i] = 1.0
+
+            # Normalizar para evitar crecimiento ilimitado
+            total_skill = sum(new_skills.values())
+            if total_skill > 0:
+                for epoch in epochs:
+                    new_skills[epoch] = new_skills[epoch] * len(epochs) / total_skill
+
+            # Verificar convergencia
+            converged = True
+            for epoch in epochs:
+                if abs(new_skills[epoch] - skills[epoch]) > 1e-6:
+                    converged = False
+                    break
+
+            skills = new_skills
+
+            if converged:
+                logger.info(f"Bradley-Terry convergió en {iteration + 1} iteraciones")
+                break
+
+        # Convertir a escala logarítmica para mejor interpretación
+        log_skills = {}
+        for epoch in epochs:
+            log_skills[epoch] = np.log(skills[epoch])
+
+        # Centrar en 0
+        mean_log_skill = np.mean(list(log_skills.values()))
+        for epoch in epochs:
+            log_skills[epoch] -= mean_log_skill
+
+        return log_skills
+
+    except Exception as e:
+        logger.error(f"Error en Bradley-Terry simple: {e}")
+        # Retornar habilidades neutras si todo falla
+        return {epoch: 0.0 for epoch in epochs}
 
 def get_all_available_epochs():
     """Obtiene todas las épocas disponibles en el sistema."""
@@ -468,6 +615,134 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
             f.write(f"\nTiempo mínimo por enfrentamiento: {min([m['Duration'] for m in matches_data]):.2f} segundos\n")
             f.write(f"Tiempo máximo por enfrentamiento: {max([m['Duration'] for m in matches_data]):.2f} segundos\n")
 
+    # ========== SISTEMA DE PUNTUACIÓN BRADLEY-TERRY ==========
+    logger.info("\n" + "=" * 60)
+    logger.info("CALCULANDO HABILIDADES BRADLEY-TERRY")
+    logger.info("=" * 60)
+
+    try:
+        # Calcular habilidades Bradley-Terry
+        bt_skills = compute_bradley_terry_skills(results_df, epochs)
+
+        # Crear DataFrame con las habilidades Bradley-Terry
+        bt_df = pd.DataFrame({
+            'Época': epochs,
+            'Habilidad_BT': [bt_skills[epoch] for epoch in epochs],
+            'Victorias': [results_df.at[epoch, 'Victorias'] for epoch in epochs],
+            'Derrotas': [results_df.at[epoch, 'Derrotas'] for epoch in epochs],
+            'Empates': [results_df.at[epoch, 'Empates'] for epoch in epochs]
+        })
+
+        # Calcular probabilidades de victoria promedio contra todos los oponentes
+        bt_df['Prob_Victoria_Promedio'] = 0.0
+        for i, epoch_i in enumerate(epochs):
+            prob_sum = 0.0
+            for epoch_j in epochs:
+                if epoch_i != epoch_j:
+                    # Probabilidad de victoria usando Bradley-Terry: exp(skill_i) / (exp(skill_i) + exp(skill_j))
+                    prob_i_beats_j = np.exp(bt_skills[epoch_i]) / (np.exp(bt_skills[epoch_i]) + np.exp(bt_skills[epoch_j]))
+                    prob_sum += prob_i_beats_j
+            bt_df.at[i, 'Prob_Victoria_Promedio'] = prob_sum / (len(epochs) - 1)
+
+        # Convertir a porcentaje
+        bt_df['Prob_Victoria_Promedio'] *= 100
+
+        # Ordenar por habilidad Bradley-Terry (descendente)
+        bt_df = bt_df.sort_values('Habilidad_BT', ascending=False).reset_index(drop=True)
+
+        # Agregar ranking
+        bt_df['Ranking_BT'] = range(1, len(bt_df) + 1)
+
+        # Mostrar tabla de habilidades Bradley-Terry
+        logger.info("\nTABLA DE HABILIDADES BRADLEY-TERRY:")
+        display_columns = ['Ranking_BT', 'Época', 'Habilidad_BT', 'Prob_Victoria_Promedio', 'Victorias', 'Derrotas', 'Empates']
+        bt_display = bt_df[display_columns].copy()
+        bt_display['Habilidad_BT'] = bt_display['Habilidad_BT'].round(3)
+        bt_display['Prob_Victoria_Promedio'] = bt_display['Prob_Victoria_Promedio'].round(1)
+
+        logger.info("\n" + bt_display.to_string(index=False))
+
+        # Identificar al campeón según Bradley-Terry
+        bt_champion = bt_df.iloc[0]['Época']
+        bt_champion_skill = bt_df.iloc[0]['Habilidad_BT']
+        bt_champion_prob = bt_df.iloc[0]['Prob_Victoria_Promedio']
+
+        logger.info(f"\n🏆 CAMPEÓN SEGÚN BRADLEY-TERRY: Época {bt_champion}")
+        logger.info(f"   Habilidad: {bt_champion_skill:.3f}")
+        logger.info(f"   Probabilidad promedio de victoria: {bt_champion_prob:.1f}%")
+
+        # Comparar con el campeón tradicional
+        if bt_champion != champion:
+            logger.info(f"\n📊 COMPARACIÓN DE SISTEMAS:")
+            logger.info(f"   Campeón tradicional (puntos): Época {champion}")
+            logger.info(f"   Campeón Bradley-Terry: Época {bt_champion}")
+            logger.info(f"   Los sistemas de puntuación difieren en el ganador.")
+        else:
+            logger.info(f"\n✅ Ambos sistemas de puntuación coinciden: Época {champion} es el campeón")
+
+        # Guardar resultados Bradley-Terry
+        bt_df.to_csv(f"{tournament_dir}/bradley_terry_skills.csv", index=False)
+        logger.info(f"\n💾 Tabla Bradley-Terry guardada en: {tournament_dir}/bradley_terry_skills.csv")
+
+        # Crear visualización adicional si se solicitó
+        if visualize:
+            # Gráfico de habilidades Bradley-Terry
+            plt.figure(figsize=(12, 8))
+            colors = ['gold' if i == 0 else 'silver' if i == 1 else 'chocolate' if i == 2 else 'skyblue'
+                     for i in range(len(bt_df))]
+
+            bars = plt.bar(bt_df['Época'].astype(str), bt_df['Habilidad_BT'], color=colors, alpha=0.8)
+            plt.title('Habilidades Bradley-Terry por Época', fontsize=16, fontweight='bold')
+            plt.xlabel('Época del Agente', fontsize=12)
+            plt.ylabel('Habilidad Bradley-Terry', fontsize=12)
+            plt.xticks(rotation=45)
+            plt.grid(axis='y', alpha=0.3)
+
+            # Agregar valores en las barras
+            for i, bar in enumerate(bars):
+                height = bar.get_height()
+                plt.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                        f'{height:.3f}', ha='center', va='bottom', fontweight='bold')
+
+            # Agregar leyenda para los colores
+            legend_elements = [
+                plt.Rectangle((0,0),1,1, facecolor='gold', alpha=0.8, label='1º Lugar'),
+                plt.Rectangle((0,0),1,1, facecolor='silver', alpha=0.8, label='2º Lugar'),
+                plt.Rectangle((0,0),1,1, facecolor='chocolate', alpha=0.8, label='3º Lugar'),
+                plt.Rectangle((0,0),1,1, facecolor='skyblue', alpha=0.8, label='Otros')
+            ]
+            plt.legend(handles=legend_elements, loc='upper right')
+
+            plt.tight_layout()
+            plt.savefig(f"{vis_dir}/bradley_terry_skills.png", dpi=300, bbox_inches='tight')
+            plt.close()
+
+            # Gráfico comparativo: Habilidad BT vs Probabilidad de Victoria
+            plt.figure(figsize=(12, 8))
+            scatter = plt.scatter(bt_df['Habilidad_BT'], bt_df['Prob_Victoria_Promedio'],
+                                c=bt_df['Ranking_BT'], cmap='viridis_r', s=100, alpha=0.7)
+
+            # Agregar etiquetas para cada punto
+            for i, row in bt_df.iterrows():
+                plt.annotate(f"Época {row['Época']}",
+                           (row['Habilidad_BT'], row['Prob_Victoria_Promedio']),
+                           xytext=(5, 5), textcoords='offset points', fontsize=9)
+
+            plt.colorbar(scatter, label='Ranking Bradley-Terry')
+            plt.title('Habilidad Bradley-Terry vs Probabilidad de Victoria', fontsize=16, fontweight='bold')
+            plt.xlabel('Habilidad Bradley-Terry', fontsize=12)
+            plt.ylabel('Probabilidad Promedio de Victoria (%)', fontsize=12)
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            plt.savefig(f"{vis_dir}/bt_skill_vs_probability.png", dpi=300, bbox_inches='tight')
+            plt.close()
+
+            logger.info(f"📊 Gráficos Bradley-Terry guardados en: {vis_dir}/")
+
+    except Exception as e:
+        logger.error(f"❌ Error al calcular las habilidades Bradley-Terry: {e}")
+        logger.info("El torneo se completó exitosamente, pero no se pudieron calcular las habilidades Bradley-Terry.")
+
     logger.info(f"\nResultados guardados en {tournament_dir}")
 
     return results_df
@@ -674,68 +949,59 @@ def main():
             print("No se encontraron épocas disponibles. Verifique que existan modelos entrenados.")
             return
 
-        print(f"\nSe encontraron {len(available_epochs)} épocas disponibles.")
+        print(f"\n📋 Épocas disponibles:")
+        print(f"   {available_epochs}")
+        print(f"\n   Total disponibles: {len(available_epochs)}")
+
+        # Mostrar sugerencia si hay muchas épocas
+        if len(available_epochs) > 8:
+            suggested = select_epochs_for_tournament(max_agents=8)
+            print(f"   Sugerencia (8 agentes): {suggested}")
 
         # Preguntar si quiere todas las épocas o selección
-        all_epochs = input("¿Desea incluir todas las épocas disponibles? (s/n) [n]: ").lower() or "n"
+        print("\nOpciones de selección de épocas:")
+        print("1. Usar todas las épocas disponibles")
+        print("2. Selección automática (épocas distribuidas uniformemente)")
+        print("3. Selección manual de épocas específicas")
 
-        if all_epochs in ["s", "si", "sí", "y", "yes"]:
-            # Verificar si hay demasiadas épocas
-            if len(available_epochs) > 10:
-                print(f"Hay {len(available_epochs)} épocas disponibles, lo que generaría {len(available_epochs) * (len(available_epochs) - 1) // 2} enfrentamientos.")
-                max_agents = input("Ingrese el número máximo de agentes para el torneo [10]: ") or "10"
-                try:
-                    max_agents = int(max_agents)
-                    if max_agents < 2:
-                        max_agents = 2
-                    epochs = select_epochs_for_tournament(max_agents)
-                except ValueError:
-                    print("Valor inválido, usando 10 como máximo.")
-                    epochs = select_epochs_for_tournament(10)
-            else:
-                epochs = available_epochs
+        selection = input("\nSeleccione una opción [2]: ").strip() or "2"
 
-            print(f"Se utilizarán {len(epochs)} épocas: {epochs}")
+        if selection == "1":
+            # Usar todas las épocas
+            epochs = available_epochs
+            print(f"Se utilizarán todas las {len(epochs)} épocas disponibles")
+        elif selection == "2":
+            # Selección automática
+            max_agents = input(f"¿Cuántos agentes desea incluir? [8]: ").strip() or "8"
+            try:
+                max_agents = int(max_agents)
+                if max_agents < 2:
+                    max_agents = 2
+                epochs = select_epochs_for_tournament(max_agents)
+                print(f"Épocas seleccionadas automáticamente: {epochs}")
+            except ValueError:
+                print("Valor inválido, usando 8 agentes.")
+                epochs = select_epochs_for_tournament(8)
         else:
-            # Pedir épocas específicas
-            print("\nÉpocas disponibles:", available_epochs)
+            # Selección manual
+            print(f"\nÉpocas disponibles: {available_epochs}")
+            epochs_input = input("\nIngrese las épocas separadas por espacios (ej: 1 50 100 150 200): ")
+            try:
+                epochs = [int(e) for e in epochs_input.split()]
+                # Verificar que las épocas existan
+                invalid_epochs = [e for e in epochs if e not in available_epochs]
+                if invalid_epochs:
+                    print(f"Advertencia: Las siguientes épocas no están disponibles: {invalid_epochs}")
+                    epochs = [e for e in epochs if e in available_epochs]
+            except ValueError:
+                print("Entrada inválida. Usando selección automática.")
+                epochs = select_epochs_for_tournament(5)
 
-            # Ofrecer algunas selecciones predefinidas
-            print("\nOpciones recomendadas:")
-            print("1. Primeros modelos vs últimos (selecciona automáticamente 5 épocas distribuidas)")
-            print("2. Comparación de modelos clave (primero, 25%, 50%, 75%, último)")
-            print("3. Selección manual de épocas")
+        if len(epochs) < 2:
+            print("Se necesitan al menos 2 épocas para un torneo. Usando las primeras 2 épocas disponibles.")
+            epochs = available_epochs[:2]
 
-            option = input("\nSeleccione una opción [1]: ") or "1"
-
-            match option:
-                case "1":
-                    # 5 épocas distribuidas
-                    epochs = select_epochs_for_tournament(5)
-                case "2":
-                    # Modelos clave
-                    indices = [0, len(available_epochs)//4, len(available_epochs)//2,
-                               3*len(available_epochs)//4, len(available_epochs)-1]
-                    epochs = [available_epochs[i] for i in indices]
-                case _:
-                    # Selección manual (caso por defecto)
-                    epochs_input = input("\nIngrese las épocas separadas por espacios (ej: 1 50 100 150 200): ")
-                    try:
-                        epochs = [int(e) for e in epochs_input.split()]
-                        # Verificar que las épocas existan
-                        invalid_epochs = [e for e in epochs if e not in available_epochs]
-                        if invalid_epochs:
-                            print(f"Advertencia: Las siguientes épocas no están disponibles: {invalid_epochs}")
-                            epochs = [e for e in epochs if e in available_epochs]
-                    except ValueError:
-                        print("Entrada inválida. Usando las primeras 5 épocas disponibles.")
-                        epochs = available_epochs[:5]
-
-            if len(epochs) < 2:
-                print("Se necesitan al menos 2 épocas para un torneo. Usando las primeras 2 épocas disponibles.")
-                epochs = available_epochs[:2]
-
-            print(f"Épocas seleccionadas para el torneo: {epochs}")
+        print(f"Épocas finales seleccionadas: {epochs}")
 
         # Solicitar otros parámetros
         while True:
@@ -771,36 +1037,35 @@ def main():
         workers = None
         specific_cores = None
 
-        match cores_option:
-            case "2":
-                physical_only = True
-                print(f"Se usarán solo los {cpu_info['physical_cores']} núcleos físicos")
-            case "3":
-                # Especificar manualmente los núcleos
-                total_cores = cpu_info['logical_cores']
-                print(f"\nSu sistema tiene {total_cores} núcleos lógicos (numerados del 0 al {total_cores-1}).")
-                cores_input = input("Ingrese los números de núcleos a utilizar, separados por comas (ej: 0,1,2,5): ")
+        if cores_option == "2":
+            physical_only = True
+            print(f"Se usarán solo los {cpu_info['physical_cores']} núcleos físicos")
+        elif cores_option == "3":
+            # Especificar manualmente los núcleos
+            total_cores = cpu_info['logical_cores']
+            print(f"\nSu sistema tiene {total_cores} núcleos lógicos (numerados del 0 al {total_cores-1}).")
+            cores_input = input("Ingrese los números de núcleos a utilizar, separados por comas (ej: 0,1,2,5): ")
 
-                try:
-                    specific_cores = [int(c.strip()) for c in cores_input.split(',')]
+            try:
+                specific_cores = [int(c.strip()) for c in cores_input.split(',')]
 
-                    # Validar que los núcleos estén en el rango correcto
-                    invalid_cores = [c for c in specific_cores if c < 0 or c >= total_cores]
-                    if invalid_cores:
-                        print(f"Advertencia: Los siguientes núcleos están fuera de rango: {invalid_cores}")
-                        specific_cores = [c for c in specific_cores if c >= 0 and c < total_cores]
+                # Validar que los núcleos estén en el rango correcto
+                invalid_cores = [c for c in specific_cores if c < 0 or c >= total_cores]
+                if invalid_cores:
+                    print(f"Advertencia: Los siguientes núcleos están fuera de rango: {invalid_cores}")
+                    specific_cores = [c for c in specific_cores if c >= 0 and c < total_cores]
 
-                    if not specific_cores:
-                        print(f"No se especificaron núcleos válidos. Usando todos los núcleos lógicos.")
-                        specific_cores = None
-                    else:
-                        print(f"Se utilizarán los siguientes núcleos: {specific_cores}")
-                except ValueError:
-                    print("Formato inválido. Usando todos los núcleos lógicos.")
+                if not specific_cores:
+                    print(f"No se especificaron núcleos válidos. Usando todos los núcleos lógicos.")
                     specific_cores = None
-            case _:
-                # Caso por defecto: usar todos los núcleos lógicos
-                print(f"Se usarán todos los {cpu_info['logical_cores']} núcleos lógicos")
+                else:
+                    print(f"Se utilizarán los siguientes núcleos: {specific_cores}")
+            except ValueError:
+                print("Formato inválido. Usando todos los núcleos lógicos.")
+                specific_cores = None
+        else:
+            # Caso por defecto: usar todos los núcleos lógicos
+            print(f"Se usarán todos los {cpu_info['logical_cores']} núcleos lógicos")
 
         visualize_input = input("\n¿Desea visualizar y guardar los resultados? (s/n) [s]: ").lower() or "s"
         visualize = visualize_input in ["s", "si", "sí", "y", "yes"]
