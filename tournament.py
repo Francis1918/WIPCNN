@@ -393,10 +393,26 @@ def run_tournament(epochs, n_matches=10, temperature=0.5, visualize=False):
         logger.error("Se necesitan al menos 2 épocas para un torneo")
         return None
 
-    # Crear un directorio para los resultados del torneo
+    # Crear estructura de directorios organizada
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    tournament_dir = f"partidas_guardadas/tournament_{timestamp}"
+
+    # Carpeta principal de torneos
+    main_tournaments_dir = "tournaments"
+    os.makedirs(main_tournaments_dir, exist_ok=True)
+
+    # Carpeta específica para este torneo
+    tournament_dir = f"{main_tournaments_dir}/tournament_{timestamp}"
     os.makedirs(tournament_dir, exist_ok=True)
+
+    # Subcarpetas organizadas
+    results_dir = f"{tournament_dir}/results"
+    matches_dir = f"{tournament_dir}/matches"
+    vis_dir = f"{tournament_dir}/visualizations"
+
+    os.makedirs(results_dir, exist_ok=True)
+    os.makedirs(matches_dir, exist_ok=True)
+    if visualize:
+        os.makedirs(vis_dir, exist_ok=True)
 
     # Inicializar sistema Bradley-Terry-ELO
     bt_elo_system = BradleyTerryELO(agents=epochs)
@@ -410,6 +426,7 @@ def run_tournament(epochs, n_matches=10, temperature=0.5, visualize=False):
     logger.info(f"Iniciando torneo con {len(epochs)} agentes")
     logger.info(f"Total de enfrentamientos: {total_matches}")
     logger.info(f"Partidas por enfrentamiento: {n_matches}")
+    logger.info(f"Resultados se guardarán en: {tournament_dir}")
 
     # Todos contra todos
     for epoch1, epoch2 in tqdm(itertools.combinations(epochs, 2), total=total_matches, desc="Enfrentamientos"):
@@ -417,7 +434,7 @@ def run_tournament(epochs, n_matches=10, temperature=0.5, visualize=False):
         logger.info(f"Enfrentamiento: Época {epoch1} vs Época {epoch2}")
 
         # Directorio específico para este enfrentamiento
-        match_dir = f"{tournament_dir}/match_{epoch1}_vs_{epoch2}"
+        match_dir = f"{matches_dir}/match_{epoch1}_vs_{epoch2}"
         os.makedirs(match_dir, exist_ok=True)
 
         # Realizar el enfrentamiento
@@ -494,19 +511,107 @@ def run_tournament(epochs, n_matches=10, temperature=0.5, visualize=False):
 
     # Si se solicitó visualización, crear gráficos
     if visualize:
-        # Crear directorio para visualizaciones
-        vis_dir = f"{tournament_dir}/visualizations"
-        os.makedirs(vis_dir, exist_ok=True)
-
         # Crear gráficos específicos para BT-ELO
         create_bt_elo_charts(bt_elo_system, vis_dir)
 
-    # Guardar resultados
-    bt_results_df.to_csv(f"{tournament_dir}/bt_elo_results.csv", index=False)
-    prob_matrix.to_csv(f"{tournament_dir}/probability_matrix.csv")
-    pd.DataFrame(matches_data).to_csv(f"{tournament_dir}/matches_detail.csv", index=False)
+    # Guardar todos los resultados en archivos
+    bt_results_df.to_csv(f"{results_dir}/bt_elo_results.csv", index=False)
+    prob_matrix.to_csv(f"{results_dir}/probability_matrix.csv")
+    pd.DataFrame(matches_data).to_csv(f"{results_dir}/matches_detail.csv", index=False)
 
-    logger.info(f"\nResultados guardados en {tournament_dir}")
+    # Guardar resumen completo en texto
+    summary_file = f"{tournament_dir}/RESUMEN_TORNEO.txt"
+    with open(summary_file, 'w', encoding='utf-8') as f:
+        f.write("=" * 80 + "\n")
+        f.write("RESUMEN DEL TORNEO - SISTEMA BRADLEY-TERRY + ELO\n")
+        f.write("=" * 80 + "\n\n")
+
+        # Información general
+        f.write(f"Fecha y hora: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Número de agentes: {len(epochs)}\n")
+        f.write(f"Épocas participantes: {epochs}\n")
+        f.write(f"Total de enfrentamientos: {total_matches}\n")
+        f.write(f"Partidas por enfrentamiento: {n_matches}\n")
+        f.write(f"Temperatura: {temperature}\n")
+        f.write(f"Visualización habilitada: {'Sí' if visualize else 'No'}\n")
+        f.write("\n" + "=" * 80 + "\n\n")
+
+        # Clasificación final
+        f.write("🏆 CLASIFICACIÓN FINAL\n")
+        f.write("=" * 80 + "\n\n")
+        f.write(bt_results_df.to_string(index=False))
+        f.write("\n\n" + "=" * 80 + "\n\n")
+
+        # Podio
+        f.write("🥇 PODIO\n")
+        f.write("=" * 80 + "\n\n")
+
+        champion_row = bt_results_df.iloc[0]
+        f.write(f"🥇 CAMPEÓN: {champion_row['Agente']}\n")
+        f.write(f"   • BT-Force: {champion_row['BT-Force']:.3f}\n")
+        f.write(f"   • ELO Rating: {champion_row['ELO-Rating']}\n")
+        f.write(f"   • Probabilidad promedio de victoria: {champion_row['vs Promedio']}\n")
+        f.write(f"   • Record: {champion_row['Victorias']}V-{champion_row['Derrotas']}D-{champion_row['Empates']}E\n\n")
+
+        if len(bt_results_df) > 1:
+            runner_up = bt_results_df.iloc[1]
+            f.write(f"🥈 SUBCAMPEÓN: {runner_up['Agente']}\n")
+            f.write(f"   • BT-Force: {runner_up['BT-Force']:.3f}\n")
+            f.write(f"   • ELO Rating: {runner_up['ELO-Rating']}\n")
+            f.write(f"   • Probabilidad promedio de victoria: {runner_up['vs Promedio']}\n\n")
+
+        if len(bt_results_df) > 2:
+            third_place = bt_results_df.iloc[2]
+            f.write(f"🥉 TERCER LUGAR: {third_place['Agente']}\n")
+            f.write(f"   • BT-Force: {third_place['BT-Force']:.3f}\n")
+            f.write(f"   • ELO Rating: {third_place['ELO-Rating']}\n")
+            f.write(f"   • Probabilidad promedio de victoria: {third_place['vs Promedio']}\n\n")
+
+        f.write("=" * 80 + "\n\n")
+
+        # Estadísticas
+        forces = bt_results_df['BT-Force'].astype(float)
+        ratings = bt_results_df['ELO-Rating'].astype(int)
+
+        f.write("📈 ANÁLISIS ESTADÍSTICO\n")
+        f.write("=" * 80 + "\n\n")
+        f.write(f"Fuerza BT máxima: {forces.max():.3f} ({bt_results_df.iloc[0]['Agente']})\n")
+        f.write(f"Fuerza BT mínima: {forces.min():.3f} ({bt_results_df.iloc[-1]['Agente']})\n")
+        f.write(f"Promedio de fuerzas: {forces.mean():.3f}\n")
+        f.write(f"Desviación estándar: {forces.std():.3f}\n")
+        f.write(f"Ratio dominancia: {forces.max()/forces.min():.2f}x\n\n")
+
+        f.write("⭐ ANÁLISIS DE RATINGS ELO\n")
+        f.write("-" * 80 + "\n\n")
+        f.write(f"Rating más alto: {ratings.max()} ({bt_results_df.iloc[0]['Agente']})\n")
+        f.write(f"Rating más bajo: {ratings.min()} ({bt_results_df.iloc[-1]['Agente']})\n")
+        f.write(f"Diferencia de rating: {ratings.max() - ratings.min()} puntos\n")
+        f.write(f"Promedio de ratings: {ratings.mean():.0f}\n\n")
+
+        f.write("=" * 80 + "\n\n")
+
+        # Matriz de probabilidades
+        f.write("📊 MATRIZ DE PROBABILIDADES DE VICTORIA\n")
+        f.write("=" * 80 + "\n\n")
+        f.write(prob_matrix_display.to_string())
+        f.write("\n\n" + "=" * 80 + "\n\n")
+
+        # Enfrentamientos detallados
+        f.write("🎯 DETALLES DE ENFRENTAMIENTOS\n")
+        f.write("=" * 80 + "\n\n")
+        matches_df = pd.DataFrame(matches_data)
+        f.write(matches_df.to_string(index=False))
+        f.write("\n\n" + "=" * 80 + "\n")
+        f.write("Fin del resumen\n")
+        f.write("=" * 80 + "\n")
+
+    logger.info(f"\n✅ Resultados guardados exitosamente en: {tournament_dir}")
+    logger.info(f"   📁 Carpeta principal: {tournament_dir}")
+    logger.info(f"   📊 Resultados: {results_dir}")
+    logger.info(f"   🎮 Enfrentamientos: {matches_dir}")
+    if visualize:
+        logger.info(f"   📈 Visualizaciones: {vis_dir}")
+    logger.info(f"   📄 Resumen completo: {summary_file}")
 
     return bt_results_df
 
