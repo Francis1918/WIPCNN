@@ -254,9 +254,21 @@ def run_match_parallel_cuda(args):
     os.makedirs(match_dir, exist_ok=True)
 
     try:
-        # Cargar agentes en GPU
-        agent1 = load_agent_gpu(epoch1, temperature, device)
-        agent2 = load_agent_gpu(epoch2, temperature, device)
+        # Pequeña pausa aleatoria para evitar condiciones de carrera en GPU
+        import random
+        time.sleep(random.uniform(0.01, 0.1))
+
+        # Cargar agentes en GPU con manejo de errores mejorado
+        try:
+            agent1 = load_agent_gpu(epoch1, temperature, device)
+            agent2 = load_agent_gpu(epoch2, temperature, device)
+        except RuntimeError as e:
+            # Si hay error de GPU (CUDA out of memory, etc.), reintentar en CPU
+            print(f"[Proceso {process_id}] ⚠️  Error cargando en GPU: {e}, reintentando...")
+            if device != 'cpu':
+                torch.cuda.empty_cache()
+                time.sleep(0.5)
+            raise
 
         # Importar play_games
         try:
@@ -289,10 +301,15 @@ def run_match_parallel_cuda(args):
         wins_2 = match_results['P2']
         draws = match_results['Empates']
 
-        # Limpiar GPU
-        del agent1, agent2
-        if device != 'cpu':
-            torch.cuda.empty_cache()
+        # Limpiar GPU de forma más agresiva
+        try:
+            del agent1, agent2
+            if device != 'cpu' and torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                # Sincronizar GPU antes de continuar
+                torch.cuda.synchronize()
+        except Exception as cleanup_error:
+            print(f"[Proceso {process_id}] ⚠️  Error en limpieza GPU: {cleanup_error}")
 
         # Guardar datos del enfrentamiento
         match_data = {
@@ -305,10 +322,14 @@ def run_match_parallel_cuda(args):
             'Win_Rate_Epoch2': wins_2 / n_matches * 100,
             'Draw_Rate': draws / n_matches * 100,
             'Duration': time.time() - match_start,
-            'Device': device
+            'Device': device,
+            'Process_ID': process_id
         }
 
         print(f"[Proceso {process_id}] ✓ Completado en {match_data['Duration']:.2f}s: {wins_1}-{wins_2}-{draws}")
+
+        # Flush stdout para asegurar que el mensaje se imprima
+        sys.stdout.flush()
 
         return epoch1, epoch2, match_results, match_data
 
@@ -316,6 +337,16 @@ def run_match_parallel_cuda(args):
         print(f"[Proceso {process_id}] ❌ Error: {e}")
         import traceback
         traceback.print_exc()
+        sys.stdout.flush()
+
+        # Asegurar limpieza de GPU incluso en caso de error
+        try:
+            if device != 'cpu' and torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+        except:
+            pass
+
         return epoch1, epoch2, None, None
 
 # Importar funciones auxiliares del tournament_parallel original
@@ -349,6 +380,34 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
         logger.error("Se necesitan al menos 2 épocas para un torneo")
         return None
 
+    # ⚠️ VALIDACIÓN DE ESCALA - Evitar torneos inmanejables
+    n_epochs = len(epochs)
+    total_combinations = (n_epochs * (n_epochs - 1)) // 2
+
+    # Advertir si el torneo es muy grande
+    if total_combinations > 1_000_000:
+        logger.error(f"\n{'='*60}")
+        logger.error(f"❌ TORNEO EXCESIVAMENTE GRANDE")
+        logger.error(f"{'='*60}")
+        logger.error(f"Épocas solicitadas: {n_epochs:,}")
+        logger.error(f"Enfrentamientos necesarios: {total_combinations:,}")
+        logger.error(f"\n⚠️  ADVERTENCIA: Esto es computacionalmente inviable!")
+        logger.error(f"   Tiempo estimado (10 seg/enfrentamiento): {total_combinations*10/3600/24:.1f} días")
+        logger.error(f"   Memoria estimada: {total_combinations*8/1024/1024/1024:.2f} GB solo para resultados")
+        logger.error(f"\n💡 RECOMENDACIONES:")
+        logger.error(f"   • Reducir número de épocas a máximo 1,000 (499,500 enfrentamientos)")
+        logger.error(f"   • Usar selección representativa de épocas")
+        logger.error(f"   • Considerar torneos por grupos/brackets")
+        return None
+
+    if total_combinations > 10_000:
+        logger.warning(f"\n⚠️  ADVERTENCIA: Torneo grande detectado")
+        logger.warning(f"   Épocas: {n_epochs:,}")
+        logger.warning(f"   Enfrentamientos: {total_combinations:,}")
+        estimated_time_hours = (total_combinations * 10) / 3600  # Asumiendo 10 seg/enfrentamiento
+        logger.warning(f"   Tiempo estimado: {estimated_time_hours:.1f} horas")
+        logger.warning(f"   ¿Desea continuar?\n")
+
     # Configurar GPU
     gpu_config = setup_gpu_environment(gpu_id, multi_gpu)
 
@@ -361,8 +420,8 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
     logger.info(f"\n{'='*60}")
     logger.info(f"⚙️  CONFIGURACIÓN DEL TORNEO GPU")
     logger.info(f"{'='*60}")
-    logger.info(f"Épocas: {epochs}")
-    logger.info(f"Enfrentamientos totales: {len(list(itertools.combinations(epochs, 2)))}")
+    logger.info(f"Épocas: {len(epochs)} agentes (min: {min(epochs)}, max: {max(epochs)})")
+    logger.info(f"Enfrentamientos totales: {total_combinations:,}")
     logger.info(f"Partidas por enfrentamiento: {n_matches}")
     logger.info(f"Temperatura: {temperature}")
     logger.info(f"Trabajadores CPU: {n_workers}")
@@ -392,28 +451,30 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
     if visualize:
         os.makedirs(vis_dir, exist_ok=True)
 
-    # Crear DataFrame de resultados
+    # Crear DataFrame de resultados - optimizado para muchas épocas
+    # Usar dtype específico para ahorrar memoria
+    logger.info("Inicializando estructuras de datos...")
     results_df = pd.DataFrame(
         index=epochs,
-        columns=epochs + ['Victorias', 'Derrotas', 'Empates', 'Puntos', 'Posición']
+        columns=epochs + ['Victorias', 'Derrotas', 'Empates', 'Puntos', 'Posición'],
+        dtype=np.float32  # Usar float32 en lugar de float64 para ahorrar memoria
     )
-    results_df = results_df.astype(float)
     results_df.fillna(0, inplace=True)
 
     matches_data = []
 
-    # Generar combinaciones de enfrentamientos
-    match_combinations = list(itertools.combinations(epochs, 2))
-    total_matches = len(match_combinations)
+    # 🚀 OPTIMIZACIÓN: Generar combinaciones sin materializar en memoria
+    # No usar list(), mantener como generador hasta que sea necesario
+    logger.info(f"Generando {total_combinations:,} combinaciones de enfrentamientos...")
 
     logger.info(f"Resultados se guardarán en: {tournament_dir}")
     logger.info(f"Iniciando torneo con {len(epochs)} agentes...\n")
 
     # Preparar argumentos para procesos paralelos
-    match_args = [
-        (epoch1, epoch2, n_matches, temperature, visualize, matches_dir, gpu_config)
-        for epoch1, epoch2 in match_combinations
-    ]
+    # Usar generador para evitar materializar todas las combinaciones
+    def generate_match_args():
+        for epoch1, epoch2 in itertools.combinations(epochs, 2):
+            yield (epoch1, epoch2, n_matches, temperature, visualize, matches_dir, gpu_config)
 
     start_time = time.time()
     completed_matches = 0
@@ -421,71 +482,89 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
     # Ejecutar enfrentamientos en paralelo
     logger.info("🚀 Iniciando enfrentamientos en paralelo...")
 
-    with ProcessPoolExecutor(max_workers=n_workers) as executor:
-        future_to_match = {
-            executor.submit(run_match_parallel_cuda, args): args
-            for args in match_args
-        }
+    # Procesar en lotes para evitar crear demasiados futures simultáneamente
+    BATCH_SIZE = max(n_workers * 10, 100)  # Procesar en lotes de al menos 100
 
+    with ProcessPoolExecutor(max_workers=n_workers) as executor:
         # Procesar resultados con barra de progreso mejorada
-        with tqdm(total=len(future_to_match),
+        with tqdm(total=total_combinations,
                  desc="🎮 Enfrentamientos GPU",
                  unit="enfrentamiento",
                  bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]') as pbar:
 
-            for future in as_completed(future_to_match):
-                try:
-                    epoch1, epoch2, match_results, match_data = future.result()
-                    completed_matches += 1
+            # Procesar en lotes para evitar problemas de memoria
+            match_args_generator = generate_match_args()
 
-                    if match_results is None:
+            while completed_matches < total_combinations:
+                # Tomar el siguiente lote
+                batch = list(itertools.islice(match_args_generator, BATCH_SIZE))
+                if not batch:
+                    break
+
+                # Enviar el lote al executor
+                future_to_match = {
+                    executor.submit(run_match_parallel_cuda, args): args
+                    for args in batch
+                }
+
+                for future in as_completed(future_to_match):
+                    try:
+                        epoch1, epoch2, match_results, match_data = future.result()
+                        completed_matches += 1
+
+                        if match_results is None:
+                            pbar.update(1)
+                            continue
+
+                        wins_1 = match_results['P1']
+                        wins_2 = match_results['P2']
+                        draws = match_results['Empates']
+
+                        # Actualizar resultados
+                        results_df.at[epoch1, epoch2] = wins_1
+                        results_df.at[epoch2, epoch1] = wins_2
+
+                        results_df.at[epoch1, 'Victorias'] += wins_1
+                        results_df.at[epoch2, 'Victorias'] += wins_2
+                        results_df.at[epoch1, 'Derrotas'] += wins_2
+                        results_df.at[epoch2, 'Derrotas'] += wins_1
+                        results_df.at[epoch1, 'Empates'] += draws
+                        results_df.at[epoch2, 'Empates'] += draws
+
+                        results_df.at[epoch1, 'Puntos'] += (wins_1 * 3 + draws * 1)
+                        results_df.at[epoch2, 'Puntos'] += (wins_2 * 3 + draws * 1)
+
+                        matches_data.append(match_data)
+
+                        # Calcular progreso
+                        elapsed = time.time() - start_time
+                        matches_per_second = completed_matches / elapsed if elapsed > 0 else 0
+                        estimated_total = elapsed * (total_combinations / completed_matches) if completed_matches > 0 else 0
+                        remaining = estimated_total - elapsed
+
+                        # Actualizar descripción de la barra con estadísticas
+                        percentage = (completed_matches / total_combinations) * 100
+                        pbar.set_description(
+                            f"🎮 GPU [{percentage:.1f}%] - {matches_per_second:.2f} enf/s - "
+                            f"ETA: {remaining/60:.1f}min"
+                        )
+
                         pbar.update(1)
-                        continue
 
-                    wins_1 = match_results['P1']
-                    wins_2 = match_results['P2']
-                    draws = match_results['Empates']
+                        # Log detallado cada 5 enfrentamientos
+                        if completed_matches % 5 == 0:
+                            logger.info(f"⚡ Progreso: {completed_matches:,}/{total_combinations:,} ({percentage:.1f}%) | "
+                                      f"Velocidad: {matches_per_second:.2f} enf/s | "
+                                      f"Restante: {remaining/60:.1f} min")
 
-                    # Actualizar resultados
-                    results_df.at[epoch1, epoch2] = wins_1
-                    results_df.at[epoch2, epoch1] = wins_2
+                        # Guardar resultados parciales cada 1000 enfrentamientos
+                        if completed_matches % 1000 == 0:
+                            logger.info(f"💾 Guardando checkpoint en {completed_matches:,} enfrentamientos...")
+                            results_df.to_csv(f"{results_dir}/partial_results_{completed_matches}.csv")
 
-                    results_df.at[epoch1, 'Victorias'] += wins_1
-                    results_df.at[epoch2, 'Victorias'] += wins_2
-                    results_df.at[epoch1, 'Derrotas'] += wins_2
-                    results_df.at[epoch2, 'Derrotas'] += wins_1
-                    results_df.at[epoch1, 'Empates'] += draws
-                    results_df.at[epoch2, 'Empates'] += draws
-
-                    results_df.at[epoch1, 'Puntos'] += (wins_1 * 3 + draws * 1)
-                    results_df.at[epoch2, 'Puntos'] += (wins_2 * 3 + draws * 1)
-
-                    matches_data.append(match_data)
-
-                    # Calcular progreso
-                    elapsed = time.time() - start_time
-                    matches_per_second = completed_matches / elapsed if elapsed > 0 else 0
-                    estimated_total = elapsed * (total_matches / completed_matches) if completed_matches > 0 else 0
-                    remaining = estimated_total - elapsed
-
-                    # Actualizar descripción de la barra con estadísticas
-                    percentage = (completed_matches / total_matches) * 100
-                    pbar.set_description(
-                        f"🎮 GPU [{percentage:.1f}%] - {matches_per_second:.2f} enf/s - "
-                        f"ETA: {remaining/60:.1f}min"
-                    )
-
-                    pbar.update(1)
-
-                    # Log detallado cada 5 enfrentamientos
-                    if completed_matches % 5 == 0:
-                        logger.info(f"⚡ Progreso: {completed_matches}/{total_matches} ({percentage:.1f}%) | "
-                                  f"Velocidad: {matches_per_second:.2f} enf/s | "
-                                  f"Restante: {remaining/60:.1f} min")
-
-                except Exception as e:
-                    logger.error(f"Error en enfrentamiento: {e}")
-                    pbar.update(1)
+                    except Exception as e:
+                        logger.error(f"Error en enfrentamiento: {e}")
+                        pbar.update(1)
 
     # Calcular posiciones
     positions = results_df['Puntos'].rank(method='min', ascending=False)
@@ -494,14 +573,14 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
 
     # Estadísticas
     total_time = time.time() - start_time
-    time_per_match = total_time / total_matches if total_matches > 0 else 0
+    time_per_match = total_time / total_combinations if total_combinations > 0 else 0
 
     logger.info(f"\n{'='*60}")
     logger.info(f"🏆 RESULTADOS DEL TORNEO GPU")
     logger.info(f"{'='*60}")
     logger.info(f"Tiempo total: {total_time/60:.2f} minutos")
     logger.info(f"Tiempo promedio por enfrentamiento: {time_per_match:.2f} segundos")
-    logger.info(f"Velocidad: {total_matches/total_time:.2f} enfrentamientos/segundo")
+    logger.info(f"Velocidad: {total_combinations/total_time:.2f} enfrentamientos/segundo")
 
     # Tabla de posiciones
     position_table = results_df[['Victorias', 'Derrotas', 'Empates', 'Puntos', 'Posición']].sort_values('Posición')
@@ -521,7 +600,7 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
 
     # Estadísticas de rendimiento GPU
     save_gpu_performance_stats(results_dir, total_time, time_per_match, n_workers,
-                               gpu_config, cpu_info, matches_data, completed_matches, total_matches)
+                               gpu_config, cpu_info, matches_data, completed_matches, total_combinations)
 
     # Bradley-Terry
     try:
@@ -534,7 +613,7 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
     # Guardar resumen
     save_tournament_summary(tournament_dir, epochs, n_matches, temperature, total_time,
                            time_per_match, n_workers, gpu_config, position_table,
-                           champion, matches_data, total_matches, visualize)
+                           champion, matches_data, total_combinations, visualize)
 
     logger.info(f"\n✅ Resultados guardados en: {tournament_dir}")
     logger.info(f"   📊 Resultados: {results_dir}")
