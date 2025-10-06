@@ -379,10 +379,26 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
     else:
         cpu_type_str = "lógicos"
 
-    # Crear un directorio para los resultados del torneo
+    # Crear estructura de directorios organizada
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    tournament_dir = f"partidas_guardadas/tournament_parallel_{timestamp}"
+
+    # Carpeta principal de torneos paralelos
+    main_tournaments_dir = "tournaments_parallel"
+    os.makedirs(main_tournaments_dir, exist_ok=True)
+
+    # Carpeta específica para este torneo
+    tournament_dir = f"{main_tournaments_dir}/tournament_{timestamp}"
     os.makedirs(tournament_dir, exist_ok=True)
+
+    # Subcarpetas organizadas
+    results_dir = f"{tournament_dir}/results"
+    matches_dir = f"{tournament_dir}/matches"
+    vis_dir = f"{tournament_dir}/visualizations"
+
+    os.makedirs(results_dir, exist_ok=True)
+    os.makedirs(matches_dir, exist_ok=True)
+    if visualize:
+        os.makedirs(vis_dir, exist_ok=True)
 
     # Crear DataFrame para almacenar resultados
     results_df = pd.DataFrame(
@@ -408,14 +424,15 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
     logger.info(f"Iniciando torneo con {len(epochs)} agentes")
     logger.info(f"Total de enfrentamientos: {total_matches}")
     logger.info(f"Partidas por enfrentamiento: {n_matches}")
+    logger.info(f"Resultados se guardarán en: {tournament_dir}")
     if specific_cores:
         logger.info(f"Utilizando {n_workers} núcleos {cpu_type_str} {cpu_affinity_str}")
     else:
         logger.info(f"Utilizando {n_workers} núcleos {cpu_type_str}")
 
-    # Preparar argumentos para los procesos paralelos
+    # Preparar argumentos para los procesos paralelos - actualizar con matches_dir
     match_args = [
-        (epoch1, epoch2, n_matches, temperature, visualize, tournament_dir)
+        (epoch1, epoch2, n_matches, temperature, visualize, matches_dir)
         for epoch1, epoch2 in match_combinations
     ]
 
@@ -506,14 +523,10 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
 
     # Definir el campeón
     champion = position_table.index[0]
-    logger.info(f"\n¡El CAMPEÓN del torneo es el agente de la Época {champion}!")
+    logger.info(f"\n🏆 ¡El CAMPEÓN del torneo es el agente de la Época {champion}!")
 
     # Si se solicitó visualización, crear gráficos
     if visualize:
-        # Crear directorio para visualizaciones
-        vis_dir = f"{tournament_dir}/visualizations"
-        os.makedirs(vis_dir, exist_ok=True)
-
         # Graficar puntos totales
         plt.figure(figsize=(12, 6))
         plt.bar(position_table.index.astype(str), position_table['Puntos'], color='skyblue')
@@ -583,18 +596,14 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
             plt.savefig(f"{vis_dir}/match_durations.png")
             plt.close()
 
-    # Guardar resultados
-    # Tabla de posiciones
-    position_table.to_csv(f"{tournament_dir}/positions.csv")
+    # Guardar resultados en la carpeta results/
+    position_table.to_csv(f"{results_dir}/positions.csv")
+    results_df.to_csv(f"{results_dir}/full_results.csv")
+    pd.DataFrame(matches_data).to_csv(f"{results_dir}/matches_detail.csv", index=False)
 
-    # Matriz completa
-    results_df.to_csv(f"{tournament_dir}/full_results.csv")
-
-    # Detalles de enfrentamientos
-    pd.DataFrame(matches_data).to_csv(f"{tournament_dir}/matches_detail.csv", index=False)
-
-    # Guardar estadísticas de tiempo y CPU
-    with open(f"{tournament_dir}/performance_stats.txt", "w") as f:
+    # Guardar estadísticas de rendimiento
+    performance_file = f"{results_dir}/performance_stats.txt"
+    with open(performance_file, "w", encoding='utf-8') as f:
         f.write(f"Tiempo total: {total_time:.2f} segundos ({total_time/60:.2f} minutos)\n")
         f.write(f"Tiempo promedio por enfrentamiento: {time_per_match:.2f} segundos\n")
         f.write(f"Trabajadores utilizados: {n_workers}\n")
@@ -680,9 +689,9 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         else:
             logger.info(f"\n✅ Ambos sistemas de puntuación coinciden: Época {champion} es el campeón")
 
-        # Guardar resultados Bradley-Terry
-        bt_df.to_csv(f"{tournament_dir}/bradley_terry_skills.csv", index=False)
-        logger.info(f"\n💾 Tabla Bradley-Terry guardada en: {tournament_dir}/bradley_terry_skills.csv")
+        # Guardar resultados Bradley-Terry en results/
+        bt_df.to_csv(f"{results_dir}/bradley_terry_skills.csv", index=False)
+        logger.info(f"\n💾 Tabla Bradley-Terry guardada en: {results_dir}/bradley_terry_skills.csv")
 
         # Crear visualización adicional si se solicitó
         if visualize:
@@ -743,10 +752,87 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         logger.error(f"❌ Error al calcular las habilidades Bradley-Terry: {e}")
         logger.info("El torneo se completó exitosamente, pero no se pudieron calcular las habilidades Bradley-Terry.")
 
-    logger.info(f"\nResultados guardados en {tournament_dir}")
+    # Guardar resumen completo en texto
+    summary_file = f"{tournament_dir}/RESUMEN_TORNEO_PARALELO.txt"
+    with open(summary_file, 'w', encoding='utf-8') as f:
+        f.write("=" * 80 + "\n")
+        f.write("RESUMEN DEL TORNEO PARALELO\n")
+        f.write("=" * 80 + "\n\n")
+
+        # Información general
+        f.write(f"Fecha y hora: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Número de agentes: {len(epochs)}\n")
+        f.write(f"Épocas participantes: {epochs}\n")
+        f.write(f"Total de enfrentamientos: {total_matches}\n")
+        f.write(f"Partidas por enfrentamiento: {n_matches}\n")
+        f.write(f"Temperatura: {temperature}\n")
+        f.write(f"Visualización habilitada: {'Sí' if visualize else 'No'}\n")
+        f.write(f"\nParalelización:\n")
+        f.write(f"  Trabajadores: {n_workers}\n")
+        f.write(f"  Tipo de núcleos: {cpu_type_str}\n")
+        if specific_cores:
+            f.write(f"  Núcleos específicos: {','.join(map(str, specific_cores))}\n")
+        f.write(f"\nRendimiento:\n")
+        f.write(f"  Tiempo total: {total_time/60:.2f} minutos\n")
+        f.write(f"  Tiempo promedio por enfrentamiento: {time_per_match:.2f} segundos\n")
+        f.write(f"  Velocidad: {total_matches/total_time:.2f} enfrentamientos/segundo\n")
+        f.write("\n" + "=" * 80 + "\n\n")
+
+        # Clasificación final
+        f.write("🏆 TABLA DE POSICIONES\n")
+        f.write("=" * 80 + "\n\n")
+        f.write(position_table.to_string())
+        f.write("\n\n" + "=" * 80 + "\n\n")
+
+        # Campeón
+        f.write("🥇 CAMPEÓN\n")
+        f.write("=" * 80 + "\n\n")
+        f.write(f"Época {champion}\n")
+        f.write(f"  Victorias: {position_table.at[champion, 'Victorias']:.0f}\n")
+        f.write(f"  Derrotas: {position_table.at[champion, 'Derrotas']:.0f}\n")
+        f.write(f"  Empates: {position_table.at[champion, 'Empates']:.0f}\n")
+        f.write(f"  Puntos: {position_table.at[champion, 'Puntos']:.0f}\n\n")
+
+        f.write("=" * 80 + "\n\n")
+
+        # Bradley-Terry si está disponible
+        try:
+            if 'bt_df' in locals():
+                f.write("📊 HABILIDADES BRADLEY-TERRY\n")
+                f.write("=" * 80 + "\n\n")
+                f.write(bt_display.to_string(index=False))
+                f.write("\n\n" + "=" * 80 + "\n\n")
+
+                f.write(f"🏆 CAMPEÓN BRADLEY-TERRY: Época {bt_champion}\n")
+                f.write(f"  Habilidad: {bt_champion_skill:.3f}\n")
+                f.write(f"  Probabilidad promedio de victoria: {bt_champion_prob:.1f}%\n\n")
+
+                if bt_champion != champion:
+                    f.write(f"📊 NOTA: El campeón tradicional (Época {champion}) difiere del campeón Bradley-Terry (Época {bt_champion})\n\n")
+
+                f.write("=" * 80 + "\n\n")
+        except:
+            pass
+
+        # Enfrentamientos detallados
+        f.write("🎯 DETALLES DE ENFRENTAMIENTOS\n")
+        f.write("=" * 80 + "\n\n")
+        matches_df = pd.DataFrame(matches_data)
+        f.write(matches_df.to_string(index=False))
+        f.write("\n\n" + "=" * 80 + "\n")
+        f.write("Fin del resumen\n")
+        f.write("=" * 80 + "\n")
+
+    logger.info(f"\n✅ Resultados guardados exitosamente en: {tournament_dir}")
+    logger.info(f"   📁 Carpeta principal: {tournament_dir}")
+    logger.info(f"   📊 Resultados: {results_dir}")
+    logger.info(f"   🎮 Enfrentamientos: {matches_dir}")
+    if visualize:
+        logger.info(f"   📈 Visualizaciones: {vis_dir}")
+    logger.info(f"   📄 Resumen completo: {summary_file}")
+    logger.info(f"   ⚡ Estadísticas de rendimiento: {performance_file}")
 
     return results_df
-
 def get_cpu_info():
     """Obtiene información básica sobre la CPU del sistema.
 

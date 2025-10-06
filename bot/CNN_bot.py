@@ -229,10 +229,22 @@ class Quarto_bot(BotAI):
             else:
                 piece_onehot = np.zeros((1, 16), dtype=float)
 
+            # Crear tensores
+            board_tensor = torch.from_numpy(board_matrix).float()
+            piece_tensor = torch.from_numpy(piece_onehot).float()
+
+            # Mover a GPU si el modelo está en GPU
+            if hasattr(self, '_device'):
+                board_tensor = board_tensor.to(self._device)
+                piece_tensor = piece_tensor.to(self._device)
+            elif hasattr(self.model, '_device'):
+                board_tensor = board_tensor.to(self.model._device)
+                piece_tensor = piece_tensor.to(self.model._device)
+
             self.board_pos_onehot_cached, self.select_piece_onehot_cached = (
                 self.model.predict(
-                    torch.from_numpy(board_matrix).float(),
-                    torch.from_numpy(piece_onehot).float(),
+                    board_tensor,
+                    piece_tensor,
                     TEMPERATURE=self.TEMPERATURE,
                     DETERMINISTIC=self.DETERMINISTIC,
                 )
