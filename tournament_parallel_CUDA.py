@@ -200,20 +200,35 @@ def load_agent_gpu(epoch, temperature=0.5, device='cuda:0'):
     matching_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     model_path = str(matching_files[0])
 
-    # Cargar modelo en GPU
-    model = QuartoCNN()
-
     # Determinar el device correcto
     if device == 'cpu' or not CUDA_AVAILABLE:
         actual_device = torch.device('cpu')
     else:
         actual_device = torch.device(device)
+        # 🔧 LIMPIEZA PREVENTIVA: Limpiar caché CUDA antes de cargar modelo
+        torch.cuda.empty_cache()
+        # Sincronizar para asegurar que operaciones previas terminaron
+        torch.cuda.synchronize(actual_device)
 
-    # Cargar pesos y mover a GPU
-    state_dict = torch.load(model_path, map_location=actual_device)
-    model.load_state_dict(state_dict)
-    model.to(actual_device)
-    model.eval()
+    # Cargar modelo en GPU
+    model = QuartoCNN()
+
+    # 🔧 FIX: Cargar primero en CPU, luego mover a GPU para evitar problemas de memoria
+    try:
+        state_dict = torch.load(model_path, map_location='cpu')  # Siempre cargar en CPU primero
+        model.load_state_dict(state_dict)
+        model.to(actual_device)  # Luego mover a GPU
+        model.eval()
+
+        # Liberar el state_dict inmediatamente
+        del state_dict
+
+    except RuntimeError as e:
+        # Si falla, limpiar y reintentar
+        if actual_device.type == 'cuda':
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize(actual_device)
+        raise RuntimeError(f"Error cargando modelo época {epoch} en {actual_device}: {e}")
 
     # Crear bot
     bot = Quarto_bot(model=model)
@@ -224,6 +239,88 @@ def load_agent_gpu(epoch, temperature=0.5, device='cuda:0'):
     bot._device = actual_device
 
     return bot
+
+def save_checkpoint(tournament_dir, results_df, matches_data, completed_matches, total_combinations, start_time):
+    """Guarda un checkpoint del estado actual del torneo.
+    
+    Args:
+        tournament_dir (str): Directorio del torneo
+        results_df (pd.DataFrame): DataFrame con resultados actuales
+        matches_data (list): Lista de datos de enfrentamientos completados
+        completed_matches (int): Número de enfrentamientos completados
+        total_combinations (int): Total de enfrentamientos a realizar
+        start_time (float): Tiempo de inicio del torneo
+    """
+    import pickle
+    
+    checkpoint_dir = f"{tournament_dir}/checkpoints"
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    
+    checkpoint_data = {
+        'results_df': results_df,
+        'matches_data': matches_data,
+        'completed_matches': completed_matches,
+        'total_combinations': total_combinations,
+        'start_time': start_time,
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+    
+    checkpoint_file = f"{checkpoint_dir}/checkpoint_latest.pkl"
+    checkpoint_backup = f"{checkpoint_dir}/checkpoint_{completed_matches}_{total_combinations}.pkl"
+    
+    # Guardar checkpoint
+    with open(checkpoint_file, 'wb') as f:
+        pickle.dump(checkpoint_data, f)
+    
+    # Crear backup cada 10% de progreso
+    progress_pct = (completed_matches / total_combinations) * 100
+    if completed_matches % max(1, total_combinations // 10) == 0:
+        with open(checkpoint_backup, 'wb') as f:
+            pickle.dump(checkpoint_data, f)
+        logger.info(f"💾 Checkpoint guardado: {progress_pct:.1f}% completado ({completed_matches}/{total_combinations})")
+
+def load_checkpoint(tournament_dir):
+    """Carga un checkpoint previo del torneo si existe.
+    
+    Args:
+        tournament_dir (str): Directorio del torneo
+        
+    Returns:
+        dict or None: Datos del checkpoint o None si no existe
+    """
+    import pickle
+    
+    checkpoint_file = f"{tournament_dir}/checkpoints/checkpoint_latest.pkl"
+    
+    if not os.path.exists(checkpoint_file):
+        return None
+    
+    try:
+        with open(checkpoint_file, 'rb') as f:
+            checkpoint_data = pickle.load(f)
+        logger.info(f"✅ Checkpoint cargado: {checkpoint_data['completed_matches']}/{checkpoint_data['total_combinations']} enfrentamientos")
+        logger.info(f"   Guardado: {checkpoint_data['timestamp']}")
+        return checkpoint_data
+    except Exception as e:
+        logger.error(f"❌ Error cargando checkpoint: {e}")
+        return None
+
+def get_completed_matchups(matches_data):
+    """Obtiene el conjunto de enfrentamientos ya completados.
+    
+    Args:
+        matches_data (list): Lista de datos de enfrentamientos
+        
+    Returns:
+        set: Conjunto de tuplas (epoch1, epoch2) completadas
+    """
+    completed = set()
+    for match in matches_data:
+        epoch1 = match['Epoch_A']
+        epoch2 = match['Epoch_B']
+        # Normalizar para que siempre sea (menor, mayor)
+        completed.add((min(epoch1, epoch2), max(epoch1, epoch2)))
+    return completed
 
 def run_match_parallel_cuda(args):
     """Función para ejecutar un enfrentamiento usando GPU.
@@ -253,10 +350,20 @@ def run_match_parallel_cuda(args):
     match_dir = f"{matches_dir}/match_{epoch1}_vs_{epoch2}"
     os.makedirs(match_dir, exist_ok=True)
 
+    # 🔧 Variables para limpieza garantizada
+    agent1 = None
+    agent2 = None
+
     try:
         # Pequeña pausa aleatoria para evitar condiciones de carrera en GPU
         import random
         time.sleep(random.uniform(0.01, 0.1))
+
+        # 🔧 LIMPIEZA PREVENTIVA: Asegurar que GPU está en estado limpio
+        if device != 'cpu' and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            # Pequeña pausa para permitir que la GPU libere recursos
+            time.sleep(0.05)
 
         # Cargar agentes en GPU con manejo de errores mejorado
         try:
@@ -301,16 +408,6 @@ def run_match_parallel_cuda(args):
         wins_2 = match_results['P2']
         draws = match_results['Empates']
 
-        # Limpiar GPU de forma más agresiva
-        try:
-            del agent1, agent2
-            if device != 'cpu' and torch.cuda.is_available():
-                torch.cuda.empty_cache()
-                # Sincronizar GPU antes de continuar
-                torch.cuda.synchronize()
-        except Exception as cleanup_error:
-            print(f"[Proceso {process_id}] ⚠️  Error en limpieza GPU: {cleanup_error}")
-
         # Guardar datos del enfrentamiento
         match_data = {
             'Epoch1': epoch1,
@@ -338,16 +435,34 @@ def run_match_parallel_cuda(args):
         import traceback
         traceback.print_exc()
         sys.stdout.flush()
+        return epoch1, epoch2, None, None
 
-        # Asegurar limpieza de GPU incluso en caso de error
+    finally:
+        # 🔧 LIMPIEZA GARANTIZADA: Siempre se ejecuta, incluso si hay errores
         try:
+            # Eliminar referencias a los agentes y sus modelos
+            if agent1 is not None:
+                if hasattr(agent1, 'model'):
+                    del agent1.model
+                del agent1
+
+            if agent2 is not None:
+                if hasattr(agent2, 'model'):
+                    del agent2.model
+                del agent2
+
+            # Forzar recolección de basura
+            import gc
+            gc.collect()
+
+            # Limpieza agresiva de GPU
             if device != 'cpu' and torch.cuda.is_available():
                 torch.cuda.empty_cache()
+                # Sincronizar para asegurar que todas las operaciones terminaron
                 torch.cuda.synchronize()
-        except:
-            pass
 
-        return epoch1, epoch2, None, None
+        except Exception as cleanup_error:
+            print(f"[Proceso {process_id}] ⚠️  Error en limpieza final: {cleanup_error}")
 
 # Importar funciones auxiliares del tournament_parallel original
 from tournament_parallel import (
@@ -451,17 +566,40 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
     if visualize:
         os.makedirs(vis_dir, exist_ok=True)
 
-    # Crear DataFrame de resultados - optimizado para muchas épocas
-    # Usar dtype específico para ahorrar memoria
-    logger.info("Inicializando estructuras de datos...")
-    results_df = pd.DataFrame(
-        index=epochs,
-        columns=epochs + ['Victorias', 'Derrotas', 'Empates', 'Puntos', 'Posición'],
-        dtype=np.float32  # Usar float32 en lugar de float64 para ahorrar memoria
-    )
-    results_df.fillna(0, inplace=True)
+    # 💾 Intentar cargar checkpoint si existe
+    checkpoint = load_checkpoint(tournament_dir)
+    
+    if checkpoint is not None:
+        logger.info(f"\n{'='*60}")
+        logger.info(f"📦 CHECKPOINT ENCONTRADO - REANUDANDO TORNEO")
+        logger.info(f"{'='*60}")
+        results_df = checkpoint['results_df']
+        matches_data = checkpoint['matches_data']
+        completed_matches = checkpoint['completed_matches']
+        start_time = checkpoint['start_time']
+        
+        # Obtener enfrentamientos ya completados
+        completed_matchups = get_completed_matchups(matches_data)
+        
+        logger.info(f"✅ Progreso recuperado: {completed_matches}/{total_combinations} ({(completed_matches/total_combinations)*100:.1f}%)")
+        logger.info(f"   Tiempo transcurrido anterior: {(time.time() - start_time)/3600:.2f} horas")
+        logger.info(f"   Enfrentamientos restantes: {total_combinations - completed_matches}")
+        logger.info(f"{'='*60}\n")
+    else:
+        # Crear DataFrame de resultados - optimizado para muchas épocas
+        # Usar dtype específico para ahorrar memoria
+        logger.info("Inicializando estructuras de datos...")
+        results_df = pd.DataFrame(
+            index=epochs,
+            columns=epochs + ['Victorias', 'Derrotas', 'Empates', 'Puntos', 'Posición'],
+            dtype=np.float32  # Usar float32 en lugar de float64 para ahorrar memoria
+        )
+        results_df.fillna(0, inplace=True)
 
-    matches_data = []
+        matches_data = []
+        completed_matches = 0
+        completed_matchups = set()
+        start_time = time.time()
 
     # 🚀 OPTIMIZACIÓN: Generar combinaciones sin materializar en memoria
     # No usar list(), mantener como generador hasta que sea necesario
@@ -472,22 +610,29 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
 
     # Preparar argumentos para procesos paralelos
     # Usar generador para evitar materializar todas las combinaciones
+    # Saltar enfrentamientos ya completados si hay checkpoint
     def generate_match_args():
         for epoch1, epoch2 in itertools.combinations(epochs, 2):
-            yield (epoch1, epoch2, n_matches, temperature, visualize, matches_dir, gpu_config)
-
-    start_time = time.time()
-    completed_matches = 0
+            # Saltar si ya está completado
+            matchup_key = (min(epoch1, epoch2), max(epoch1, epoch2))
+            if matchup_key not in completed_matchups:
+                yield (epoch1, epoch2, n_matches, temperature, visualize, matches_dir, gpu_config)
 
     # Ejecutar enfrentamientos en paralelo
     logger.info("🚀 Iniciando enfrentamientos en paralelo...")
 
     # Procesar en lotes para evitar crear demasiados futures simultáneamente
     BATCH_SIZE = max(n_workers * 10, 100)  # Procesar en lotes de al menos 100
+    
+    # 💾 Configurar guardado automático de checkpoints
+    CHECKPOINT_INTERVAL = 100  # Guardar cada 100 enfrentamientos
+    last_checkpoint_save = completed_matches
 
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         # Procesar resultados con barra de progreso mejorada
+        # Ajustar la barra si se reanudó desde checkpoint
         with tqdm(total=total_combinations,
+                 initial=completed_matches,
                  desc="🎮 Enfrentamientos GPU",
                  unit="enfrentamiento",
                  bar_format='{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]') as pbar:
@@ -557,14 +702,28 @@ def run_tournament_parallel_cuda(epochs, n_matches=10, temperature=0.5, visualiz
                                       f"Velocidad: {matches_per_second:.2f} enf/s | "
                                       f"Restante: {remaining/60:.1f} min")
 
-                        # Guardar resultados parciales cada 1000 enfrentamientos
-                        if completed_matches % 1000 == 0:
-                            logger.info(f"💾 Guardando checkpoint en {completed_matches:,} enfrentamientos...")
-                            results_df.to_csv(f"{results_dir}/partial_results_{completed_matches}.csv")
+                        # 💾 Guardar checkpoint automático cada CHECKPOINT_INTERVAL enfrentamientos
+                        if completed_matches - last_checkpoint_save >= CHECKPOINT_INTERVAL:
+                            save_checkpoint(tournament_dir, results_df, matches_data, 
+                                          completed_matches, total_combinations, start_time)
+                            last_checkpoint_save = completed_matches
+                            
+                        # 💾 Guardar checkpoint cada hora (3600 segundos)
+                        if elapsed % 3600 < 10:  # Aprox cada hora
+                            if completed_matches - last_checkpoint_save >= 10:  # Evitar guardar múltiples veces
+                                save_checkpoint(tournament_dir, results_df, matches_data, 
+                                              completed_matches, total_combinations, start_time)
+                                last_checkpoint_save = completed_matches
+                                logger.info(f"⏰ Checkpoint automático (cada hora) - {elapsed/3600:.2f} horas transcurridas")
 
                     except Exception as e:
                         logger.error(f"Error en enfrentamiento: {e}")
                         pbar.update(1)
+
+    # 💾 Guardar checkpoint final
+    save_checkpoint(tournament_dir, results_df, matches_data, 
+                   completed_matches, total_combinations, start_time)
+    logger.info("💾 Checkpoint final guardado")
 
     # Calcular posiciones
     positions = results_df['Puntos'].rank(method='min', ascending=False)
@@ -637,6 +796,38 @@ def create_gpu_visualizations(results_df, epochs, n_matches, matches_data, vis_d
     plt.grid(axis='y', alpha=0.3)
     plt.tight_layout()
     plt.savefig(f"{vis_dir}/points_by_agent_gpu.png", dpi=300)
+    plt.close()
+
+    # Matriz de calor para enfrentamientos directos
+    plt.figure(figsize=(10, 8))
+    matchup_matrix = results_df[epochs].copy()
+
+    # Normalizar por número de partidas
+    for col in epochs:
+        matchup_matrix[col] = matchup_matrix[col] / n_matches
+
+    # Establecer la diagonal en 0 (un agente no puede jugar contra sí mismo)
+    np.fill_diagonal(matchup_matrix.values, 0.0)
+
+    plt.imshow(matchup_matrix, cmap='YlOrRd', interpolation='nearest')
+    plt.colorbar(label='Tasa de victoria')
+    plt.title('Matriz de enfrentamientos directos')
+    plt.xlabel('Oponente (época)')
+    plt.ylabel('Agente (época)')
+
+    # Configurar etiquetas de ejes
+    plt.xticks(np.arange(len(epochs)), epochs, rotation=45)
+    plt.yticks(np.arange(len(epochs)), epochs)
+
+    # Mostrar valores en las celdas
+    for i in range(len(epochs)):
+        for j in range(len(epochs)):
+            plt.text(j, i, f'{matchup_matrix.iloc[i, j]:.2f}',
+                     ha='center', va='center',
+                     color='white' if matchup_matrix.iloc[i, j] > 0.5 else 'black')
+
+    plt.tight_layout()
+    plt.savefig(f"{vis_dir}/matchup_heatmap.png")
     plt.close()
 
     # Distribución de tiempos (comparación por GPU si multi-GPU)
@@ -729,21 +920,25 @@ def compute_bradley_terry_analysis(results_df, epochs, results_dir, vis_dir, vis
     """Calcula y guarda análisis Bradley-Terry."""
     bt_skills = compute_bradley_terry_skills(results_df, epochs)
 
+    # Exponenciar las habilidades para obtener valores positivos (en lugar de log-skills)
     bt_df = pd.DataFrame({
         'Época': epochs,
-        'Habilidad_BT': [bt_skills[epoch] for epoch in epochs],
+        'Habilidad_BT': [np.exp(bt_skills[epoch]) for epoch in epochs],  # Exponenciar para valores positivos
         'Victorias': [results_df.at[epoch, 'Victorias'] for epoch in epochs],
         'Derrotas': [results_df.at[epoch, 'Derrotas'] for epoch in epochs],
         'Empates': [results_df.at[epoch, 'Empates'] for epoch in epochs]
     })
 
     # Calcular probabilidades
+    # Como ya exponenciamos bt_skills al crear el DataFrame, usamos los valores directamente
     bt_df['Prob_Victoria_Promedio'] = 0.0
     for i, epoch_i in enumerate(epochs):
         prob_sum = 0.0
+        skill_i = np.exp(bt_skills[epoch_i])  # Habilidad exponenciada de i
         for epoch_j in epochs:
             if epoch_i != epoch_j:
-                prob = np.exp(bt_skills[epoch_i]) / (np.exp(bt_skills[epoch_i]) + np.exp(bt_skills[epoch_j]))
+                skill_j = np.exp(bt_skills[epoch_j])  # Habilidad exponenciada de j
+                prob = skill_i / (skill_i + skill_j)
                 prob_sum += prob
         bt_df.at[i, 'Prob_Victoria_Promedio'] = prob_sum / (len(epochs) - 1) * 100
 
@@ -753,6 +948,61 @@ def compute_bradley_terry_analysis(results_df, epochs, results_dir, vis_dir, vis
     bt_df.to_csv(f"{results_dir}/bradley_terry_skills.csv", index=False)
 
     logger.info(f"\n📊 BRADLEY-TERRY:\n{bt_df[['Ranking_BT', 'Época', 'Habilidad_BT', 'Prob_Victoria_Promedio']].to_string(index=False)}")
+
+    # Crear visualizaciones si se solicitó
+    if visualize:
+        # Gráfico de habilidades Bradley-Terry
+        plt.figure(figsize=(12, 8))
+        colors = ['gold' if i == 0 else 'silver' if i == 1 else 'chocolate' if i == 2 else 'skyblue'
+                 for i in range(len(bt_df))]
+
+        bars = plt.bar(bt_df['Época'].astype(str), bt_df['Habilidad_BT'], color=colors, alpha=0.8)
+        plt.title('Habilidades Bradley-Terry por Época', fontsize=16, fontweight='bold')
+        plt.xlabel('Época del Agente', fontsize=12)
+        plt.ylabel('Habilidad Bradley-Terry', fontsize=12)
+        plt.xticks(rotation=45)
+        plt.grid(axis='y', alpha=0.3)
+
+        # Agregar valores en las barras
+        for i, bar in enumerate(bars):
+            height = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2., height + 0.01,
+                    f'{height:.3f}', ha='center', va='bottom', fontweight='bold')
+
+        # Agregar leyenda para los colores
+        legend_elements = [
+            plt.Rectangle((0,0),1,1, facecolor='gold', alpha=0.8, label='1º Lugar'),
+            plt.Rectangle((0,0),1,1, facecolor='silver', alpha=0.8, label='2º Lugar'),
+            plt.Rectangle((0,0),1,1, facecolor='chocolate', alpha=0.8, label='3º Lugar'),
+            plt.Rectangle((0,0),1,1, facecolor='skyblue', alpha=0.8, label='Otros')
+        ]
+        plt.legend(handles=legend_elements, loc='upper right')
+
+        plt.tight_layout()
+        plt.savefig(f"{vis_dir}/bradley_terry_skills.png", dpi=300, bbox_inches='tight')
+        plt.close()
+
+        # Gráfico comparativo: Habilidad BT vs Probabilidad de Victoria
+        plt.figure(figsize=(12, 8))
+        scatter = plt.scatter(bt_df['Habilidad_BT'], bt_df['Prob_Victoria_Promedio'],
+                            c=bt_df['Ranking_BT'], cmap='viridis_r', s=100, alpha=0.7)
+
+        # Agregar etiquetas para cada punto
+        for i, row in bt_df.iterrows():
+            plt.annotate(f"Época {row['Época']}",
+                       (row['Habilidad_BT'], row['Prob_Victoria_Promedio']),
+                       xytext=(5, 5), textcoords='offset points', fontsize=9)
+
+        plt.colorbar(scatter, label='Ranking Bradley-Terry')
+        plt.title('Habilidad Bradley-Terry vs Probabilidad de Victoria', fontsize=16, fontweight='bold')
+        plt.xlabel('Habilidad Bradley-Terry', fontsize=12)
+        plt.ylabel('Probabilidad Promedio de Victoria (%)', fontsize=12)
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(f"{vis_dir}/bt_skill_vs_probability.png", dpi=300, bbox_inches='tight')
+        plt.close()
+
+        logger.info(f"📊 Gráficos Bradley-Terry guardados en: {vis_dir}/")
 
     return {'champion': bt_df.iloc[0]['Época'], 'dataframe': bt_df}
 

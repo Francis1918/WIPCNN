@@ -559,6 +559,9 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         for col in epochs:
             matchup_matrix[col] = matchup_matrix[col] / n_matches
 
+        # Establecer la diagonal en 0 (un agente no puede jugar contra sí mismo)
+        np.fill_diagonal(matchup_matrix.values, 0.0)
+
         plt.imshow(matchup_matrix, cmap='YlOrRd', interpolation='nearest')
         plt.colorbar(label='Tasa de victoria')
         plt.title('Matriz de enfrentamientos directos')
@@ -634,22 +637,26 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
         bt_skills = compute_bradley_terry_skills(results_df, epochs)
 
         # Crear DataFrame con las habilidades Bradley-Terry
+        # Exponenciar las habilidades para obtener valores positivos (en lugar de log-skills)
         bt_df = pd.DataFrame({
             'Época': epochs,
-            'Habilidad_BT': [bt_skills[epoch] for epoch in epochs],
+            'Habilidad_BT': [np.exp(bt_skills[epoch]) for epoch in epochs],  # Exponenciar para valores positivos
             'Victorias': [results_df.at[epoch, 'Victorias'] for epoch in epochs],
             'Derrotas': [results_df.at[epoch, 'Derrotas'] for epoch in epochs],
             'Empates': [results_df.at[epoch, 'Empates'] for epoch in epochs]
         })
 
         # Calcular probabilidades de victoria promedio contra todos los oponentes
+        # Como ya exponenciamos bt_skills al crear el DataFrame, usamos los valores directamente
         bt_df['Prob_Victoria_Promedio'] = 0.0
         for i, epoch_i in enumerate(epochs):
             prob_sum = 0.0
+            skill_i = np.exp(bt_skills[epoch_i])  # Habilidad exponenciada de i
             for epoch_j in epochs:
                 if epoch_i != epoch_j:
-                    # Probabilidad de victoria usando Bradley-Terry: exp(skill_i) / (exp(skill_i) + exp(skill_j))
-                    prob_i_beats_j = np.exp(bt_skills[epoch_i]) / (np.exp(bt_skills[epoch_i]) + np.exp(bt_skills[epoch_j]))
+                    skill_j = np.exp(bt_skills[epoch_j])  # Habilidad exponenciada de j
+                    # Probabilidad de victoria usando Bradley-Terry: skill_i / (skill_i + skill_j)
+                    prob_i_beats_j = skill_i / (skill_i + skill_j)
                     prob_sum += prob_i_beats_j
             bt_df.at[i, 'Prob_Victoria_Promedio'] = prob_sum / (len(epochs) - 1)
 

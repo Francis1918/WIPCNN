@@ -232,7 +232,7 @@ class BradleyTerryELO:
         for agent1 in self.agents:
             for agent2 in self.agents:
                 if agent1 == agent2:
-                    prob_matrix.loc[agent1, agent2] = 0.5  # Empate consigo mismo
+                    prob_matrix.loc[agent1, agent2] = 0.0  # Un agente no puede jugar contra sí mismo
                 else:
                     prob_matrix.loc[agent1, agent2] = self.get_win_probability(agent1, agent2)
 
