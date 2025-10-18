@@ -4,43 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Fix bugs?">
-      <change afterPath="$PROJECT_DIR$/torneomasivo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/hierarchical-SAE.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ANALISIS_TOURNAMENT_CUDA.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/OPTIMIZACIONES_GPU_100.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_OPTIMIZACIONES_96GB.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SOLUCION_CUDA_ERROR_LARGO_PLAZO.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/a.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/a.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ac_2last_states.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/actions.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_13_vs_133_20250926_105711.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_18_vs_70_20250920_213136.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_69_vs_169_20250919_224439.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_results.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/board.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cart_p0ole.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/debugging.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/piece_map.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_collector.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/tournament_parallel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament_parallel_CUDA.py" beforeDir="false" afterPath="$PROJECT_DIR$/tournament_parallel_CUDA.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/try_collector.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/update_requirements.py" beforeDir="false" />
-    </list>
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Fix bugs?" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -67,12 +31,12 @@
     &quot;assignee&quot;: &quot;Francis1918&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Francis1918/WIPCNN.git&quot;,
-    &quot;accountId&quot;: &quot;07b78637-9552-46fc-ac6f-1019a3f65b5a&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Francis1918/WIPCNN.git",
+    "accountId": "d0e5112a-168a-47fd-85fd-92548336da59"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 6
@@ -212,7 +176,7 @@
       <workItem from="1760542238412" duration="1436000" />
       <workItem from="1760543725521" duration="1300000" />
       <workItem from="1760546486508" duration="80000" />
-      <workItem from="1760739436284" duration="3119000" />
+      <workItem from="1760739436284" duration="4153000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -382,7 +346,15 @@
       <option name="project" value="LOCAL" />
       <updated>1759786226802</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Fix bugs?">
+      <option name="closed" value="true" />
+      <created>1760757741516</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1760757741516</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
