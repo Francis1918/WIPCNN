@@ -5,26 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Fix bugs?">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_CONSOLIDATED.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_DETALLADO.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/REORGANIZACION_PROYECTO.md" beforeDir="false" afterPath="$PROJECT_DIR$/REORGANIZACION_PROYECTO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/REPORTE_ANALISIS_ARCHIVOS_INNECESARIOS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/auto_checkpoint_monitor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/check_cuda.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cleanup_project.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/compare_agents.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/comprehensive_cleanup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/epoch_group_monitor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run_checkpoint_monitor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup_dependencies.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament_bracket.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament_parallel.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament_parallel_CUDA.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournament_parallel_massive.py" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/script para comparar entre agentes" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -198,7 +179,7 @@
       <workItem from="1760542238412" duration="1436000" />
       <workItem from="1760543725521" duration="1300000" />
       <workItem from="1760546486508" duration="80000" />
-      <workItem from="1760739436284" duration="5563000" />
+      <workItem from="1760739436284" duration="5941000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -384,7 +365,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760757867662</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="Fix bugs?">
+      <option name="closed" value="true" />
+      <created>1760759378025</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1760759378025</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
