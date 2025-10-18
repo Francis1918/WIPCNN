@@ -1,6 +1,6 @@
 # Hierarchical-SAE - Documentación Consolidada
 
-**Generado automáticamente:** 2025-10-18 13:03:39
+**Generado automáticamente:** 2025-10-18 13:55:25
 
 **Nota:** Esta documentación consolida todos los archivos README del proyecto.
 
