@@ -7,7 +7,6 @@ numpy
 scipy
 pandas
 tabulate
-pandas
 python-dotenv
 tensordict
 torch

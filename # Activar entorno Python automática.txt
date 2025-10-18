@@ -1,0 +1,7 @@
+# Activar entorno Python automáticamente al entrar a la carpeta del proyecto
+$projectPath = "C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\hierarchical-SAE"
+if (Test-Path "$projectPath\.venv\Scripts\Activate.ps1") {
+    Set-Location $projectPath
+    . "$projectPath\.venv\Scripts\Activate.ps1"
+    Write-Host "✅ Entorno .venv activado automáticamente en $projectPath"
+}

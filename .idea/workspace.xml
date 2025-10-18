@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Fix bugs?">
+      <change afterPath="$PROJECT_DIR$/torneomasivo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/hierarchical-SAE.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ANALISIS_TOURNAMENT_CUDA.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/OPTIMIZACIONES_GPU_100.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README_OPTIMIZACIONES_96GB.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SOLUCION_CUDA_ERROR_LARGO_PLAZO.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/a.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/a.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ac_2last_states.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/actions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_13_vs_133_20250926_105711.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_18_vs_70_20250920_213136.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_69_vs_169_20250919_224439.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/agent_comparisons/comparison_results.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/board.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cart_p0ole.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/debugging.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/img.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/piece_map.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_collector.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tournament_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/tournament_parallel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tournament_parallel_CUDA.py" beforeDir="false" afterPath="$PROJECT_DIR$/tournament_parallel_CUDA.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/try_collector.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/update_requirements.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="Legacy" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Francis1918&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Francis1918/WIPCNN.git&quot;,
+    &quot;accountId&quot;: &quot;07b78637-9552-46fc-ac6f-1019a3f65b5a&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="32eIQIFuGQEGm2ZK7Rf0d1dWHen" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python.CNN1.executor": "Run",
+    "Python.CNN_bot.executor": "Run",
+    "Python.NN_abstract.executor": "Run",
+    "Python.RL_functions.executor": "Run",
+    "Python.a.executor": "Run",
+    "Python.actions.executor": "Run",
+    "Python.auto_checkpoint_monitor.executor": "Run",
+    "Python.cart_p0ole.executor": "Run",
+    "Python.check_cuda.executor": "Run",
+    "Python.cleanup_project.executor": "Run",
+    "Python.compare_agents.executor": "Run",
+    "Python.comprehensive_cleanup.executor": "Run",
+    "Python.contest.executor": "Run",
+    "Python.debugging.executor": "Run",
+    "Python.epoch_group_monitor.executor": "Run",
+    "Python.format_matches.executor": "Run",
+    "Python.human.executor": "Run",
+    "Python.install_pytorch_cuda.executor": "Run",
+    "Python.install_pytorch_direct.executor": "Run",
+    "Python.model_evaluator.executor": "Run",
+    "Python.random_bot.executor": "Run",
+    "Python.run_checkpoint_monitor.executor": "Run",
+    "Python.run_trainRL.executor": "Run",
+    "Python.setup_dependencies.executor": "Run",
+    "Python.test_collector.executor": "Run",
+    "Python.torneomasivo.executor": "Run",
+    "Python.tournament.executor": "Run",
+    "Python.tournament_bracket.executor": "Run",
+    "Python.tournament_parallel.executor": "Run",
+    "Python.tournament_parallel_CUDA.executor": "Run",
+    "Python.tournament_parallel_CUDA_BACKUP.executor": "Run",
+    "Python.tournament_parallel_massive.executor": "Run",
+    "Python.trainRL.executor": "Run",
+    "Python.trainRL_resume.executor": "Run",
+    "Python.try_collector.executor": "Run",
+    "Python.update_requirements.executor": "Run",
+    "Python.view_training.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/bravo/Documents/Metodos Numericos Pycharm/Mech Interp/hierarchical-SAE",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-PY-252.26830.99" />
+        <option value="bundled-python-sdk-164cda30dcd9-0af03a5fa574-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.26830.99" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="" />
+      <created>1757774595763</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1757774595763</updated>
+      <workItem from="1757774597144" duration="906000" />
+      <workItem from="1757776351942" duration="1302000" />
+      <workItem from="1757870068798" duration="631000" />
+      <workItem from="1757870786275" duration="2633000" />
+      <workItem from="1757873939186" duration="658000" />
+      <workItem from="1757874932003" duration="11183000" />
+      <workItem from="1757937158791" duration="653000" />
+      <workItem from="1758198089976" duration="11207000" />
+      <workItem from="1758230797954" duration="14243000" />
+      <workItem from="1758253609408" duration="2968000" />
+      <workItem from="1758283717012" duration="3346000" />
+      <workItem from="1758297878497" duration="10623000" />
+      <workItem from="1758419391573" duration="8818000" />
+      <workItem from="1758723041715" duration="1078000" />
+      <workItem from="1758806605651" duration="2104000" />
+      <workItem from="1758808787045" duration="34000" />
+      <workItem from="1758808841550" duration="3070000" />
+      <workItem from="1758814213779" duration="1825000" />
+      <workItem from="1758816472916" duration="237000" />
+      <workItem from="1758822428365" duration="146000" />
+      <workItem from="1758901485537" duration="2121000" />
+      <workItem from="1758943321139" duration="2722000" />
+      <workItem from="1759426676356" duration="227000" />
+      <workItem from="1759510277250" duration="627000" />
+      <workItem from="1759683521628" duration="3774000" />
+      <workItem from="1759692679220" duration="31000" />
+      <workItem from="1759692726606" duration="15510000" />
+      <workItem from="1759785097764" duration="6720000" />
+      <workItem from="1759794113778" duration="399000" />
+      <workItem from="1759795521931" duration="29000" />
+      <workItem from="1759795943055" duration="4000" />
+      <workItem from="1759797628075" duration="4000" />
+      <workItem from="1759797679855" duration="38000" />
+      <workItem from="1759800776340" duration="304000" />
+      <workItem from="1759801241854" duration="812000" />
+      <workItem from="1759803824884" duration="369000" />
+      <workItem from="1760372867316" duration="102000" />
+      <workItem from="1760392063894" duration="5278000" />
+      <workItem from="1760397421105" duration="307000" />
+      <workItem from="1760398562480" duration="3964000" />
+      <workItem from="1760404057413" duration="110000" />
+      <workItem from="1760404194428" duration="92000" />
+      <workItem from="1760404304825" duration="131000" />
+      <workItem from="1760404455076" duration="367000" />
+      <workItem from="1760404843037" duration="103000" />
+      <workItem from="1760405001134" duration="301000" />
+      <workItem from="1760405446496" duration="1000" />
+      <workItem from="1760405609793" duration="5478000" />
+      <workItem from="1760452132823" duration="2834000" />
+      <workItem from="1760458107423" duration="2837000" />
+      <workItem from="1760537034327" duration="650000" />
+      <workItem from="1760540567306" duration="22000" />
+      <workItem from="1760540597741" duration="1430000" />
+      <workItem from="1760542238412" duration="1436000" />
+      <workItem from="1760543725521" duration="1300000" />
+      <workItem from="1760546486508" duration="80000" />
+      <workItem from="1760739436284" duration="3119000" />
+    </task>
+    <task id="LOCAL-00001" summary="CNN version 1 fase beta">
+      <option name="closed" value="true" />
+      <created>1758231152369</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1758231152369</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Redme del proyecto bien detallado para saber que tiene">
+      <option name="closed" value="true" />
+      <created>1758232059227</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1758232059227</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Reparando errores menores">
+      <option name="closed" value="true" />
+      <created>1758235482020</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1758235482020</updated>
+    </task>
+    <task id="LOCAL-00004" summary="estable el codigo">
+      <option name="closed" value="true" />
+      <created>1758239040429</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1758239040429</updated>
+    </task>
+    <task id="LOCAL-00005" summary="estable el codigo">
+      <option name="closed" value="true" />
+      <created>1758247027496</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1758247027496</updated>
+    </task>
+    <task id="LOCAL-00006" summary="estable el codigo">
+      <option name="closed" value="true" />
+      <created>1758247033057</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1758247033057</updated>
+    </task>
+    <task id="LOCAL-00007" summary="estable el codigo">
+      <option name="closed" value="true" />
+      <created>1758247252411</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1758247252411</updated>
+    </task>
+    <task id="LOCAL-00008" summary="modificacion del readme antes de los enfrentamientos entre los agentes">
+      <option name="closed" value="true" />
+      <created>1758254392137</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1758254392137</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Ultimos ajustes">
+      <option name="closed" value="true" />
+      <created>1758291525752</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1758291525752</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Peleas entre todos y que gane el mejor, Secuencial y Multiprocesamiento">
+      <option name="closed" value="true" />
+      <created>1758419455527</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1758419455527</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Update readme">
+      <option name="closed" value="true" />
+      <created>1758421607467</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1758421607467</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Ajustes del torneo">
+      <option name="closed" value="true" />
+      <created>1758422791809</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1758422791809</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Ajustes del torneo">
+      <option name="closed" value="true" />
+      <created>1758422805455</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1758422805455</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Ajustes del torneo e implementaciones adicionales">
+      <option name="closed" value="true" />
+      <created>1758424345445</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1758424345445</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Correcciones menores">
+      <option name="closed" value="true" />
+      <created>1758424415541</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1758424415541</updated>
+    </task>
+    <task id="LOCAL-00016" summary="referencia de torneo tradicional">
+      <option name="closed" value="true" />
+      <created>1758424434976</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1758424434976</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Ultimas modificaciones antes de la actualizacion Quarto v1.1">
+      <option name="closed" value="true" />
+      <created>1758943439318</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1758943439318</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Mejoras en el trainRL_resume.py este inicia dessde la ultima epoca entrenada">
+      <option name="closed" value="true" />
+      <created>1759695372542</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1759695372542</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Modificaciones en el cambio de ubicaicon de las partidas en el torneo secuencial.">
+      <option name="closed" value="true" />
+      <created>1759696182830</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1759696182830</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Implementacion del torneo Paralelo con cuda.">
+      <option name="closed" value="true" />
+      <created>1759713446941</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1759713446941</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Implementacion del torneo Paralelo con cuda.">
+      <option name="closed" value="true" />
+      <created>1759786226802</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1759786226802</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="CNN version 1 fase beta" />
+    <MESSAGE value="Redme del proyecto bien detallado para saber que tiene" />
+    <MESSAGE value="Reparando errores menores" />
+    <MESSAGE value="estable el codigo" />
+    <MESSAGE value="modificacion del readme antes de los enfrentamientos entre los agentes" />
+    <MESSAGE value="Ultimos ajustes" />
+    <MESSAGE value="Peleas entre todos y que gane el mejor, Secuencial y Multiprocesamiento" />
+    <MESSAGE value="Update readme" />
+    <MESSAGE value="Ajustes del torneo" />
+    <MESSAGE value="Ajustes del torneo e implementaciones adicionales" />
+    <MESSAGE value="Correcciones menores" />
+    <MESSAGE value="referencia de torneo tradicional" />
+    <MESSAGE value="Ultimas modificaciones antes de la actualizacion Quarto v1.1" />
+    <MESSAGE value="Mejoras en el trainRL_resume.py este inicia dessde la ultima epoca entrenada" />
+    <MESSAGE value="Modificaciones en el cambio de ubicaicon de las partidas en el torneo secuencial." />
+    <MESSAGE value="Implementacion del torneo Paralelo con cuda." />
+    <MESSAGE value="Fix bugs?" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix bugs?" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/cleanup_project.py</url>
+          <line>5</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$update_requirements.coverage" NAME="update_requirements Coverage Results" MODIFIED="1760392975350" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1758246603059" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$model_evaluator.coverage" NAME="model_evaluator Coverage Results" MODIFIED="1758246318963" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/checkpoint_monitor" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$epoch_group_monitor.coverage" NAME="epoch_group_monitor Coverage Results" MODIFIED="1758246903852" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_massive.coverage" NAME="tournament_parallel_massive Coverage Results" MODIFIED="1760407336837" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$human.coverage" NAME="human Coverage Results" MODIFIED="1758233889823" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_bracket.coverage" NAME="tournament_bracket Coverage Results" MODIFIED="1758424068865" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$CNN_bot.coverage" NAME="CNN_bot Coverage Results" MODIFIED="1759709911351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$run_checkpoint_monitor.coverage" NAME="run_checkpoint_monitor Coverage Results" MODIFIED="1758291225185" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents.coverage" NAME="compare_agents Coverage Results" MODIFIED="1758424283579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$setup_dependencies.coverage" NAME="setup_dependencies Coverage Results" MODIFIED="1758291236492" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA_BACKUP.coverage" NAME="tournament_parallel_CUDA_BACKUP Coverage Results" MODIFIED="1759787714191" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$install_pytorch_cuda.coverage" NAME="install_pytorch_cuda Coverage Results" MODIFIED="1760402930067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$torneomasivo.coverage" NAME="torneomasivo Coverage Results" MODIFIED="1760410551181" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$contest.coverage" NAME="contest Coverage Results" MODIFIED="1758233934773" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/QuartoRL" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$debugging.coverage" NAME="debugging Coverage Results" MODIFIED="1758234337640" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$install_pytorch_direct.coverage" NAME="install_pytorch_direct Coverage Results" MODIFIED="1760403722478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$CNN1.coverage" NAME="CNN1 Coverage Results" MODIFIED="1758233907534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel.coverage" NAME="tournament_parallel Coverage Results" MODIFIED="1760406111244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_resume.coverage" NAME="trainRL_resume Coverage Results" MODIFIED="1760398678993" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$run_trainRL.coverage" NAME="run_trainRL Coverage Results" MODIFIED="1757872869125" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$RL_functions.coverage" NAME="RL_functions Coverage Results" MODIFIED="1758233942203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/QuartoRL" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL.coverage" NAME="trainRL Coverage Results" MODIFIED="1760398566947" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$view_training.coverage" NAME="view_training Coverage Results" MODIFIED="1758233966222" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$try_collector.coverage" NAME="try_collector Coverage Results" MODIFIED="1758291202275" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament.coverage" NAME="tournament Coverage Results" MODIFIED="1759696369722" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$format_matches.coverage" NAME="format_matches Coverage Results" MODIFIED="1758233952793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$a.coverage" NAME="a Coverage Results" MODIFIED="1758234105806" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$cart_p0ole.coverage" NAME="cart_p0ole Coverage Results" MODIFIED="1758291305002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$comprehensive_cleanup.coverage" NAME="comprehensive_cleanup Coverage Results" MODIFIED="1760754541104" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$actions.coverage" NAME="actions Coverage Results" MODIFIED="1758291278846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$NN_abstract.coverage" NAME="NN_abstract Coverage Results" MODIFIED="1758233914442" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA.coverage" NAME="tournament_parallel_CUDA Coverage Results" MODIFIED="1760404521687" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$test_collector.coverage" NAME="test_collector Coverage Results" MODIFIED="1758234354253" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$random_bot.coverage" NAME="random_bot Coverage Results" MODIFIED="1758233895688" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$check_cuda.coverage" NAME="check_cuda Coverage Results" MODIFIED="1760405223598" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$cleanup_project.coverage" NAME="cleanup_project Coverage Results" MODIFIED="1760753390445" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>

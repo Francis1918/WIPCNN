@@ -316,8 +316,9 @@ def get_completed_matchups(matches_data):
     """
     completed = set()
     for match in matches_data:
-        epoch1 = match['Epoch_A']
-        epoch2 = match['Epoch_B']
+        # 🔧 FIX: Las claves correctas son 'Epoch1' y 'Epoch2', no 'Epoch_A' y 'Epoch_B'
+        epoch1 = match['Epoch1']
+        epoch2 = match['Epoch2']
         # Normalizar para que siempre sea (menor, mayor)
         completed.add((min(epoch1, epoch2), max(epoch1, epoch2)))
     return completed

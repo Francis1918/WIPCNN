@@ -382,12 +382,13 @@ def run_tournament_parallel(epochs, n_matches=10, temperature=0.5, visualize=Fal
     # Crear estructura de directorios organizada
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # Carpeta principal de torneos paralelos
-    main_tournaments_dir = "tournaments_parallel"
-    os.makedirs(main_tournaments_dir, exist_ok=True)
+    # Carpeta principal con el nombre del programa
+    program_name = Path(__file__).stem  # Obtiene 'tournament_parallel' del nombre del archivo
+    main_program_dir = program_name
+    os.makedirs(main_program_dir, exist_ok=True)
 
     # Carpeta específica para este torneo
-    tournament_dir = f"{main_tournaments_dir}/tournament_{timestamp}"
+    tournament_dir = f"{main_program_dir}/tournament_{timestamp}"
     os.makedirs(tournament_dir, exist_ok=True)
 
     # Subcarpetas organizadas
