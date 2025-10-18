@@ -193,7 +193,7 @@
       <workItem from="1760546486508" duration="80000" />
       <workItem from="1760739436284" duration="7284000" />
       <workItem from="1760795014790" duration="3196000" />
-      <workItem from="1760805947641" duration="7548000" />
+      <workItem from="1760805947641" duration="8935000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -459,7 +459,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760814836123</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="WIP implementaciones de una arquitectrura flexible para el entrenamiento">
+      <option name="closed" value="true" />
+      <created>1760815309777</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1760815309777</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -510,7 +518,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$run_checkpoint_monitor.coverage" NAME="run_checkpoint_monitor Coverage Results" MODIFIED="1760810647424" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents.coverage" NAME="compare_agents Coverage Results" MODIFIED="1758424283579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA_BACKUP.coverage" NAME="tournament_parallel_CUDA_BACKUP Coverage Results" MODIFIED="1759787714191" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$setup_dependencies.coverage" NAME="setup_dependencies Coverage Results" MODIFIED="1760812237053" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$setup_dependencies.coverage" NAME="setup_dependencies Coverage Results" MODIFIED="1760821506824" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$install_requirements.coverage" NAME="install_requirements Coverage Results" MODIFIED="1760810464254" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/install" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$install_pytorch_cuda.coverage" NAME="install_pytorch_cuda Coverage Results" MODIFIED="1760402930067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$visualize.coverage" NAME="visualize Coverage Results" MODIFIED="1760810451247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/checkpoint_monitor" />
@@ -539,7 +547,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA.coverage" NAME="tournament_parallel_CUDA Coverage Results" MODIFIED="1760404521687" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$test_collector.coverage" NAME="test_collector Coverage Results" MODIFIED="1758234354253" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$test_compare_agents.coverage" NAME="test_compare_agents Coverage Results" MODIFIED="1760814910389" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents_external.coverage" NAME="compare_agents_external Coverage Results" MODIFIED="1760815160391" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents_external.coverage" NAME="compare_agents_external Coverage Results" MODIFIED="1760821572793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$random_bot.coverage" NAME="random_bot Coverage Results" MODIFIED="1760810342154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$check_cuda.coverage" NAME="check_cuda Coverage Results" MODIFIED="1760810594643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$cleanup_project.coverage" NAME="cleanup_project Coverage Results" MODIFIED="1760810609243" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
