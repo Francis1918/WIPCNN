@@ -78,7 +78,13 @@ class CleanupManager:
         timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = f"[{timestamp_str}] {message}"
         
-        print(message)
+        # Imprimir con manejo de errores de codificación
+        try:
+            print(message)
+        except UnicodeEncodeError:
+            # Reemplazar caracteres problemáticos para Windows
+            safe_message = message.encode('ascii', 'replace').decode('ascii')
+            print(safe_message)
         
         if not self.dry_run:
             target_log = self.errors_log if is_error else self.log_file
@@ -165,7 +171,7 @@ class CleanupManager:
             
             self.stats['moved'] += 1
             self.stats['total_size'] += file_size
-            self.log(f"✓ [{dest_category}] Movido: {source.relative_to(PROJECT_DIR)}")
+            self.log(f"[OK] [{dest_category}] Movido: {source.relative_to(PROJECT_DIR)}")
             return True, "OK"
             
         except Exception as e:
@@ -199,7 +205,7 @@ class CleanupManager:
             
             self.stats['moved'] += 1
             self.stats['total_size'] += dir_size
-            self.log(f"✓ [{dest_category}] Movido directorio: {source.relative_to(PROJECT_DIR)}/")
+            self.log(f"[OK] [{dest_category}] Movido directorio: {source.relative_to(PROJECT_DIR)}/")
             return True, "OK"
             
         except Exception as e:
@@ -218,7 +224,7 @@ class CleanupManager:
                 else:
                     try:
                         shutil.rmtree(pycache_path)
-                        self.log(f"✓ [CACHE] Eliminado: {pycache_path.relative_to(PROJECT_DIR)}")
+                        self.log(f"[OK] [CACHE] Eliminado: {pycache_path.relative_to(PROJECT_DIR)}")
                         removed_count += 1
                     except Exception as e:
                         self.log(f"✗ [CACHE] Error eliminando {pycache_path}: {e}", is_error=True)
@@ -473,7 +479,7 @@ class CleanupManager:
             else:
                 try:
                     pyc_file.unlink()
-                    self.log(f"✓ [CACHE] Eliminado: {pyc_file.relative_to(PROJECT_DIR)}")
+                    self.log(f"[OK] [CACHE] Eliminado: {pyc_file.relative_to(PROJECT_DIR)}")
                     self.stats['moved'] += 1
                 except Exception as e:
                     self.log(f"✗ [CACHE] Error eliminando {pyc_file}: {e}", is_error=True)
@@ -545,18 +551,18 @@ class CleanupManager:
                     consolidated_content.append(content)
                     consolidated_content.append("\n---\n")
                     
-                    self.log(f"✓ Incorporado: {filename}")
+                    self.log(f"[OK] Incorporado: {filename}")
                 except Exception as e:
-                    self.log(f"✗ Error leyendo {filename}: {e}", is_error=True)
+                    self.log(f"[ERROR] Error leyendo {filename}: {e}", is_error=True)
         
         # Guardar documentación consolidada
         consolidated_file = PROJECT_DIR / "README_CONSOLIDATED.md"
         try:
             with open(consolidated_file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(consolidated_content))
-            self.log(f"✓ Documentación consolidada guardada en: {consolidated_file.name}")
+            self.log(f"[OK] Documentacion consolidada guardada en: {consolidated_file.name}")
         except Exception as e:
-            self.log(f"✗ Error guardando documentación consolidada: {e}", is_error=True)
+            self.log(f"[ERROR] Error guardando documentacion consolidada: {e}", is_error=True)
     
     def save_manifest(self):
         """Guarda el manifest de archivos movidos"""
@@ -564,9 +570,9 @@ class CleanupManager:
             try:
                 with open(self.manifest_file, 'w', encoding='utf-8') as f:
                     json.dump(self.manifest_data, f, indent=2, ensure_ascii=False)
-                self.log(f"\n✓ Manifest guardado en: {self.manifest_file}")
+                self.log(f"\n[OK] Manifest guardado en: {self.manifest_file}")
             except Exception as e:
-                self.log(f"✗ Error guardando manifest: {e}", is_error=True)
+                self.log(f"[ERROR] Error guardando manifest: {e}", is_error=True)
     
     def generate_summary(self):
         """Genera un resumen de la limpieza"""
@@ -618,7 +624,7 @@ class CleanupManager:
                         files = [i for i in items if i.is_file()]
                         f.write(f"  - {cat_name}: {len(files)} archivos\n")
             
-            self.log(f"\n✓ Resumen guardado en: {summary_file}")
+            self.log(f"\n[OK] Resumen guardado en: {summary_file}")
     
     def run(self):
         """Ejecuta el proceso completo de limpieza"""
@@ -659,7 +665,7 @@ class CleanupManager:
         # Generar resumen
         self.generate_summary()
         
-        self.log("\n✅ Limpieza completada!")
+        self.log("\n[COMPLETADO] Limpieza completada!")
 
 
 def main():
@@ -720,14 +726,19 @@ def main():
             return
         elif response == 'dry-run':
             manager.dry_run = True
-            print("\n✓ Modo DRY-RUN activado")
+            print("\n[OK] Modo DRY-RUN activado")
         elif response == '':
             # ENTER presionado - continuar con la ejecución normal
-            print("\n✓ Continuando con la limpieza...")
+            print("\n[OK] Continuando con la limpieza...")
         else:
             print(f"\n⚠️  Opción no reconocida: '{response}'. Continuando de todas formas...")
     
     # Ejecutar limpieza
+    manager.run()
+
+
+if __name__ == "__main__":
+    main()    # Ejecutar limpieza
     manager.run()
 
 
