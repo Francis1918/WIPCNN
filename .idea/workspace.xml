@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Fix bugs?">
-      <change beforePath="$PROJECT_DIR$/# Activar entorno Python automática.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/REORGANIZACION_PROYECTO.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/checkpoint_monitor/monitor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/auto_checkpoint_monitor.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/run_checkpoint_monitor.py" beforeDir="false" />
-    </list>
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Fix bugs?" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,6 +18,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Francis19 &lt;9alemanbravo@gmail.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
         <entry key="$PROJECT_DIR$" value="Legacy" />
@@ -191,7 +189,7 @@
       <workItem from="1760546486508" duration="80000" />
       <workItem from="1760739436284" duration="7284000" />
       <workItem from="1760795014790" duration="3196000" />
-      <workItem from="1760805947641" duration="3204000" />
+      <workItem from="1760805947641" duration="3509000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -409,7 +407,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760810307118</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="Fix bugs?">
+      <option name="closed" value="true" />
+      <created>1760810906850</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1760810906850</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Fix bugs?">
+      <option name="closed" value="true" />
+      <created>1760811121325</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1760811121325</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
