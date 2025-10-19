@@ -35,6 +35,13 @@ torch.manual_seed(50)
 EXPERIMENT_NAME = "improved_training"
 
 # ===========================
+# TRAINING DATA DIRECTORY
+# ===========================
+TRAINING_DATA_DIR = Path(r"C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\Entrenamiento")
+TRAINING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+logger.info(f"Training data will be saved to: {TRAINING_DATA_DIR}")
+
+# ===========================
 # IMPROVED HYPERPARAMETERS
 # ===========================
 
@@ -141,16 +148,17 @@ class TrainingMetrics:
         self.metrics['exploration_temp'].append(exploration_temp if exploration_temp is not None else 0)
         self.metrics['replay_buffer_size'].append(buffer_size if buffer_size is not None else 0)
         
-    def save_metrics(self):
+    def save_metrics(self, training_dir):
         """Save metrics to pickle file"""
-        metrics_file = f"{self.experiment_name}_metrics.pkl"
+        metrics_file = training_dir / f"{self.experiment_name}_metrics.pkl"
         with open(metrics_file, 'wb') as f:
             pickle.dump(self.metrics, f)
         logger.info(f"Metrics saved to {metrics_file}")
         
-    def create_bokeh_visualization(self):
+    def create_bokeh_visualization(self, training_dir):
         """Create comprehensive Bokeh visualization"""
-        output_file(f"{self.experiment_name}_training_metrics.html")
+        html_file = training_dir / f"{self.experiment_name}_training_metrics.html"
+        output_file(str(html_file))
         
         # Create figures
         p1 = figure(title="Training Loss", x_axis_label='Epoch', y_axis_label='Loss',
@@ -196,7 +204,7 @@ class TrainingMetrics:
         # Combine all plots
         layout = column(p1, p2, p3, p4, p5, p6)
         save(layout)
-        logger.info(f"Bokeh visualization saved to {self.experiment_name}_training_metrics.html")
+        logger.info(f"Bokeh visualization saved to {html_file}")
 
 # ===========================
 # CHECKPOINT MANAGEMENT
@@ -236,9 +244,9 @@ def find_latest_checkpoint(experiment_name: str) -> tuple[int, str | None]:
     return latest_epoch, latest_file
 
 
-def load_epochs_results(experiment_name: str) -> list:
+def load_epochs_results(experiment_name: str, training_dir: Path) -> list:
     """Load the epochs results from pickle file."""
-    results_file = Path(f"{experiment_name}.pkl")
+    results_file = training_dir / f"{experiment_name}.pkl"
     
     if results_file.exists():
         try:
@@ -332,7 +340,7 @@ if latest_checkpoint is not None:
     policy_net.load_state_dict(torch.load(latest_checkpoint))
     target_net.load_state_dict(policy_net.state_dict())
     
-    epochs_results = load_epochs_results(EXPERIMENT_NAME)
+    epochs_results = load_epochs_results(EXPERIMENT_NAME, TRAINING_DATA_DIR)
     checkpoints_files = get_all_checkpoints(EXPERIMENT_NAME)
     
     start_epoch = latest_epoch + 1
@@ -557,7 +565,8 @@ for e in tqdm(
     logger.info(pprint.pformat(contest_results))
     
     epochs_results.append(dict(contest_results))
-    with open(f"{EXPERIMENT_NAME}.pkl", "wb") as f:
+    results_file = TRAINING_DATA_DIR / f"{EXPERIMENT_NAME}.pkl"
+    with open(results_file, "wb") as f:
         pickle.dump(epochs_results, f)
     
     # Calculate win rate
@@ -581,8 +590,8 @@ for e in tqdm(
     
     # Save metrics periodically
     if (e + 1) % 10 == 0:
-        metrics_tracker.save_metrics()
-        metrics_tracker.create_bokeh_visualization()
+        metrics_tracker.save_metrics(TRAINING_DATA_DIR)
+        metrics_tracker.create_bokeh_visualization(TRAINING_DATA_DIR)
     
     # Update learning rate
     scheduler.step()
@@ -591,7 +600,7 @@ for e in tqdm(
 logger.info("Training completed.")
 
 # Final metrics save and visualization
-metrics_tracker.save_metrics()
-metrics_tracker.create_bokeh_visualization()
+metrics_tracker.save_metrics(TRAINING_DATA_DIR)
+metrics_tracker.create_bokeh_visualization(TRAINING_DATA_DIR)
 
-logger.info(f"Training metrics visualization saved to {EXPERIMENT_NAME}_training_metrics.html")
+logger.info(f"Training metrics visualization saved to {TRAINING_DATA_DIR / f'{EXPERIMENT_NAME}_training_metrics.html'}")
