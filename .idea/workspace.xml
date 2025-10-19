@@ -4,23 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento">
-      <change beforePath="$PROJECT_DIR$/.idea/hierarchical-SAE.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hierarchical-SAE.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MEJORAS_ENTRENAMIENTO.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QuartoRL/RL_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/QuartoRL/RL_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_TRAINING_IMPROVEMENTS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README_compare_agents.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/codigo de comparacion como referencia" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_compare_agents.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournaments/compare_agents.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournaments/torneomasivo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tournaments/tournament_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/tournaments/tournament_parallel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainRL.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainRL_improved.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL_improved.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainRL_resume.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL_resume.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainRL_resume_improved.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL_resume_improved.py" afterDir="false" />
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Bug fixes?">
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_083645/checkpoint.pkl.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_083645/results/positions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_083645/results/wins_matrix.pkl.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090624/checkpoint.pkl.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090624/results/positions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090624/results/wins_matrix.pkl.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090918/checkpoint.pkl.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090918/results/positions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090918/results/wins_matrix.pkl.gz" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -213,7 +206,7 @@
       <workItem from="1760805947641" duration="15520000" />
       <workItem from="1760833748769" duration="325000" />
       <workItem from="1760880351997" duration="188000" />
-      <workItem from="1760912018314" duration="832000" />
+      <workItem from="1760912018314" duration="2662000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -519,7 +512,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760832145717</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="Bug fixes?">
+      <option name="closed" value="true" />
+      <created>1760913075224</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1760913075224</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Bug fixes?">
+      <option name="closed" value="true" />
+      <created>1760914073287</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1760914073287</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -558,7 +567,8 @@
     <MESSAGE value="WIP implementaciones de una arquitectrura flexible para el entrenamiento" />
     <MESSAGE value="implementaciones de una arquitectrura flexible para el test entre agentes distintos" />
     <MESSAGE value="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento" />
-    <option name="LAST_COMMIT_MESSAGE" value="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento" />
+    <MESSAGE value="Bug fixes?" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bug fixes?" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$update_requirements.coverage" NAME="update_requirements Coverage Results" MODIFIED="1760392975350" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -602,7 +612,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA.coverage" NAME="tournament_parallel_CUDA Coverage Results" MODIFIED="1760404521687" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$test_collector.coverage" NAME="test_collector Coverage Results" MODIFIED="1758234354253" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$test_compare_agents.coverage" NAME="test_compare_agents Coverage Results" MODIFIED="1760823411784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents_external.coverage" NAME="compare_agents_external Coverage Results" MODIFIED="1760912836621" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents_external.coverage" NAME="compare_agents_external Coverage Results" MODIFIED="1760914835754" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_improved.coverage" NAME="trainRL_improved Coverage Results" MODIFIED="1760833876672" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$random_bot.coverage" NAME="random_bot Coverage Results" MODIFIED="1760810342154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$check_cuda.coverage" NAME="check_cuda Coverage Results" MODIFIED="1760810594643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
