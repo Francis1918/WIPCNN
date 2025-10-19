@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Bug fixes?">
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_083645/checkpoint.pkl.gz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_083645/results/positions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_083645/results/wins_matrix.pkl.gz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090624/checkpoint.pkl.gz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090624/results/positions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090624/results/wins_matrix.pkl.gz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090918/checkpoint.pkl.gz" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090918/results/positions.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/torneomasivo/tournament_20251019_090918/results/wins_matrix.pkl.gz" beforeDir="false" />
-    </list>
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Bug fixes?" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -206,7 +196,7 @@
       <workItem from="1760805947641" duration="15520000" />
       <workItem from="1760833748769" duration="325000" />
       <workItem from="1760880351997" duration="188000" />
-      <workItem from="1760912018314" duration="2662000" />
+      <workItem from="1760912018314" duration="4756000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -528,7 +518,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760914073287</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="Bug fixes?">
+      <option name="closed" value="true" />
+      <created>1760914928645</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1760914928645</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
