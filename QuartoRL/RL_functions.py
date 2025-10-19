@@ -196,17 +196,20 @@ def gen_experience(
     number_of_matches: int = 1000,
     steps_per_batch: int = 10_000,
     verbose: bool = False,
+    match_dir: str | None = None,
     PROGRESS_MESSAGE: str = "Generating experience...",
 ) -> TensorDict:
     """
     steps_per_batch: int = must be greater than ``number_of_matches`` ~ 10x.
     It takes the last ``steps_per_batch`` steps of the matches played.
+    match_dir: Optional path to save match files. If None, uses default path.
     """
     logger.debug("Generating experience...")
 
     batch_size = steps_per_batch
 
-    match_dir = f"./partidas_guardadas/{experiment_name}/{datetime.now().strftime('%Y%m%d_%H%M')}/"
+    if match_dir is None:
+        match_dir = f"./partidas_guardadas/{experiment_name}/{datetime.now().strftime('%Y%m%d_%H%M')}/"
 
     results = play_games(
         matches=number_of_matches,

@@ -5,9 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento">
+      <change beforePath="$PROJECT_DIR$/.idea/hierarchical-SAE.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/hierarchical-SAE.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MEJORAS_ENTRENAMIENTO.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/QuartoRL/RL_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/QuartoRL/RL_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README_TRAINING_IMPROVEMENTS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README_compare_agents.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ba_increasing_n_last_states.pkl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/codigo de comparacion como referencia" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_compare_agents.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tournaments/compare_agents.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tournaments/torneomasivo.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tournaments/tournament_parallel.py" beforeDir="false" afterPath="$PROJECT_DIR$/tournaments/tournament_parallel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trainRL.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/trainRL_improved.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL_improved.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trainRL_resume.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL_resume.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/trainRL_resume_improved.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRL_resume_improved.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,75 +68,75 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.CNN1.executor": "Run",
-    "Python.CNN_bot.executor": "Run",
-    "Python.NN_abstract.executor": "Run",
-    "Python.RL_functions.executor": "Run",
-    "Python.a.executor": "Run",
-    "Python.actions.executor": "Run",
-    "Python.auto_checkpoint_monitor.executor": "Run",
-    "Python.cart_p0ole.executor": "Run",
-    "Python.check_cuda.executor": "Run",
-    "Python.checkpoint_manager.executor": "Run",
-    "Python.cleanup_project.executor": "Run",
-    "Python.compare_agents.executor": "Run",
-    "Python.compare_agents_external.executor": "Run",
-    "Python.comprehensive_cleanup.executor": "Run",
-    "Python.contest.executor": "Run",
-    "Python.debugging.executor": "Run",
-    "Python.epoch_group_monitor.executor": "Run",
-    "Python.format_matches.executor": "Run",
-    "Python.human.executor": "Run",
-    "Python.install_pytorch_cuda.executor": "Run",
-    "Python.install_pytorch_direct.executor": "Run",
-    "Python.install_requirements.executor": "Run",
-    "Python.logger.executor": "Run",
-    "Python.model_evaluator.executor": "Run",
-    "Python.monitor.executor": "Run",
-    "Python.random_bot.executor": "Run",
-    "Python.run_checkpoint_monitor.executor": "Run",
-    "Python.run_trainRL.executor": "Run",
-    "Python.setup_dependencies.executor": "Run",
-    "Python.test_collector.executor": "Run",
-    "Python.test_compare_agents.executor": "Run",
-    "Python.torneomasivo.executor": "Run",
-    "Python.tournament.executor": "Run",
-    "Python.tournament_bracket.executor": "Run",
-    "Python.tournament_parallel.executor": "Run",
-    "Python.tournament_parallel_CUDA.executor": "Run",
-    "Python.tournament_parallel_CUDA_BACKUP.executor": "Run",
-    "Python.tournament_parallel_massive.executor": "Run",
-    "Python.trainRL.executor": "Run",
-    "Python.trainRL_improved.executor": "Run",
-    "Python.trainRL_resume.executor": "Run",
-    "Python.trainRL_resume_improved.executor": "Run",
-    "Python.try_collector.executor": "Run",
-    "Python.update_requirements.executor": "Run",
-    "Python.view_training.executor": "Run",
-    "Python.visualize.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/bravo/Documents/Metodos Numericos Pycharm/Mech Interp/hierarchical-SAE",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.CNN1.executor&quot;: &quot;Run&quot;,
+    &quot;Python.CNN_bot.executor&quot;: &quot;Run&quot;,
+    &quot;Python.NN_abstract.executor&quot;: &quot;Run&quot;,
+    &quot;Python.RL_functions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.a.executor&quot;: &quot;Run&quot;,
+    &quot;Python.actions.executor&quot;: &quot;Run&quot;,
+    &quot;Python.auto_checkpoint_monitor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cart_p0ole.executor&quot;: &quot;Run&quot;,
+    &quot;Python.check_cuda.executor&quot;: &quot;Run&quot;,
+    &quot;Python.checkpoint_manager.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cleanup_project.executor&quot;: &quot;Run&quot;,
+    &quot;Python.compare_agents.executor&quot;: &quot;Run&quot;,
+    &quot;Python.compare_agents_external.executor&quot;: &quot;Run&quot;,
+    &quot;Python.comprehensive_cleanup.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.debugging.executor&quot;: &quot;Run&quot;,
+    &quot;Python.epoch_group_monitor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.format_matches.executor&quot;: &quot;Run&quot;,
+    &quot;Python.human.executor&quot;: &quot;Run&quot;,
+    &quot;Python.install_pytorch_cuda.executor&quot;: &quot;Run&quot;,
+    &quot;Python.install_pytorch_direct.executor&quot;: &quot;Run&quot;,
+    &quot;Python.install_requirements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.logger.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model_evaluator.executor&quot;: &quot;Run&quot;,
+    &quot;Python.monitor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.random_bot.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_checkpoint_monitor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_trainRL.executor&quot;: &quot;Run&quot;,
+    &quot;Python.setup_dependencies.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_collector.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_compare_agents.executor&quot;: &quot;Run&quot;,
+    &quot;Python.torneomasivo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tournament.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tournament_bracket.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tournament_parallel.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tournament_parallel_CUDA.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tournament_parallel_CUDA_BACKUP.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tournament_parallel_massive.executor&quot;: &quot;Run&quot;,
+    &quot;Python.trainRL.executor&quot;: &quot;Run&quot;,
+    &quot;Python.trainRL_improved.executor&quot;: &quot;Run&quot;,
+    &quot;Python.trainRL_resume.executor&quot;: &quot;Run&quot;,
+    &quot;Python.trainRL_resume_improved.executor&quot;: &quot;Run&quot;,
+    &quot;Python.try_collector.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_requirements.executor&quot;: &quot;Run&quot;,
+    &quot;Python.view_training.executor&quot;: &quot;Run&quot;,
+    &quot;Python.visualize.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/bravo/Documents/Metodos Numericos Pycharm/Mech Interp/hierarchical-SAE&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;PyPlotsConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -199,6 +211,9 @@
       <workItem from="1760739436284" duration="7284000" />
       <workItem from="1760795014790" duration="3196000" />
       <workItem from="1760805947641" duration="15520000" />
+      <workItem from="1760833748769" duration="325000" />
+      <workItem from="1760880351997" duration="188000" />
+      <workItem from="1760912018314" duration="832000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -587,8 +602,8 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA.coverage" NAME="tournament_parallel_CUDA Coverage Results" MODIFIED="1760404521687" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$test_collector.coverage" NAME="test_collector Coverage Results" MODIFIED="1758234354253" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$test_compare_agents.coverage" NAME="test_compare_agents Coverage Results" MODIFIED="1760823411784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents_external.coverage" NAME="compare_agents_external Coverage Results" MODIFIED="1760830630451" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_improved.coverage" NAME="trainRL_improved Coverage Results" MODIFIED="1760831753841" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$compare_agents_external.coverage" NAME="compare_agents_external Coverage Results" MODIFIED="1760912836621" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_improved.coverage" NAME="trainRL_improved Coverage Results" MODIFIED="1760833876672" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$random_bot.coverage" NAME="random_bot Coverage Results" MODIFIED="1760810342154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$check_cuda.coverage" NAME="check_cuda Coverage Results" MODIFIED="1760810594643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$cleanup_project.coverage" NAME="cleanup_project Coverage Results" MODIFIED="1760810609243" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />

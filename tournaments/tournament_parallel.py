@@ -193,8 +193,8 @@ def get_all_available_epochs():
         logger.error(f"No se encontró el directorio de pesos: {weights_dir}")
         return []
 
-    # Encontrar todos los archivos de modelo
-    model_files = list(Path(weights_dir).glob("*-ba_increasing_n_last_states_epoch_*.pt"))
+    # Encontrar TODOS los archivos .pt (no solo ba_increasing_n_last_states)
+    model_files = list(Path(weights_dir).glob("*.pt"))
 
     if not model_files:
         logger.warning(f"No se encontraron modelos en {weights_dir}")
@@ -205,10 +205,13 @@ def get_all_available_epochs():
     for model_file in model_files:
         file_name = model_file.name
         try:
-            # Extraer el número de época del formato
-            epoch_str = file_name.split("epoch_")[1].split(".")[0]
-            epoch = int(epoch_str)
-            available_epochs.add(epoch)
+            # Buscar cualquier archivo que contenga "epoch_" en el nombre
+            if 'epoch_' in file_name:
+                # Extraer el número de época del formato
+                epoch_part = file_name.split("epoch_")[1]  # "0000.pt" o "0000" dependiendo
+                epoch_str = epoch_part.replace('.pt', '')  # Remover .pt si está presente
+                epoch = int(epoch_str)
+                available_epochs.add(epoch)
         except (IndexError, ValueError):
             continue
 

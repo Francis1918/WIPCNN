@@ -37,9 +37,12 @@ EXPERIMENT_NAME = "improved_training"
 # ===========================
 # TRAINING DATA DIRECTORY
 # ===========================
-TRAINING_DATA_DIR = Path(r"C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\Entrenamiento")
+TRAINING_DATA_DIR = Path(r"C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\Datos del entrenamiento")
 TRAINING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+CHECKPOINTS_DIR = TRAINING_DATA_DIR / "checkpoints"
+CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
 logger.info(f"Training data will be saved to: {TRAINING_DATA_DIR}")
+logger.info(f"Model checkpoints will be saved to: {CHECKPOINTS_DIR}")
 
 # ===========================
 # IMPROVED HYPERPARAMETERS
@@ -212,7 +215,7 @@ class TrainingMetrics:
 
 def find_latest_checkpoint(experiment_name: str) -> tuple[int, str | None]:
     """Find the latest checkpoint for the given experiment name."""
-    weights_dir = Path(__file__).parent / "models" / "weights" / "QuartoCNN1"
+    weights_dir = CHECKPOINTS_DIR / "QuartoCNN1"
     
     if not weights_dir.exists():
         logger.warning(f"Weights directory not found: {weights_dir}")
@@ -264,7 +267,7 @@ def load_epochs_results(experiment_name: str, training_dir: Path) -> list:
 
 def get_all_checkpoints(experiment_name: str) -> list[str]:
     """Get all checkpoint files sorted by epoch number."""
-    weights_dir = Path(__file__).parent / "models" / "weights" / "QuartoCNN1"
+    weights_dir = CHECKPOINTS_DIR / "QuartoCNN1"
     
     if not weights_dir.exists():
         return []
@@ -357,7 +360,7 @@ else:
     
     checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
     checkpoint_name = checkpoint_name_generator(0)
-    _fcheckpoint_name = policy_net.export_model(checkpoint_name)
+    _fcheckpoint_name = policy_net.export_model(checkpoint_name, checkpoint_folder=str(CHECKPOINTS_DIR))
     checkpoints_files.append(_fcheckpoint_name)
 
 checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
@@ -440,6 +443,7 @@ for e in tqdm(
         number_of_matches=MATCHES_PER_EPOCH,
         steps_per_batch=STEPS_PER_EPOCH,
         experiment_name=f"epoch_{e + 1}",
+        match_dir=str(TRAINING_DATA_DIR / "partidas_guardadas" / f"epoch_{e + 1}"),
         PROGRESS_MESSAGE=f"{Fore.YELLOW}Generating experience for epoch {e + 1}{Style.RESET_ALL}",
     )
     
@@ -545,7 +549,7 @@ for e in tqdm(
     
     # Save the model at the end of each epoch
     _fname = checkpoint_name_generator(e + 1)
-    _f_fname = policy_net.export_model(_fname)
+    _f_fname = policy_net.export_model(_fname, checkpoint_folder=str(CHECKPOINTS_DIR))
     checkpoints_files.append(_f_fname)
     
     # Run contest
@@ -558,7 +562,7 @@ for e in tqdm(
         rivals_clip=RIVALS_IN_TOURNAMENT,
         matches=N_MATCHES_EVAL,
         verbose=False,
-        match_dir=f"./partidas_guardadas/{EXPERIMENT_NAME}/{_fname}/",
+        match_dir=str(TRAINING_DATA_DIR / "partidas_guardadas" / EXPERIMENT_NAME / _fname),
         PROGRESS_MESSAGE=f"{Fore.MAGENTA}Running contest for epoch {e + 1}{Style.RESET_ALL}",
     )
     logger.info(f"Contest results after epoch {e + 1}")

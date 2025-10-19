@@ -31,6 +31,16 @@ plt.ion()  # Enable interactive mode
 torch.manual_seed(50)
 EXPERIMENT_NAME = "ba_increasing_n_last_states"
 
+# ===========================
+# TRAINING DATA DIRECTORY
+# ===========================
+TRAINING_DATA_DIR = Path(r"C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\Datos del entrenamiento")
+TRAINING_DATA_DIR.mkdir(parents=True, exist_ok=True)
+CHECKPOINTS_DIR = TRAINING_DATA_DIR / "checkpoints"
+CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
+logger.info(f"Training data will be saved to: {TRAINING_DATA_DIR}")
+logger.info(f"Model checkpoints will be saved to: {CHECKPOINTS_DIR}")
+
 
 # if True, will use smaller batch size and fewer epochs for debugging
 DEBUG_PARAMS = False  # Real training parameters
@@ -129,7 +139,7 @@ def find_latest_checkpoint(experiment_name: str) -> tuple[int, str | None]:
     Returns:
         tuple: (epoch_number, checkpoint_path) or (-1, None) if no checkpoint found
     """
-    weights_dir = Path(__file__).parent / "models" / "weights" / "QuartoCNN1"
+    weights_dir = CHECKPOINTS_DIR / "QuartoCNN1"
 
     if not weights_dir.exists():
         logger.warning(f"Weights directory not found: {weights_dir}")
@@ -166,7 +176,7 @@ def find_latest_checkpoint(experiment_name: str) -> tuple[int, str | None]:
 
 def load_epochs_results(experiment_name: str) -> list:
     """Load the epochs results from pickle file."""
-    results_file = Path(f"{experiment_name}.pkl")
+    results_file = TRAINING_DATA_DIR / f"{experiment_name}.pkl"
 
     if results_file.exists():
         try:
@@ -184,7 +194,7 @@ def load_epochs_results(experiment_name: str) -> list:
 
 def get_all_checkpoints(experiment_name: str) -> list[str]:
     """Get all checkpoint files sorted by epoch number."""
-    weights_dir = Path(__file__).parent / "models" / "weights" / "QuartoCNN1"
+    weights_dir = CHECKPOINTS_DIR / "QuartoCNN1"
 
     if not weights_dir.exists():
         return []
@@ -246,7 +256,7 @@ else:
     # Save initial checkpoint
     checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
     checkpoint_name = checkpoint_name_generator(0)
-    _fcheckpoint_name = policy_net.export_model(checkpoint_name)
+    _fcheckpoint_name = policy_net.export_model(checkpoint_name, checkpoint_folder=str(CHECKPOINTS_DIR))
     checkpoints_files.append(_fcheckpoint_name)
 
 checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
@@ -331,6 +341,7 @@ for e in tqdm(
         number_of_matches=MATCHES_PER_EPOCH,
         steps_per_batch=STEPS_PER_EPOCH,
         experiment_name=f"epoch_{e + 1}",
+        match_dir=str(TRAINING_DATA_DIR / "partidas_guardadas" / f"epoch_{e + 1}"),
         PROGRESS_MESSAGE=f"{Fore.YELLOW}Generating experience for epoch {e + 1}{Style.RESET_ALL}",
     )
 
@@ -442,7 +453,7 @@ for e in tqdm(
 
     # Save the model at the end of each epoch
     _fname = checkpoint_name_generator(e + 1)
-    _f_fname = policy_net.export_model(_fname)
+    _f_fname = policy_net.export_model(_fname, checkpoint_folder=str(CHECKPOINTS_DIR))
     checkpoints_files.append(_f_fname)
 
     # Ignore the last epoch, as it is the current model
@@ -455,14 +466,15 @@ for e in tqdm(
         rivals_clip=RIVALS_IN_TOURNAMENT,  # limit the number of rivals for evaluation, -1 means no limit
         matches=N_MATCHES_EVAL,
         verbose=False,
-        match_dir=f"./partidas_guardadas/{EXPERIMENT_NAME}/{_fname}/",
+        match_dir=str(TRAINING_DATA_DIR / "partidas_guardadas" / EXPERIMENT_NAME / _fname),
         PROGRESS_MESSAGE=f"{Fore.MAGENTA}Running contest for epoch {e + 1}{Style.RESET_ALL}",
     )
     logger.info(f"Contest results after epoch {e + 1}")
     logger.info(pprint.pformat(contest_results))
 
     epochs_results.append(dict(contest_results))
-    with open(f"{EXPERIMENT_NAME}.pkl", "wb") as f:
+    results_file = TRAINING_DATA_DIR / f"{EXPERIMENT_NAME}.pkl"
+    with open(results_file, "wb") as f:
         pickle.dump(epochs_results, f)
 
     # Extract win rates for each player epoch and each rival
