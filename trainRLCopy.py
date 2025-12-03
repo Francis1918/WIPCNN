@@ -142,64 +142,56 @@ class TrainingMonitor:
 
 
 def evaluar_vs_random(player_bot: Quarto_bot, n_partidas: int = 10) -> float:
-    """Evalúa el bot contra un oponente aleatorio."""
-    from quartopy import QuartoGame
+    """Evalúa el bot contra un oponente aleatorio usando play_games de quartopy."""
+    from quartopy import play_games
+    import tempfile
 
-    wins = 0
-    draws = 0
     random_bot = Quarto_random_bot()
 
-    for i in range(n_partidas):
-        game = QuartoGame()
-        # Alternar quién empieza
-        if i % 2 == 0:
-            bots = [player_bot, random_bot]
-            player_idx = 0
-        else:
-            bots = [random_bot, player_bot]
-            player_idx = 1
+    # Usar directorio temporal para partidas de evaluación (no necesitamos guardarlas)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Jugar mitad de partidas como P1 y mitad como P2
+        results_p1 = play_games(
+            matches=n_partidas // 2,
+            player1=player_bot,
+            player2=random_bot,
+            verbose=False,
+            match_dir=temp_dir,
+            return_file_paths=False,
+        )
 
-        current_player = 0
-        selected_piece = None
+        results_p2 = play_games(
+            matches=n_partidas // 2,
+            player1=random_bot,
+            player2=player_bot,
+            verbose=False,
+            match_dir=temp_dir,
+            return_file_paths=False,
+        )
 
-        while not game.is_game_over():
-            bot = bots[current_player]
+    # Calcular victorias totales del player_bot
+    wins = results_p1["P1"] + results_p2["P2"]
+    draws = results_p1["Empates"] + results_p2["Empates"]
+    total = n_partidas
 
-            # Seleccionar pieza para el oponente
-            selected_piece = bot.select(game)
-
-            if game.is_game_over():
-                break
-
-            # Cambiar turno para colocar la pieza
-            current_player = 1 - current_player
-            bot = bots[current_player]
-
-            # Colocar la pieza seleccionada
-            pos = bot.place_piece(game, selected_piece)
-            game.play(selected_piece, pos)
-
-        # Determinar resultado
-        winner = game.get_winner()
-        if winner is None:
-            draws += 1
-        elif (winner == 1 and player_idx == 0) or (winner == 2 and player_idx == 1):
-            wins += 1
-
-    return (wins + 0.5 * draws) / n_partidas
+    return (wins + 0.5 * draws) / total
 
 
 def evaluar_vs_debil(player_bot: Quarto_bot, checkpoint_debil: str, n_partidas: int = 10) -> float:
     """Evalúa el bot contra el modelo de la época 0 (débil)."""
-    results = run_contest(
-        player=player_bot,
-        rivals=[checkpoint_debil],
-        rival_class=Quarto_bot,
-        rivals_clip=1,
-        matches=n_partidas,
-        verbose=False,
-        match_dir=None,  # No guardar partidas de evaluación
-    )
+    import tempfile
+
+    # Usar directorio temporal para partidas de evaluación
+    with tempfile.TemporaryDirectory() as temp_dir:
+        results = run_contest(
+            player=player_bot,
+            rivals=[checkpoint_debil],
+            rival_class=Quarto_bot,
+            rivals_clip=1,
+            matches=n_partidas,
+            verbose=False,
+            match_dir=temp_dir,
+        )
 
     for _, stats in results.items():
         total = stats["wins"] + stats["draws"] + stats["losses"]
