@@ -36,11 +36,11 @@ def _validate_and_import_quartopy():
     """
     try:
         from quartopy import BotAI, Piece, QuartoGame
-        utils_logger.debug("✅ Quartopy importado correctamente")
+        utils_logger.debug("Quartopy importado correctamente")
         return BotAI, Piece, QuartoGame
 
     except ImportError as initial_error:
-        utils_logger.warning("⚠️ Error al importar quartopy, intentando configurar dependencias...")
+        utils_logger.warning("Error al importar quartopy, intentando configurar dependencias...")
 
         # Attempt fallback with utils.setup_quartopy
         try:
@@ -58,12 +58,12 @@ def _validate_and_import_quartopy():
 
             # Retry import after setup
             from quartopy import BotAI, Piece, QuartoGame
-            utils_logger.info("✅ Quartopy importado correctamente después de configurar dependencias")
+            utils_logger.info("Quartopy importado correctamente después de configurar dependencias")
             return BotAI, Piece, QuartoGame
 
         except ImportError as final_error:
             error_msg = (
-                "❌ ERROR DE DEPENDENCIA: No se puede importar quartopy. "
+                "ERROR DE DEPENDENCIA: No se puede importar quartopy. "
                 "Asegúrese de que quartopy esté correctamente instalado."
             )
             utils_logger.error(error_msg)

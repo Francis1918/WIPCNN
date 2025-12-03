@@ -36,11 +36,11 @@ def _validate_and_import_quartopy():
     """
     try:
         from quartopy import BotAI, Piece, QuartoGame
-        utils_logger.debug("✅ Quartopy imported successfully")
+        utils_logger.debug("Quartopy imported successfully")
         return BotAI, Piece, QuartoGame
 
     except ImportError as initial_error:
-        utils_logger.warning("⚠️ Initial quartopy import failed, attempting dependency setup...")
+        utils_logger.warning("Initial quartopy import failed, attempting dependency setup...")
 
         # Attempt fallback with utils.setup_quartopy
         try:
@@ -58,12 +58,12 @@ def _validate_and_import_quartopy():
 
             # Retry import after setup
             from quartopy import BotAI, Piece, QuartoGame
-            utils_logger.info("✅ Quartopy imported successfully after dependency setup")
+            utils_logger.info("Quartopy imported successfully after dependency setup")
             return BotAI, Piece, QuartoGame
 
         except ImportError as final_error:
             error_msg = (
-                "❌ DEPENDENCY ERROR: Cannot import quartopy. "
+                "DEPENDENCY ERROR: Cannot import quartopy. "
                 "Please ensure quartopy is properly installed."
             )
             utils_logger.error(error_msg)

@@ -5,14 +5,14 @@
 tournament_parallel_CUDA.py - Versión GPU-acelerada del torneo paralelo para agentes de Quarto.
 Utiliza CUDA/GPU para la inferencia de los modelos mientras mantiene paralelismo en CPU.
 
-🚀 CARACTERÍSTICAS PRINCIPALES:
-    - ✅ Multiprocesamiento en CPU (múltiples enfrentamientos en paralelo)
-    - ✅ Inferencia acelerada por GPU (CUDA) en cada proceso
-    - ✅ Soporte para múltiples GPUs (distribución automática)
-    - ✅ Gestión inteligente de memoria VRAM
-    - ✅ Batch processing cuando sea posible
+CARACTERÍSTICAS PRINCIPALES:
+    - Multiprocesamiento en CPU (múltiples enfrentamientos en paralelo)
+    - Inferencia acelerada por GPU (CUDA) en cada proceso
+    - Soporte para múltiples GPUs (distribución automática)
+    - Gestión inteligente de memoria VRAM
+    - Batch processing cuando sea posible
 
-💡 ARQUITECTURA:
+ARQUITECTURA:
     - CPU: Ejecuta N procesos paralelos (enfrentamientos simultáneos)
     - GPU: Cada proceso usa GPU para inferencia de modelos (10-50x más rápido)
     - Multi-GPU: Distribuye procesos entre GPUs disponibles
@@ -106,25 +106,25 @@ def print_gpu_info():
     gpu_info = get_gpu_info()
 
     if not gpu_info['available']:
-        logger.error("❌ CUDA NO ESTÁ DISPONIBLE")
+        logger.error("CUDA NO ESTÁ DISPONIBLE")
         logger.error("Este script REQUIERE una GPU con CUDA para funcionar.")
-        logger.info("\n📋 Para usar este torneo necesitas:")
+        logger.info("\nPara usar este torneo necesitas:")
         logger.info("   1. Una GPU NVIDIA")
         logger.info("   2. Drivers NVIDIA instalados")
         logger.info("   3. PyTorch con soporte CUDA")
-        logger.info("\n💡 Alternativas:")
+        logger.info("\nAlternativas:")
         logger.info("   • Para CPU multiproceso: usa 'tournament_parallel.py'")
         logger.info("   • Para secuencial: usa 'tournament.py'")
-        logger.info("\n🔧 Para instalar CUDA support:")
+        logger.info("\nPara instalar CUDA support:")
         logger.info("   pip uninstall torch torchvision torchaudio -y")
         logger.info("   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121")
-        logger.info("\n📚 Ejecuta 'python check_cuda.py' para diagnóstico completo")
+        logger.info("\nEjecuta 'python check_cuda.py' para diagnóstico completo")
         return False
 
     logger.info(f"\n{'='*60}")
-    logger.info(f"🎮 INFORMACIÓN DE GPU - CUDA {gpu_info['cuda_version']}")
+    logger.info(f"INFORMACIÓN DE GPU - CUDA {gpu_info['cuda_version']}")
     logger.info(f"{'='*60}")
-    logger.info(f"✅ GPUs disponibles: {gpu_info['count']}")
+    logger.info(f"GPUs disponibles: {gpu_info['count']}")
 
     for device in gpu_info['devices']:
         logger.info(f"\n  GPU {device['id']}: {device['name']}")
@@ -146,13 +146,13 @@ def setup_gpu_environment(gpu_id=None, multi_gpu=False):
         dict: Configuración GPU a usar
     """
     if not CUDA_AVAILABLE:
-        logger.error("❌ ERROR CRÍTICO: CUDA no está disponible")
+        logger.error("ERROR CRÍTICO: CUDA no está disponible")
         logger.error("Este script está diseñado EXCLUSIVAMENTE para uso con GPU")
         logger.error("Por favor, usa 'tournament_parallel.py' si quieres multiprocesamiento en CPU")
         raise RuntimeError("CUDA no disponible. Este script requiere GPU obligatoriamente.")
 
     if multi_gpu and N_GPUS > 1:
-        logger.info(f"✅ Modo multi-GPU habilitado: {N_GPUS} GPUs disponibles")
+        logger.info(f"Modo multi-GPU habilitado: {N_GPUS} GPUs disponibles")
         for i in range(N_GPUS):
             gpu_name = torch.cuda.get_device_name(i)
             logger.info(f"   GPU {i}: {gpu_name}")
@@ -160,15 +160,15 @@ def setup_gpu_environment(gpu_id=None, multi_gpu=False):
 
     if gpu_id is not None:
         if gpu_id >= N_GPUS:
-            logger.warning(f"⚠️  GPU {gpu_id} no existe. Usando GPU 0")
+            logger.warning(f"GPU {gpu_id} no existe. Usando GPU 0")
             gpu_id = 0
         gpu_name = torch.cuda.get_device_name(gpu_id)
-        logger.info(f"✅ Usando GPU {gpu_id}: {gpu_name}")
+        logger.info(f"Usando GPU {gpu_id}: {gpu_name}")
         return {'device': f'cuda:{gpu_id}', 'gpu_id': gpu_id, 'gpu_name': gpu_name}
 
     # Por defecto, usar GPU 0
     gpu_name = torch.cuda.get_device_name(0)
-    logger.info(f"✅ Usando GPU 0 (por defecto): {gpu_name}")
+    logger.info(f"Usando GPU 0 (por defecto): {gpu_name}")
     return {'device': 'cuda:0', 'gpu_id': 0, 'gpu_name': gpu_name}
 
 def load_agent_gpu(epoch, temperature=0.5, device='cuda:0'):
@@ -205,7 +205,7 @@ def load_agent_gpu(epoch, temperature=0.5, device='cuda:0'):
         actual_device = torch.device('cpu')
     else:
         actual_device = torch.device(device)
-        # 🔧 LIMPIEZA PREVENTIVA: Limpiar caché CUDA antes de cargar modelo
+        # LIMPIEZA PREVENTIVA: Limpiar caché CUDA antes de cargar modelo
         torch.cuda.empty_cache()
         # Sincronizar para asegurar que operaciones previas terminaron
         torch.cuda.synchronize(actual_device)
@@ -213,7 +213,7 @@ def load_agent_gpu(epoch, temperature=0.5, device='cuda:0'):
     # Cargar modelo en GPU
     model = QuartoCNN()
 
-    # 🔧 FIX: Cargar primero en CPU, luego mover a GPU para evitar problemas de memoria
+    # FIX: Cargar primero en CPU, luego mover a GPU para evitar problemas de memoria
     try:
         state_dict = torch.load(model_path, map_location='cpu')  # Siempre cargar en CPU primero
         model.load_state_dict(state_dict)

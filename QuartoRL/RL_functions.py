@@ -46,12 +46,12 @@ except ImportError:
         # Reintentar importación después de la configuración
         from quartopy import play_games, BotAI, Board
 
-        logger.info("✅ Quartopy importado exitosamente después de configuración de dependencias")
+        logger.info("Quartopy importado exitosamente después de configuración de dependencias")
 
     except ImportError as e:
         error_msg = (
-            "❌ ERROR DE DEPENDENCIA: No se puede importar quartopy\n\n"
-            "🔧 PASOS PARA SOLUCIONAR:\n"
+            "ERROR DE DEPENDENCIA: No se puede importar quartopy\n\n"
+            "PASOS PARA SOLUCIONAR:\n"
             "1. Asegúrate de que el proyecto 'quartopy' esté disponible en tu entorno\n"
             "2. Verifica si quartopy está en alguna de estas ubicaciones:\n"
             "   - ../quartopy (relativo a este proyecto)\n"
@@ -60,8 +60,8 @@ except ImportError:
             "3. Si quartopy está en otro lugar, crea un archivo .env con:\n"
             "   QUARTOPY_PATH=/ruta/a/tu/proyecto/quartopy\n"
             "4. O instala quartopy como paquete: pip install quartopy\n\n"
-            f"📋 Error original: {e}\n\n"
-            "💡 Para más ayuda, revisa utils/setup_quartopy.py"
+            f"Error original: {e}\n\n"
+            "Para más ayuda, revisa utils/setup_quartopy.py"
         )
         logger.error(error_msg)
         raise ImportError(error_msg) from e

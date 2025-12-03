@@ -42,11 +42,11 @@ def _validate_and_import_quartopy():
     """
     try:
         from quartopy import BotAI, Piece, QuartoGame
-        logger.debug("✅ Quartopy imported successfully")
+        logger.debug("Quartopy imported successfully")
         return BotAI, Piece, QuartoGame
 
     except ImportError as initial_error:
-        logger.warning("⚠️ Initial quartopy import failed, attempting dependency setup...")
+        logger.warning("Initial quartopy import failed, attempting dependency setup...")
 
         # Attempt fallback with utils.setup_quartopy
         try:
@@ -64,14 +64,14 @@ def _validate_and_import_quartopy():
 
             # Retry import after setup
             from quartopy import BotAI, Piece, QuartoGame
-            logger.info("✅ Quartopy imported successfully after dependency setup")
+            logger.info("Quartopy imported successfully after dependency setup")
             return BotAI, Piece, QuartoGame
 
         except ImportError as final_error:
             # Create comprehensive error message with troubleshooting steps
             error_msg = (
-                "❌ DEPENDENCY ERROR: Cannot import quartopy\n\n"
-                "🔧 TROUBLESHOOTING STEPS:\n"
+                "DEPENDENCY ERROR: Cannot import quartopy\n\n"
+                "TROUBLESHOOTING STEPS:\n"
                 "1. Ensure the 'quartopy' project is available in your environment\n"
                 "2. Check if quartopy is in one of these locations:\n"
                 "   - ../quartopy (relative to this project)\n"
@@ -80,9 +80,9 @@ def _validate_and_import_quartopy():
                 "3. If quartopy is elsewhere, create a .env file with:\n"
                 "   QUARTOPY_PATH=/path/to/your/quartopy/project\n"
                 "4. Or install quartopy as a package: pip install quartopy\n\n"
-                f"📋 Original error: {initial_error}\n"
-                f"📋 Setup attempt error: {final_error}\n\n"
-                "💡 For more help, check the project documentation or utils/setup_quartopy.py"
+                f"Original error: {initial_error}\n"
+                f"Setup attempt error: {final_error}\n\n"
+                "For more help, check the project documentation or utils/setup_quartopy.py"
             )
 
             logger.error(error_msg)
@@ -91,13 +91,13 @@ def _validate_and_import_quartopy():
         except Exception as unexpected_error:
             # Handle any unexpected errors during setup
             error_msg = (
-                f"❌ UNEXPECTED ERROR during quartopy setup: {unexpected_error}\n\n"
-                "🔧 SUGGESTED ACTIONS:\n"
+                f"UNEXPECTED ERROR during quartopy setup: {unexpected_error}\n\n"
+                "SUGGESTED ACTIONS:\n"
                 "1. Check that setup_dependencies.py exists and is valid\n"
                 "2. Verify file permissions in the project directory\n"
                 "3. Try running the project with administrator privileges\n"
                 "4. Check the utils/logger.py for any issues\n\n"
-                "💡 Consider manually adding quartopy to your Python path"
+                "Consider manually adding quartopy to your Python path"
             )
 
             logger.error(error_msg)
@@ -138,7 +138,7 @@ class Quarto_bot(BotAI):
 
             # Validate input parameters with proper exception handling
             if model_path is not None and model is not None:
-                error_msg = "❌ PARAMETER ERROR: Either 'model_path' or 'model' must be provided, but not both."
+                error_msg = "PARAMETER ERROR: Either 'model_path' or 'model' must be provided, but not both."
                 logger.error(error_msg)
                 raise ValueError(error_msg)
 
@@ -146,27 +146,27 @@ class Quarto_bot(BotAI):
                 try:
                     logger.debug(f"Loading model from {model_path}")
                     self.model = QuartoCNN.from_file(model_path)
-                    logger.info(f"✅ Model loaded successfully from {model_path}")
+                    logger.info(f"Model loaded successfully from {model_path}")
                 except FileNotFoundError as e:
                     error_msg = (
-                        f"❌ MODEL FILE NOT FOUND: {model_path}\n\n"
-                        "🔧 TROUBLESHOOTING STEPS:\n"
+                        f"MODEL FILE NOT FOUND: {model_path}\n\n"
+                        "TROUBLESHOOTING STEPS:\n"
                         "1. Check if the file path is correct\n"
                         "2. Verify the file exists in the specified location\n"
                         "3. Ensure you have read permissions for the file\n"
-                        f"📋 Original error: {e}"
+                        f"Original error: {e}"
                     )
                     logger.error(error_msg)
                     raise FileNotFoundError(error_msg) from e
                 except Exception as e:
                     error_msg = (
-                        f"❌ MODEL LOADING ERROR: Failed to load model from {model_path}\n\n"
-                        "🔧 POSSIBLE CAUSES:\n"
+                        f"MODEL LOADING ERROR: Failed to load model from {model_path}\n\n"
+                        "POSSIBLE CAUSES:\n"
                         "1. Corrupted model file\n"
                         "2. Model was saved with different PyTorch version\n"
                         "3. Model architecture mismatch\n"
                         "4. Insufficient memory to load model\n"
-                        f"📋 Original error: {e}"
+                        f"Original error: {e}"
                     )
                     logger.error(error_msg)
                     raise RuntimeError(error_msg) from e
@@ -174,7 +174,7 @@ class Quarto_bot(BotAI):
             elif model:
                 if not isinstance(model, QuartoCNN):
                     error_msg = (
-                        f"❌ MODEL TYPE ERROR: Provided model must be an instance of QuartoCNN.\n"
+                        f"MODEL TYPE ERROR: Provided model must be an instance of QuartoCNN.\n"
                         f"Got: {type(model).__name__}\n"
                         f"Expected: QuartoCNN"
                     )
@@ -182,21 +182,21 @@ class Quarto_bot(BotAI):
                     raise TypeError(error_msg)
 
                 self.model = model
-                logger.debug("✅ Using provided model instance")
+                logger.debug("Using provided model instance")
 
             else:
                 try:
                     logger.debug("Loading model with random weights")
                     self.model = QuartoCNN()
-                    logger.info("✅ Model initialized with random weights")
+                    logger.info("Model initialized with random weights")
                 except Exception as e:
                     error_msg = (
-                        f"❌ MODEL INITIALIZATION ERROR: Failed to initialize QuartoCNN\n\n"
-                        "🔧 POSSIBLE CAUSES:\n"
+                        f"MODEL INITIALIZATION ERROR: Failed to initialize QuartoCNN\n\n"
+                        "POSSIBLE CAUSES:\n"
                         "1. Missing dependencies (torch, etc.)\n"
                         "2. Insufficient memory\n"
                         "3. CUDA/GPU configuration issues\n"
-                        f"📋 Original error: {e}"
+                        f"Original error: {e}"
                     )
                     logger.error(error_msg)
                     raise RuntimeError(error_msg) from e
