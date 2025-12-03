@@ -19,6 +19,10 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from utils.logger import logger as utils_logger
+from utils import setup_quartopy
+
+# Ensure quartopy is available
+setup_quartopy.setup(silent=True)
 
 def _validate_and_import_quartopy():
     """

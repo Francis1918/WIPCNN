@@ -18,7 +18,11 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from utils.logger import logger
+from utils import setup_quartopy
 from datetime import datetime
+
+# Ensure quartopy is available
+setup_quartopy.setup(silent=True)
 
 from tensordict import set_list_to_stack, TensorDict
 
