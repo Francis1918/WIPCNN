@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="update de el entrenamiento, e implementacion de plotly en reemplazo a matplotlib ya que se requiere que las graficas sean mas interactivas.">
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Primeras evidencias y toma de desciones para corregir el entrenamiento.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
     </list>
@@ -210,15 +210,7 @@
       <workItem from="1764733503137" duration="152000" />
       <workItem from="1764766599594" duration="10877000" />
       <workItem from="1764791001906" duration="1315000" />
-      <workItem from="1764794504537" duration="716000" />
-    </task>
-    <task id="LOCAL-00008" summary="modificacion del readme antes de los enfrentamientos entre los agentes">
-      <option name="closed" value="true" />
-      <created>1758254392137</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1758254392137</updated>
+      <workItem from="1764794504537" duration="3605000" />
     </task>
     <task id="LOCAL-00009" summary="Ultimos ajustes">
       <option name="closed" value="true" />
@@ -604,7 +596,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764792231085</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="Primeras evidencias y toma de desciones para corregir el entrenamiento.">
+      <option name="closed" value="true" />
+      <created>1764795376171</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1764795376171</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -622,7 +622,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Ultimos ajustes" />
     <MESSAGE value="Peleas entre todos y que gane el mejor, Secuencial y Multiprocesamiento" />
     <MESSAGE value="Update readme" />
     <MESSAGE value="Ajustes del torneo" />
@@ -647,7 +646,8 @@
     <MESSAGE value="Copias de TrainRL y su version de Resume para la implementacion de las mejoraas con otra ruta en especifico para que se pueda hacer comparaciones" />
     <MESSAGE value="Update a la bitacora&#10;con las copias del TrainRLcpy y TrainRLresumecpy" />
     <MESSAGE value="update de el entrenamiento, e implementacion de plotly en reemplazo a matplotlib ya que se requiere que las graficas sean mas interactivas." />
-    <option name="LAST_COMMIT_MESSAGE" value="update de el entrenamiento, e implementacion de plotly en reemplazo a matplotlib ya que se requiere que las graficas sean mas interactivas." />
+    <MESSAGE value="Primeras evidencias y toma de desciones para corregir el entrenamiento." />
+    <option name="LAST_COMMIT_MESSAGE" value="Primeras evidencias y toma de desciones para corregir el entrenamiento." />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
