@@ -13,10 +13,22 @@ Python 3
 -Donald E. Knuth
 """
 
+import sys
+from pathlib import Path
+
+# Add project root to sys.path to allow importing models and utils
+project_root = str(Path(__file__).parent.parent)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from models.CNN1 import QuartoCNN
 from utils.logger import logger
+from utils import setup_quartopy
 import numpy as np
 import torch
+
+# Ensure quartopy is available
+setup_quartopy.setup(silent=True)
 
 def _validate_and_import_quartopy():
     """
