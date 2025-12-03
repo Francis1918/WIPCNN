@@ -11,6 +11,13 @@ import logging
 from typing import Dict, Any, Optional, List, Tuple
 
 import torch
+import sys
+from pathlib import Path
+
+# Add project root to sys.path to allow importing modules
+project_root = str(Path(__file__).parent.parent)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # Importamos los módulos necesarios del proyecto original sin modificarlos
 from bot.CNN_bot import Quarto_bot
