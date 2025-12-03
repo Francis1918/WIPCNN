@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Bug fixes?">
-      <change afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,6 +14,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
@@ -205,7 +203,7 @@
       <workItem from="1761236125537" duration="916000" />
       <workItem from="1761267204893" duration="32000" />
       <workItem from="1764733503137" duration="152000" />
-      <workItem from="1764766599594" duration="1074000" />
+      <workItem from="1764766599594" duration="1654000" />
     </task>
     <task id="LOCAL-00001" summary="CNN version 1 fase beta">
       <option name="closed" value="true" />
@@ -543,7 +541,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760917887961</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados">
+      <option name="closed" value="true" />
+      <created>1764767752654</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1764767752654</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados">
+      <option name="closed" value="true" />
+      <created>1764768264478</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1764768264478</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -583,7 +597,8 @@
     <MESSAGE value="implementaciones de una arquitectrura flexible para el test entre agentes distintos" />
     <MESSAGE value="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento" />
     <MESSAGE value="Bug fixes?" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug fixes?" />
+    <MESSAGE value="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados" />
+    <option name="LAST_COMMIT_MESSAGE" value="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$update_requirements.coverage" NAME="update_requirements Coverage Results" MODIFIED="1760392975350" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
