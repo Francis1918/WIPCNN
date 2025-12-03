@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Modificaciones y mejoras de trainRLCopy.py">
-      <change beforePath="$PROJECT_DIR$/trainRLCopy.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRLCopy.py" afterDir="false" />
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="copia de trainRL para implementar las mejoras y correcciones del entrenamiento y visualizacion">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -206,23 +206,7 @@
       <workItem from="1761236125537" duration="916000" />
       <workItem from="1761267204893" duration="32000" />
       <workItem from="1764733503137" duration="152000" />
-      <workItem from="1764766599594" duration="9042000" />
-    </task>
-    <task id="LOCAL-00003" summary="Reparando errores menores">
-      <option name="closed" value="true" />
-      <created>1758235482020</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1758235482020</updated>
-    </task>
-    <task id="LOCAL-00004" summary="estable el codigo">
-      <option name="closed" value="true" />
-      <created>1758239040429</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1758239040429</updated>
+      <workItem from="1764766599594" duration="10877000" />
     </task>
     <task id="LOCAL-00005" summary="estable el codigo">
       <option name="closed" value="true" />
@@ -600,7 +584,23 @@
       <option name="project" value="LOCAL" />
       <updated>1764781588723</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="copia de trainRL para implementar las mejoras y correcciones del entrenamiento y visualizacion">
+      <option name="closed" value="true" />
+      <created>1764781692478</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1764781692478</updated>
+    </task>
+    <task id="LOCAL-00053" summary="copia de trainRL para implementar las mejoras y correcciones del entrenamiento y visualizacion">
+      <option name="closed" value="true" />
+      <created>1764781745486</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1764781745486</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -618,7 +618,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Redme del proyecto bien detallado para saber que tiene" />
     <MESSAGE value="Reparando errores menores" />
     <MESSAGE value="estable el codigo" />
     <MESSAGE value="modificacion del readme antes de los enfrentamientos entre los agentes" />
@@ -643,7 +642,8 @@
     <MESSAGE value="modificaciones necesarias" />
     <MESSAGE value="Bug fixes" />
     <MESSAGE value="Modificaciones y mejoras de trainRLCopy.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="Modificaciones y mejoras de trainRLCopy.py" />
+    <MESSAGE value="copia de trainRL para implementar las mejoras y correcciones del entrenamiento y visualizacion" />
+    <option name="LAST_COMMIT_MESSAGE" value="copia de trainRL para implementar las mejoras y correcciones del entrenamiento y visualizacion" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
@@ -659,7 +659,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$install_pytorch_direct.coverage" NAME="install_pytorch_direct Coverage Results" MODIFIED="1760403722478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel.coverage" NAME="tournament_parallel Coverage Results" MODIFIED="1760406111244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$CNN1.coverage" NAME="CNN1 Coverage Results" MODIFIED="1764766858763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_resume.coverage" NAME="trainRL_resume Coverage Results" MODIFIED="1760814491021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_resume.coverage" NAME="trainRL_resume Coverage Results" MODIFIED="1764783478469" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$run_trainRL.coverage" NAME="run_trainRL Coverage Results" MODIFIED="1757872869125" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$RL_functions.coverage" NAME="RL_functions Coverage Results" MODIFIED="1764766980887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/QuartoRL" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$VALIDAR_CORRECCIONES.coverage" NAME="VALIDAR_CORRECCIONES Coverage Results" MODIFIED="1761236353402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

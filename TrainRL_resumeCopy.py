@@ -19,6 +19,8 @@ import pprint
 import pickle
 from colorama import init, Fore, Style
 from pathlib import Path
+import re
+import glob
 
 import matplotlib.pyplot as plt
 
@@ -129,18 +131,135 @@ TAU = 0.005
 GAMMA = 0.99
 
 # ###########################
+# Function to find the latest checkpoint
+def find_latest_checkpoint(experiment_name: str) -> tuple[int, str | None]:
+    """
+    Find the latest checkpoint for the given experiment name.
+
+    Returns:
+        tuple: (epoch_number, checkpoint_path) or (-1, None) if no checkpoint found
+    """
+    weights_dir = CHECKPOINTS_DIR / "QuartoCNN1"
+
+    if not weights_dir.exists():
+        logger.warning(f"Weights directory not found: {weights_dir}")
+        return -1, None
+
+    # Pattern to match checkpoint files
+    pattern = f"*-{experiment_name}_epoch_*.pt"
+    checkpoint_files = list(weights_dir.glob(pattern))
+
+    if not checkpoint_files:
+        logger.warning(f"No checkpoint files found for experiment: {experiment_name}")
+        return -1, None
+
+    # Extract epoch numbers from filenames
+    epoch_pattern = re.compile(rf"{experiment_name}_epoch_(\d+)\.pt")
+    epochs_and_files = []
+
+    for file_path in checkpoint_files:
+        match = epoch_pattern.search(file_path.name)
+        if match:
+            epoch_num = int(match.group(1))
+            epochs_and_files.append((epoch_num, str(file_path)))
+
+    if not epochs_and_files:
+        logger.warning("No valid epoch numbers found in checkpoint files")
+        return -1, None
+
+    # Find the maximum epoch
+    latest_epoch, latest_file = max(epochs_and_files, key=lambda x: x[0])
+
+    logger.info(f"Found latest checkpoint: Epoch {latest_epoch} at {latest_file}")
+    return latest_epoch, latest_file
+
+
+def load_epochs_results(experiment_name: str) -> list:
+    """Load the epochs results from pickle file."""
+    results_file = TRAINING_DATA_DIR / f"{experiment_name}.pkl"
+
+    if results_file.exists():
+        try:
+            with open(results_file, "rb") as f:
+                epochs_results = pickle.load(f)
+            logger.info(f"Loaded {len(epochs_results)} epochs from results file")
+            return epochs_results
+        except Exception as e:
+            logger.error(f"Error loading results file: {e}")
+            return []
+    else:
+        logger.warning(f"Results file not found: {results_file}")
+        return []
+
+
+def get_all_checkpoints(experiment_name: str) -> list[str]:
+    """Get all checkpoint files sorted by epoch number."""
+    weights_dir = CHECKPOINTS_DIR / "QuartoCNN1"
+
+    if not weights_dir.exists():
+        return []
+
+    pattern = f"*-{experiment_name}_epoch_*.pt"
+    checkpoint_files = list(weights_dir.glob(pattern))
+
+    # Extract epoch numbers and sort
+    epoch_pattern = re.compile(rf"{experiment_name}_epoch_(\d+)\.pt")
+    epochs_and_files = []
+
+    for file_path in checkpoint_files:
+        match = epoch_pattern.search(file_path.name)
+        if match:
+            epoch_num = int(match.group(1))
+            epochs_and_files.append((epoch_num, str(file_path)))
+
+    # Sort by epoch number
+    epochs_and_files.sort(key=lambda x: x[0])
+
+    # Return just the file paths
+    return [f for _, f in epochs_and_files]
+
+
+# ###########################
+# Load or initialize models
+latest_epoch, latest_checkpoint = find_latest_checkpoint(EXPERIMENT_NAME)
+
 policy_net = QuartoCNN()
 target_net = QuartoCNN()
-target_net.load_state_dict(policy_net.state_dict())
 
+if latest_checkpoint is not None:
+    logger.info(f"Resuming training from epoch {latest_epoch}")
+    logger.info(f"Loading checkpoint: {latest_checkpoint}")
+
+    # Load the policy network
+    policy_net.load_state_dict(torch.load(latest_checkpoint))
+    target_net.load_state_dict(policy_net.state_dict())
+
+    # Load epochs results
+    epochs_results = load_epochs_results(EXPERIMENT_NAME)
+
+    # Get all existing checkpoints
+    checkpoints_files = get_all_checkpoints(EXPERIMENT_NAME)
+
+    # Starting epoch is the next one after the latest
+    start_epoch = latest_epoch + 1
+
+    logger.info(f"Resuming from epoch {start_epoch}")
+    logger.info(f"Found {len(checkpoints_files)} existing checkpoints")
+    logger.info(f"Found {len(epochs_results)} epochs results")
+else:
+    logger.info("No checkpoint found. Starting training from scratch.")
+    target_net.load_state_dict(policy_net.state_dict())
+    epochs_results = []
+    checkpoints_files = []
+    start_epoch = 0
+
+    # Save initial checkpoint
+    checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
+    checkpoint_name = checkpoint_name_generator(0)
+    _fcheckpoint_name = policy_net.export_model(checkpoint_name, checkpoint_folder=str(CHECKPOINTS_DIR))
+    checkpoints_files.append(_fcheckpoint_name)
 
 checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
-
-checkpoint_name = checkpoint_name_generator(0)
-
-# list of file names by epoch
-_fcheckpoint_name = policy_net.export_model(checkpoint_name, checkpoint_folder=str(CHECKPOINTS_DIR))
-checkpoints_files: list[str] = [_fcheckpoint_name]
 
 # ###########################
 replay_buffer = ReplayBuffer(
@@ -153,16 +272,24 @@ optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, EPOCHS, 0.0)
 
+# Advance the scheduler to the correct epoch if resuming
+if start_epoch > 0:
+    for _ in range(start_epoch):
+        scheduler.step()
+    logger.info(f"Scheduler advanced to epoch {start_epoch}")
+    logger.info(f"Current learning rate: {scheduler.get_last_lr()[0]}")
 
 # The Huber loss acts like the mean squared error when the error is small, but like the mean absolute error when the error is large - this makes it more robust to outliers when the estimates of Q are very noisy.
 loss_fcn = nn.SmoothL1Loss()
 
-epochs_results = []  # to store the results of each epoch
 # ###########################
 init(autoreset=True)
 
+# Calculate total iterations remaining
+total_iterations_remaining = (EPOCHS - start_epoch) * ITER_PER_EPOCH
+
 pbar = tqdm(
-    total=EPOCHS * ITER_PER_EPOCH,
+    total=total_iterations_remaining,
     desc=f"{Fore.CYAN}\n Update network{Style.RESET_ALL}",
     leave=True,
     position=1,
@@ -170,10 +297,15 @@ pbar = tqdm(
 )
 
 logger.info("Hyperparameters loaded.")
-logger.info("Starting training...")
+logger.info(f"Starting training from epoch {start_epoch} to {EPOCHS}...")
 
 for e in tqdm(
-    range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", position=1, leave=False
+    range(start_epoch, EPOCHS),
+    desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}",
+    position=1,
+    leave=False,
+    initial=start_epoch,
+    total=EPOCHS
 ):
     # load models
     p1 = Quarto_bot(model=policy_net)
@@ -308,7 +440,7 @@ for e in tqdm(
                 f"Gradient clipping activated! Total norm before clipping: {total_norm:.4f}"
             )
         optimizer.step()
-#optimizar zero.grad en caso que se use en POO
+
         if i % N_BATCHS_2_UPDATE_TARGET == 0:
             # ----------- Update the target network
             target_net_state_dict = target_net.state_dict()
@@ -365,10 +497,11 @@ for e in tqdm(
 
     # ############ PLOTTING
     # Only plot N_PLAYERS_PLOT equally spaced players (or all if N_PLAYERS_PLOT < 0 or more players than available)
-    if N_PLAYERS_PLOT < 0 or N_PLAYERS_PLOT >= e + 1:
-        players_to_plot = range(e + 1)  # Plot all players
+    current_num_epochs = len(epochs_results)
+    if N_PLAYERS_PLOT < 0 or N_PLAYERS_PLOT >= current_num_epochs:
+        players_to_plot = range(current_num_epochs)  # Plot all players
     else:
-        players_to_plot = torch.linspace(0, e, steps=N_PLAYERS_PLOT).long().tolist()
+        players_to_plot = torch.linspace(0, current_num_epochs - 1, steps=N_PLAYERS_PLOT).long().tolist()
 
     for player_name in players_to_plot:
         win_rates = win_rate_by_epoch[player_name]
