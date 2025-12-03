@@ -78,18 +78,46 @@ class QuartoCNN(NN_abstract):
         self.conv1 = nn.Conv2d(
             16 + fc_inpiece_size // 16, k1_size, kernel_size=3, padding=1
         )
+        #-----inicio de la modificacion--- FASE 3: Añadir BatchNormalization después de conv1
+        # Valor anterior: No existía
+        self.bn1 = nn.BatchNorm2d(k1_size)
+        #-----fin de la modificacion---
+
         k2_size = 32
         self.conv2 = nn.Conv2d(k1_size, k2_size, kernel_size=3, padding=1)
-        n_neurons = 128
-        self.fc1 = nn.Linear(k2_size * 4 * 4, n_neurons)
+        #-----inicio de la modificacion--- FASE 3: Añadir BatchNormalization después de conv2
+        # Valor anterior: No existía
+        self.bn2 = nn.BatchNorm2d(k2_size)
+        #-----fin de la modificacion---
+
+        #-----inicio de la modificacion--- FASE 3: Arquitectura más profunda 256→256→128→64
+        # Valor anterior: n_neurons = 128, solo fc1
+        self.fc1 = nn.Linear(k2_size * 4 * 4, 256)
+        self.bn_fc1 = nn.BatchNorm1d(256)
+        self.fc1b = nn.Linear(256, 256)
+        self.bn_fc1b = nn.BatchNorm1d(256)
+        self.fc1c = nn.Linear(256, 128)
+        self.bn_fc1c = nn.BatchNorm1d(128)
+        self.fc1d = nn.Linear(128, 64)
+        self.bn_fc1d = nn.BatchNorm1d(64)
+        n_neurons_final = 64
+        #-----fin de la modificacion---
 
         # Both heads now receive the same input size for architectural consistency
-        # Predicts board position - normalized input (128 dimensions)
-        self.fc2_board = nn.Linear(n_neurons, 4 * 4)
+        # Predicts board position - normalized input (64 dimensions)
+        #-----inicio de la modificacion--- FASE 3: Actualizar entrada de cabezas
+        # Valor anterior: self.fc2_board = nn.Linear(n_neurons, 4 * 4), n_neurons=128
+        self.fc2_board = nn.Linear(n_neurons_final, 4 * 4)
 
-        # Predicts piece selection - normalized input (same 128 dimensions as board)
-        self.fc2_piece = nn.Linear(n_neurons, 4 * 4)
-        self.dropout = nn.Dropout(0.5)  # 0.3 before
+        # Predicts piece selection - normalized input (same 64 dimensions as board)
+        # Valor anterior: self.fc2_piece = nn.Linear(n_neurons, 4 * 4), n_neurons=128
+        self.fc2_piece = nn.Linear(n_neurons_final, 4 * 4)
+        #-----fin de la modificacion---
+
+        #-----inicio de la modificacion--- FASE 3: Reducir Dropout
+        # Valor anterior: self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(0.2)  # Menor dropout para red más profunda
+        #-----fin de la modificacion---
 
     def forward(
         self, x_board: torch.Tensor, x_piece: torch.Tensor
@@ -105,11 +133,28 @@ class QuartoCNN(NN_abstract):
         piece_feat = F.relu(self.fc_in_piece(x_piece))
         piece_map = piece_feat.view(-1, 1, 4, 4)
         x = torch.cat([x_board, piece_map], dim=1)  # type: ignore
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+
+        #-----inicio de la modificacion--- FASE 3: Usar BatchNormalization en convoluciones
+        # Valor anterior: x = F.relu(self.conv1(x))
+        x = F.relu(self.bn1(self.conv1(x)))
+        # Valor anterior: x = F.relu(self.conv2(x))
+        x = F.relu(self.bn2(self.conv2(x)))
+        #-----fin de la modificacion---
+
         x = x.flatten(start_dim=1)
-        x = F.relu(self.fc1(x))
-        x = self.dropout(x)  # Bx128
+
+        #-----inicio de la modificacion--- FASE 3: Usar arquitectura más profunda con BatchNorm
+        # Valor anterior: x = F.relu(self.fc1(x))
+        x = F.relu(self.bn_fc1(self.fc1(x)))
+        x = self.dropout(x)
+        x = F.relu(self.bn_fc1b(self.fc1b(x)))
+        x = self.dropout(x)
+        x = F.relu(self.bn_fc1c(self.fc1c(x)))
+        x = self.dropout(x)
+        x = F.relu(self.bn_fc1d(self.fc1d(x)))
+        #-----fin de la modificacion---
+
+        x = self.dropout(x)  # Bx64
 
         # Both outputs now use the same backbone features for consistency
         # This eliminates the architectural inconsistency and allows parallel computation

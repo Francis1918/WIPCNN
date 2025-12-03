@@ -83,6 +83,82 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 
+#-----inicio de la modificacion--- FASE 4: Función para calcular recompensas intermedias
+# Valor anterior: No existía esta función
+def calculate_intermediate_reward(board_state: str, action_pos: int, is_winner: bool = False) -> float:
+    """
+    Calcula recompensas intermedias basadas en la calidad del movimiento.
+
+    Args:
+        board_state: Estado del tablero serializado (string de 16 chars)
+        action_pos: Posición donde se colocó la pieza (0-15)
+        is_winner: Si este movimiento ganó el juego
+
+    Returns:
+        Recompensa intermedia adicional
+    """
+    if is_winner or action_pos == -1 or board_state == "0":
+        return 0.0
+
+    reward = 0.0
+
+    # Posiciones centrales (4x4 tablero): índices 5, 6, 9, 10
+    CENTER_POSITIONS = {5, 6, 9, 10}
+
+    # Premiar posiciones centrales (+0.1)
+    if action_pos in CENTER_POSITIONS:
+        reward += 0.1
+
+    # Deserializar tablero para análisis
+    try:
+        board = Board.deserialize(board_state)  # Shape: (16, 4, 4)
+
+        # Analizar amenazas (3 en línea) y bloqueos
+        # Filas, columnas y diagonales
+        lines_to_check = []
+
+        # Filas
+        for row in range(4):
+            lines_to_check.append([(row, col) for col in range(4)])
+
+        # Columnas
+        for col in range(4):
+            lines_to_check.append([(row, col) for row in range(4)])
+
+        # Diagonales
+        lines_to_check.append([(i, i) for i in range(4)])
+        lines_to_check.append([(i, 3-i) for i in range(4)])
+
+        action_row, action_col = action_pos // 4, action_pos % 4
+
+        # Verificar si la posición de acción está en alguna línea con 3 piezas
+        for line in lines_to_check:
+            if (action_row, action_col) in line:
+                # Contar piezas en esta línea (excluyendo la posición de acción)
+                pieces_in_line = 0
+                for (r, c) in line:
+                    pos_idx = r * 4 + c
+                    # Verificar si hay pieza en esta posición (sum de características > 0)
+                    if np.sum(board[:, r, c]) > 0:
+                        pieces_in_line += 1
+
+                # Si hay 3 piezas en la línea (incluyendo la recién colocada), es una amenaza
+                if pieces_in_line == 3:
+                    reward += 0.3  # Premiar crear amenaza (3 en línea)
+                    break
+
+                # Si hay 2 piezas y bloqueamos una posible línea del oponente
+                elif pieces_in_line == 2:
+                    reward += 0.2  # Premiar bloqueo potencial
+
+    except Exception:
+        # Si hay error en el análisis, no dar recompensa intermedia
+        pass
+
+    return reward
+#-----fin de la modificacion---
+
+
 # ####################################################################
 def process_match(
     match_path: str, result: int, n_last_states: int = 10
@@ -177,19 +253,49 @@ def process_match(
     p1["done"] = False
     p2["done"] = False
 
-    # Función de recompensa
-    p1["reward"] = result
+    #-----inicio de la modificacion--- FASE 4: Recompensas intermedias
+    # Valor anterior: Solo recompensa final basada en resultado
+    # Calcular recompensas intermedias para cada estado
+    p1_intermediate_rewards = []
+    p2_intermediate_rewards = []
+
+    for i in range(len(p1)):
+        is_final_state = (i == len(p1) - 1)
+        is_winner_p1 = is_final_state and result == 1
+        intermediate_r = calculate_intermediate_reward(
+            p1["state_board"].iloc[i],
+            p1["action_pos"].iloc[i],
+            is_winner=is_winner_p1
+        )
+        p1_intermediate_rewards.append(intermediate_r)
+
+    for i in range(len(p2)):
+        is_final_state = (i == len(p2) - 1)
+        is_winner_p2 = is_final_state and result == -1
+        intermediate_r = calculate_intermediate_reward(
+            p2["state_board"].iloc[i],
+            p2["action_pos"].iloc[i],
+            is_winner=is_winner_p2
+        )
+        p2_intermediate_rewards.append(intermediate_r)
+
+    # Función de recompensa: final + intermedia
     if result == 1:
-        p2["reward"] = -1
+        # p1 gana
+        p1["reward"] = [r + (1.0 if i == len(p1) - 1 else 0) for i, r in enumerate(p1_intermediate_rewards)]
+        p2["reward"] = [r + (-1.0 if i == len(p2) - 1 else 0) for i, r in enumerate(p2_intermediate_rewards)]
         p1.loc[p1.index[-1], "done"] = True
-
     elif result == -1:
-        p2["reward"] = 1
+        # p2 gana
+        p1["reward"] = [r + (-1.0 if i == len(p1) - 1 else 0) for i, r in enumerate(p1_intermediate_rewards)]
+        p2["reward"] = [r + (1.0 if i == len(p2) - 1 else 0) for i, r in enumerate(p2_intermediate_rewards)]
         p2.loc[p2.index[-1], "done"] = True
-
     else:
-        p2["reward"] = 0
+        # Empate
+        p1["reward"] = p1_intermediate_rewards  # Solo recompensas intermedias, 0 final
+        p2["reward"] = p2_intermediate_rewards
         p1.loc[p1.index[-1], "done"] = True
+    #-----fin de la modificacion---
 
     # --- Last n states
     p1 = p1.tail(n_last_states).reset_index(drop=True)

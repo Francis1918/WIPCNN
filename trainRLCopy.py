@@ -245,11 +245,15 @@ if not DEBUG_PARAMS:
     # number of last states to consider in the experience generation at the end of training. -1 means all states
     N_LAST_STATES_FINAL: int = -1
 
+    #-----inicio de la modificacion--- FASE 3: Temperatura de exploración más conservadora
+    # Valores anteriores:
+    # TEMPERATURE_EXPLORE = 0.5
+    # TEMPERATURE_EXPLOIT = 0.1
     # temperature for exploration, higher values lead to more exploration
-    TEMPERATURE_EXPLORE = 0.5  # view test of temperature
-
+    TEMPERATURE_EXPLORE = 0.3  # Menor temperatura = menos exploración aleatoria
     # temperature for exploitation, lower values lead to more exploitation
-    TEMPERATURE_EXPLOIT = 0.1
+    TEMPERATURE_EXPLOIT = 0.05  # Más determinístico en evaluación
+    #-----fin de la modificacion---
 
     # number of players to plot in the win rate graph, -1 means all players
     N_PLAYERS_PLOT = 7
@@ -339,7 +343,19 @@ replay_buffer = ReplayBuffer(
 # ###########################
 optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
 
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, EPOCHS, 0.0)
+#-----inicio de la modificacion--- FASE 4: Learning Rate Scheduler mejorado
+# Valor anterior: scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, EPOCHS, 0.0)
+# Opción 1: StepLR - Reduce LR cada 200 épocas por factor 0.5
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.5)
+
+# Opción 2: CosineAnnealing con reinicio (más suave, recomendado)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
+    optimizer,
+    T_0=200,      # Reiniciar cada 200 épocas
+    T_mult=2,     # Duplicar período después de cada reinicio
+    eta_min=1e-6  # LR mínimo
+)
+#-----fin de la modificacion---
 
 
 # The Huber loss acts like the mean squared error when the error is small, but like the mean absolute error when the error is large - this makes it more robust to outliers when the estimates of Q are very noisy.
@@ -360,12 +376,44 @@ pbar = tqdm(
 logger.info("Hyperparameters loaded.")
 logger.info("Starting training...")
 
+#-----inicio de la modificacion--- FASE 4: Configuración para mezcla de oponentes
+# Valor anterior: No existía esta configuración
+import random
+MIXED_OPPONENTS_START_EPOCH = 10  # Comenzar a mezclar oponentes después de N épocas
+SELF_PLAY_PROBABILITY = 0.5  # 50% self-play, 50% contra oponentes anteriores
+#-----fin de la modificacion---
+
 for e in tqdm(
     range(EPOCHS), desc=f"{Fore.GREEN}Epochs{Style.RESET_ALL}", position=1, leave=False
 ):
     # load models
     p1 = Quarto_bot(model=policy_net)
-    p2 = Quarto_bot(model=policy_net)  # self play
+
+    #-----inicio de la modificacion--- FASE 4: Mezclar oponentes
+    # Valor anterior: p2 = Quarto_bot(model=policy_net) siempre (solo self-play)
+    # Decidir si usar self-play o un oponente de época anterior
+    use_self_play = True
+
+    if e >= MIXED_OPPONENTS_START_EPOCH and len(checkpoints_files) > 1:
+        use_self_play = random.random() < SELF_PLAY_PROBABILITY
+
+    if use_self_play:
+        # Self-play: p2 usa el mismo modelo que p1
+        p2 = Quarto_bot(model=policy_net)
+        logger.debug(f"Epoch {e+1}: Using self-play")
+    else:
+        # Cargar un oponente de una época anterior aleatoria
+        # Preferir oponentes más recientes (últimos 50% de checkpoints disponibles)
+        n_checkpoints = len(checkpoints_files)
+        recent_start = max(0, n_checkpoints // 2)  # Últimos 50%
+        opponent_checkpoint = random.choice(checkpoints_files[recent_start:])
+
+        # Crear modelo para el oponente y cargar pesos
+        opponent_model = QuartoCNN()
+        opponent_model.load_model(opponent_checkpoint)
+        p2 = Quarto_bot(model=opponent_model)
+        logger.debug(f"Epoch {e+1}: Using opponent from checkpoint: {opponent_checkpoint}")
+    #-----fin de la modificacion---
 
     # modify the bots to use different temperatures for exploration and exploitation
     p1.DETERMINISTIC = False
