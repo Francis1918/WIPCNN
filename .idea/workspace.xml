@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Bug fixed en el mescla de agentes en el entreamiento con la finalidad de mejorar" />
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="bug fixed">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -206,15 +209,7 @@
       <workItem from="1764733503137" duration="152000" />
       <workItem from="1764766599594" duration="10877000" />
       <workItem from="1764791001906" duration="1315000" />
-      <workItem from="1764794504537" duration="5505000" />
-    </task>
-    <task id="LOCAL-00013" summary="Ajustes del torneo">
-      <option name="closed" value="true" />
-      <created>1758422805455</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1758422805455</updated>
+      <workItem from="1764794504537" duration="8868000" />
     </task>
     <task id="LOCAL-00014" summary="Ajustes del torneo e implementaciones adicionales">
       <option name="closed" value="true" />
@@ -600,7 +595,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764801765071</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="bug fixed">
+      <option name="closed" value="true" />
+      <created>1764801999540</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1764801999540</updated>
+    </task>
+    <option name="localTasksCounter" value="63" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -618,7 +621,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Ajustes del torneo e implementaciones adicionales" />
     <MESSAGE value="Correcciones menores" />
     <MESSAGE value="referencia de torneo tradicional" />
     <MESSAGE value="Ultimas modificaciones antes de la actualizacion Quarto v1.1" />
@@ -643,7 +645,8 @@
     <MESSAGE value="Inicio de la Fase 1" />
     <MESSAGE value="Posibles mejoras de las fases 1 a 4" />
     <MESSAGE value="Bug fixed en el mescla de agentes en el entreamiento con la finalidad de mejorar" />
-    <option name="LAST_COMMIT_MESSAGE" value="Bug fixed en el mescla de agentes en el entreamiento con la finalidad de mejorar" />
+    <MESSAGE value="bug fixed" />
+    <option name="LAST_COMMIT_MESSAGE" value="bug fixed" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
