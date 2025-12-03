@@ -410,7 +410,10 @@ for e in tqdm(
 
         # Crear modelo para el oponente y cargar pesos
         opponent_model = QuartoCNN()
-        opponent_model.load_model(opponent_checkpoint)
+        #-----inicio de la modificacion--- CORRECCION: Usar torch.load y load_state_dict
+        # Valor anterior: opponent_model.load_model(opponent_checkpoint) - método no existía
+        opponent_model.load_state_dict(torch.load(opponent_checkpoint))
+        #-----fin de la modificacion---
         p2 = Quarto_bot(model=opponent_model)
         logger.debug(f"Epoch {e+1}: Using opponent from checkpoint: {opponent_checkpoint}")
     #-----fin de la modificacion---
