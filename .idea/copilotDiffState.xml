@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/update_notebook.py">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/update_notebook.py" />
+              <option name="updatedContent" value="import json&#10;&#10;# Leer el archivo&#10;with open(r'C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\hierarchical-SAE\analysis\Bitacora_1.ipynb', 'r', encoding='utf-8') as f:&#10;    data = json.load(f)&#10;&#10;# Nuevo contenido para la celda 15&#10;new_content = &quot;&quot;&quot;### Implementacion de las correcciones y mejoras por fases&#10;&#10; PRIORIDAD CRÍTICA (Fase 1) ✅ YA ESTABA IMPLEMENTADO&#10;1. Target Network: `target_net = QuartoCNN()` con soft update cada N batches&#10;2. Learning Rate: `LR = 1e-4` (AdamW optimizer)&#10;3. Huber Loss: `nn.SmoothL1Loss()` &#10;&gt; **Estado:** Ya existía en trainRLCopy.py antes de las modificaciones&#10;&#10; PRIORIDAD ALTA (Fase 2) ✅ YA ESTABA IMPLEMENTADO&#10;1. Batch Size: `BATCH_SIZE = 256` (mayor al recomendado de 128)&#10;2. Buffer Size: `REPLAY_SIZE = 300,000` (mayor al recomendado de 100,000)&#10;3. Gamma: `GAMMA = 0.99`&#10;4. Gradient Clipping: `MAX_GRAD_NORM = 1.0` con `clip_grad_norm_()`&#10;&gt; **Estado:** Ya existía en trainRLCopy.py antes de las modificaciones&#10;&#10; PRIORIDAD MEDIA (Fase 3) ✅ IMPLEMENTADO - 3 Dic 2025&#10;1. ~~Epsilon Decay~~ → Usa temperatura: `TEMPERATURE_EXPLORE = 0.3` (antes 0.5)&#10;2. ~~Epsilon Min~~ → Usa temperatura: `TEMPERATURE_EXPLOIT = 0.05` (antes 0.1)&#10;3. BatchNormalization: Añadido `bn1, bn2, bn_fc1, bn_fc1b, bn_fc1c, bn_fc1d` en CNN1.py&#10;4. Más capas ocultas: Arquitectura 256→256→128→64 neuronas en CNN1.py&#10;5. Dropout: Reducido de 0.5 a 0.2 en CNN1.py&#10;&gt; **Archivos modificados:** trainRLCopy.py, models/CNN1.py&#10;&#10; PRIORIDAD BAJA (Fase 4) ✅ IMPLEMENTADO - 3 Dic 2025&#10;1. Recompensas intermedias: Centro (+0.1), Amenaza 3 en línea (+0.3), Bloqueo (+0.2) en RL_functions.py&#10;2. Learning Rate Scheduler: `CosineAnnealingWarmRestarts(T_0=200, T_mult=2, eta_min=1e-6)` en trainRLCopy.py&#10;3. Soft Update Target: `TAU = 0.005` (ya existía)&#10;4. Mezclar oponentes: `SELF_PLAY_PROBABILITY = 0.5` después de época 10 en trainRLCopy.py&#10;&gt; **Archivos modificados:** trainRLCopy.py, QuartoRL/RL_functions.py&quot;&quot;&quot;&#10;&#10;# Actualizar la celda 15&#10;data['cells'][15]['source'] = new_content&#10;&#10;# Guardar el archivo&#10;with open(r'C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\hierarchical-SAE\analysis\Bitacora_1.ipynb', 'w', encoding='utf-8') as f:&#10;    json.dump(data, f, ensure_ascii=False, indent=1)&#10;&#10;print('Celda 15 actualizada correctamente')&#10;print('Contenido actualizado:')&#10;print(new_content[:200])&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
