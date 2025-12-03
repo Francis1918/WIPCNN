@@ -49,8 +49,8 @@ def _validate_and_import_quartopy():
                 sys.path.insert(0, str(parent_dir))
 
             # Importar y ejecutar configuración de dependencias
-            import setup_dependencies
-            setup_dependencies.setup_quartopy(silent=False)
+            from utils import setup_quartopy
+            setup_quartopy.setup(silent=False)
 
             # Reintentar importación después de configuración
             from quartopy import logger

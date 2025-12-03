@@ -24,9 +24,8 @@ except ImportError:
             sys.path.insert(0, str(parent_dir))
 
         # Import and run dependency setup
-        import setup_dependencies
-
-        setup_dependencies.setup_quartopy(silent=False)
+        from utils import setup_quartopy
+        setup_quartopy.setup(silent=False)
 
         # Retry import after setup
         from quartopy import BotAI, play_games
