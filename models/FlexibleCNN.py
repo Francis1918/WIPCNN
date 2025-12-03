@@ -20,13 +20,58 @@ import numpy as np
 import os
 import logging
 
-# Configurar logger
+# Configurar logger (moverlo antes de cualquier uso en funciones de compatibilidad)
 logger = logging.getLogger("FlexibleCNN")
 handler = logging.StreamHandler()
 formatter = logging.Formatter('[%(asctime)s][%(levelname)s][%(name)s] %(message)s', datefmt='%m-%d %H:%M:%S')
 handler.setFormatter(formatter)
-logger.addHandler(handler)
+# Evitar múltiples handlers si el módulo se importa varias veces
+if not logger.handlers:
+    logger.addHandler(handler)
 logger.setLevel(logging.INFO)
+
+# Compat loader for torch.load across PyTorch versions
+def torch_load_compat(weights_path, map_location=torch.device('cpu')):
+    """
+    Compatibilidad para cargar checkpoints con distintas versiones de PyTorch.
+    Intenta en este orden:
+      1) torch.load() por defecto (PyTorch >=2.6 usa weights_only=True por defecto)
+      2) Reintentar dentro de torch.serialization.safe_globals([numpy._core.multiarray.scalar])
+      3) Como último recurso, reintentar con weights_only=False (menos seguro)
+    """
+    try:
+        return torch.load(weights_path, map_location=map_location)
+    except Exception as e:
+        logger.warning(f"torch.load failed (default). Error: {e}")
+        # Intentar safe_globals (disponible en PyTorch 2.6+)
+        try:
+            _np = np
+            safe_globals_ctx = getattr(torch.serialization, 'safe_globals', None)
+            add_safe_globals = getattr(torch.serialization, 'add_safe_globals', None)
+
+            if safe_globals_ctx is not None:
+                logger.info("Retrying torch.load inside torch.serialization.safe_globals for numpy._core.multiarray.scalar")
+                with torch.serialization.safe_globals([_np._core.multiarray.scalar]):
+                    return torch.load(weights_path, map_location=map_location)
+            elif add_safe_globals is not None:
+                logger.info("Registering numpy._core.multiarray.scalar globally via add_safe_globals and retrying")
+                torch.serialization.add_safe_globals([_np._core.multiarray.scalar])
+                return torch.load(weights_path, map_location=map_location)
+        except Exception as e2:
+            logger.warning(f"safe_globals attempt failed: {e2}")
+
+        # Último recurso: intentar weights_only=False (solo si confías en el checkpoint)
+        try:
+            logger.warning("Retrying torch.load with weights_only=False (less safe). Only do this if checkpoint is trusted.")
+            return torch.load(weights_path, map_location=map_location, weights_only=False)
+        except TypeError:
+            # Este parámetro no existe en versiones antiguas de torch
+            logger.error("torch.load does not support weights_only parameter in this torch version; re-raising original exception.")
+            raise e
+        except Exception as e3:
+            logger.error(f"Final attempt to load model failed: {e3}")
+            raise
+
 
 class FlexibleNN(nn.Module):
     """
@@ -53,8 +98,9 @@ class FlexibleNN(nn.Module):
         
         try:
             # Intentar cargar el estado del modelo
-            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
-            
+-            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
++            state_dict = torch_load_compat(weights_path, map_location=torch.device('cpu'))
+
             # Verificar si hay diferencias en las claves del estado
             model_keys = set(model.state_dict().keys())
             loaded_keys = set(state_dict.keys())
@@ -275,8 +321,9 @@ class FlexibleQuartoCNN(FlexibleNN):
         """
         try:
             # Cargar el estado del modelo
-            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
-            
+-            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
++            state_dict = torch_load_compat(weights_path, map_location=torch.device('cpu'))
+
             # Detectar dimensiones
             architecture = {}
             
@@ -346,8 +393,9 @@ class FlexibleQuartoCNN(FlexibleNN):
         
         try:
             # Cargar el estado del modelo
-            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
-            
+-            state_dict = torch.load(weights_path, map_location=torch.device('cpu'))
++            state_dict = torch_load_compat(weights_path, map_location=torch.device('cpu'))
+
             # Verificar si hay diferencias en las claves del estado
             model_keys = set(model.state_dict().keys())
             loaded_keys = set(state_dict.keys())
