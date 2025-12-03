@@ -2,7 +2,7 @@ from utils.logger import logger
 
 logger.info("Starting. Importing...")
 
-from collections import defaultdict
+from collections import defaultdict, deque
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,6 +11,7 @@ from torchrl.data.replay_buffers.storages import LazyTensorStorage
 from torchrl.data.replay_buffers.samplers import SamplerWithoutReplacement
 
 from bot.CNN_bot import Quarto_bot
+from bot.random_bot import Quarto_random_bot
 from models.CNN1 import QuartoCNN
 from QuartoRL import gen_experience, run_contest
 
@@ -20,11 +21,192 @@ import pickle
 from colorama import init, Fore, Style
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 logger.info("Imports done.")
 
-plt.ion()  # Enable interactive mode
+
+# ===========================
+# TRAINING MONITOR WITH PLOTLY
+# ===========================
+class TrainingMonitor:
+    """Monitor de entrenamiento con gráficas interactivas usando Plotly."""
+
+    def __init__(self, max_points: int = 10000, save_dir: Path = None):
+        self.losses = deque(maxlen=max_points)
+        self.loss_steps = deque(maxlen=max_points)
+        self.win_rate_random = []  # Win rate vs oponente aleatorio
+        self.win_rate_weak = []    # Win rate vs oponente débil (época 0)
+        self.epochs = []
+        self.step_counter = 0
+        self.save_dir = save_dir
+
+    def update_loss(self, loss_value: float):
+        """Registra el valor de pérdida en cada iteración."""
+        self.step_counter += 1
+        self.losses.append(loss_value)
+        self.loss_steps.append(self.step_counter)
+
+    def update_win_rates(self, epoch: int, wr_random: float, wr_weak: float):
+        """Registra los win rates vs oponentes de referencia."""
+        self.epochs.append(epoch)
+        self.win_rate_random.append(wr_random)
+        self.win_rate_weak.append(wr_weak)
+
+    def plot(self, save_html: bool = True, filename: str = "training_monitor.html"):
+        """Genera y guarda la gráfica interactiva de Plotly."""
+        fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=(
+                "📉 Pérdida durante Entrenamiento (debe BAJAR)",
+                "📈 Win Rate vs Oponentes de Referencia (debe SUBIR)"
+            ),
+            vertical_spacing=0.15
+        )
+
+        # Gráfica de pérdida (debe BAJAR)
+        if len(self.losses) > 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=list(self.loss_steps),
+                    y=list(self.losses),
+                    mode='lines',
+                    name='Loss',
+                    line=dict(color='red', width=1),
+                    hovertemplate='Iteración: %{x}<br>Loss: %{y:.6f}<extra></extra>'
+                ),
+                row=1, col=1
+            )
+
+        # Win Rate vs Random (debe SUBIR)
+        if len(self.win_rate_random) > 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=self.epochs,
+                    y=self.win_rate_random,
+                    mode='lines+markers',
+                    name='vs Aleatorio',
+                    line=dict(color='blue', width=2),
+                    marker=dict(size=6),
+                    hovertemplate='Época: %{x}<br>Win Rate: %{y:.2%}<extra></extra>'
+                ),
+                row=2, col=1
+            )
+
+        # Win Rate vs Oponente Débil (debe SUBIR)
+        if len(self.win_rate_weak) > 0:
+            fig.add_trace(
+                go.Scatter(
+                    x=self.epochs,
+                    y=self.win_rate_weak,
+                    mode='lines+markers',
+                    name='vs Modelo Inicial (Época 0)',
+                    line=dict(color='green', width=2),
+                    marker=dict(size=6),
+                    hovertemplate='Época: %{x}<br>Win Rate: %{y:.2%}<extra></extra>'
+                ),
+                row=2, col=1
+            )
+
+        # Línea de referencia 50% win rate
+        if len(self.epochs) > 0:
+            fig.add_hline(
+                y=0.5,
+                line_dash="dash",
+                line_color="gray",
+                row=2, col=1,
+                annotation_text="50% (neutral)",
+                annotation_position="right"
+            )
+
+        fig.update_xaxes(title_text="Iteración", row=1, col=1)
+        fig.update_yaxes(title_text="Loss", row=1, col=1)
+        fig.update_xaxes(title_text="Época", row=2, col=1)
+        fig.update_yaxes(title_text="Win Rate", range=[0, 1], row=2, col=1)
+
+        fig.update_layout(
+            title="🎮 Monitor de Entrenamiento RL - Quarto",
+            height=800,
+            showlegend=True,
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            template="plotly_white"
+        )
+
+        if save_html and self.save_dir:
+            filepath = self.save_dir / filename
+            fig.write_html(str(filepath))
+            logger.debug(f"Training monitor saved to: {filepath}")
+
+        return fig
+
+
+def evaluar_vs_random(player_bot: Quarto_bot, n_partidas: int = 10) -> float:
+    """Evalúa el bot contra un oponente aleatorio."""
+    from quartopy import QuartoGame
+
+    wins = 0
+    draws = 0
+    random_bot = Quarto_random_bot()
+
+    for i in range(n_partidas):
+        game = QuartoGame()
+        # Alternar quién empieza
+        if i % 2 == 0:
+            bots = [player_bot, random_bot]
+            player_idx = 0
+        else:
+            bots = [random_bot, player_bot]
+            player_idx = 1
+
+        current_player = 0
+        selected_piece = None
+
+        while not game.is_game_over():
+            bot = bots[current_player]
+
+            # Seleccionar pieza para el oponente
+            selected_piece = bot.select(game)
+
+            if game.is_game_over():
+                break
+
+            # Cambiar turno para colocar la pieza
+            current_player = 1 - current_player
+            bot = bots[current_player]
+
+            # Colocar la pieza seleccionada
+            pos = bot.place_piece(game, selected_piece)
+            game.play(selected_piece, pos)
+
+        # Determinar resultado
+        winner = game.get_winner()
+        if winner is None:
+            draws += 1
+        elif (winner == 1 and player_idx == 0) or (winner == 2 and player_idx == 1):
+            wins += 1
+
+    return (wins + 0.5 * draws) / n_partidas
+
+
+def evaluar_vs_debil(player_bot: Quarto_bot, checkpoint_debil: str, n_partidas: int = 10) -> float:
+    """Evalúa el bot contra el modelo de la época 0 (débil)."""
+    results = run_contest(
+        player=player_bot,
+        rivals=[checkpoint_debil],
+        rival_class=Quarto_bot,
+        rivals_clip=1,
+        matches=n_partidas,
+        verbose=False,
+        match_dir=None,  # No guardar partidas de evaluación
+    )
+
+    for _, stats in results.items():
+        total = stats["wins"] + stats["draws"] + stats["losses"]
+        if total > 0:
+            return (stats["wins"] + 0.5 * stats["draws"]) / total
+    return 0.0
+
 
 torch.manual_seed(50)
 EXPERIMENT_NAME = "ba_increasing_n_last_states"
@@ -83,6 +265,10 @@ if not DEBUG_PARAMS:
     # number of rival points to plot for each player in the win rate graph
     POINTS_BY_RIVAL = 50  # must be less than or equal to RIVALS_IN_TOURNAMENT
 
+    # Evaluación vs oponentes de referencia (para TrainingMonitor)
+    N_MATCHES_EVAL_REFERENCE = 20  # partidas vs random y vs modelo inicial
+    MONITOR_UPDATE_FREQ = 5  # actualizar gráfica cada N épocas
+
 
 else:
     logger.warning(
@@ -121,6 +307,10 @@ else:
     RIVALS_IN_TOURNAMENT = 15  # number of rivals to evaluate the bot against in the contest at the end of each epoch
     POINTS_BY_RIVAL = 6
 
+    # Evaluación vs oponentes de referencia (para TrainingMonitor)
+    N_MATCHES_EVAL_REFERENCE = 10  # partidas vs random y vs modelo inicial
+    MONITOR_UPDATE_FREQ = 2  # actualizar gráfica cada N épocas
+
 
 # ###########################
 MAX_GRAD_NORM = 1.0
@@ -141,6 +331,12 @@ checkpoint_name = checkpoint_name_generator(0)
 # list of file names by epoch
 _fcheckpoint_name = policy_net.export_model(checkpoint_name, checkpoint_folder=str(CHECKPOINTS_DIR))
 checkpoints_files: list[str] = [_fcheckpoint_name]
+
+# Referencia fija para evaluación consistente (modelo época 0 - débil)
+CHECKPOINT_DEBIL = _fcheckpoint_name
+
+# Inicializar monitor de entrenamiento con Plotly
+training_monitor = TrainingMonitor(max_points=50000, save_dir=TRAINING_DATA_DIR)
 
 # ###########################
 replay_buffer = ReplayBuffer(
@@ -293,6 +489,9 @@ for e in tqdm(
             state_sel_action_values, expected_state_action_values.unsqueeze(1)
         )
 
+        # Actualizar monitor de entrenamiento con el loss
+        training_monitor.update_loss(loss.item())
+
         # Optimize the model
         optimizer.zero_grad()
         loss.backward()
@@ -345,6 +544,26 @@ for e in tqdm(
     with open(results_file, "wb") as f:
         pickle.dump(epochs_results, f)
 
+    # ===========================
+    # EVALUACIÓN VS OPONENTES DE REFERENCIA (para TrainingMonitor)
+    # ===========================
+    if (e + 1) % MONITOR_UPDATE_FREQ == 0:
+        logger.info(f"Evaluating vs reference opponents at epoch {e + 1}...")
+
+        # Evaluar vs oponente aleatorio
+        wr_random = evaluar_vs_random(p1, n_partidas=N_MATCHES_EVAL_REFERENCE)
+
+        # Evaluar vs modelo inicial (débil)
+        wr_weak = evaluar_vs_debil(p1, CHECKPOINT_DEBIL, n_partidas=N_MATCHES_EVAL_REFERENCE)
+
+        # Actualizar monitor
+        training_monitor.update_win_rates(e + 1, wr_random, wr_weak)
+
+        # Guardar gráfica HTML
+        training_monitor.plot(save_html=True, filename="training_monitor.html")
+
+        logger.info(f"Win rate vs Random: {wr_random:.2%}, vs Modelo Inicial: {wr_weak:.2%}")
+
     # Extract win rates for each player epoch and each rival
     win_rate_by_epoch: defaultdict[int, dict[int, float]] = defaultdict(lambda: dict())
     for player_id, player_results in enumerate(epochs_results):
@@ -360,15 +579,16 @@ for e in tqdm(
 
             win_rate_by_epoch[player_id][player_name] = win_rate
 
-    # Plot win rate by rival without halting execution, limit to POINTS_BY_RIVAL points but cover whole range
-    plt.figure(1, figsize=(10, 6), clear=True)
-
-    # ############ PLOTTING
+    # ===========================
+    # PLOTTING CON PLOTLY (Win Rate vs Previous Rivals)
+    # ===========================
     # Only plot N_PLAYERS_PLOT equally spaced players (or all if N_PLAYERS_PLOT < 0 or more players than available)
     if N_PLAYERS_PLOT < 0 or N_PLAYERS_PLOT >= e + 1:
         players_to_plot = range(e + 1)  # Plot all players
     else:
         players_to_plot = torch.linspace(0, e, steps=N_PLAYERS_PLOT).long().tolist()
+
+    fig_rivals = go.Figure()
 
     for player_name in players_to_plot:
         win_rates = win_rate_by_epoch[player_name]
@@ -381,24 +601,36 @@ for e in tqdm(
             x_rival_names = [list(win_rates.keys())[i] for i in idx_rival_names]
         else:
             # If fewer than POINTS_BY_RIVAL, plot all available points
-            x_rival_names = win_rates.keys()
+            x_rival_names = list(win_rates.keys())
 
         y_win_rates = [win_rates[i] for i in x_rival_names]
-        plt.plot(
-            x_rival_names,
-            y_win_rates,
-            ".:",
-            label=f"Rival epoch {player_name}",
+
+        fig_rivals.add_trace(
+            go.Scatter(
+                x=x_rival_names,
+                y=y_win_rates,
+                mode='lines+markers',
+                name=f"Época {player_name}",
+                hovertemplate='Rival época: %{x}<br>Win Rate: %{y:.2%}<extra></extra>'
+            )
         )
-    plt.xlabel("Rival from epoch")
-    plt.ylabel("Win Rate")
-    plt.title("Win Rate vs Previous Rivals")
-    plt.legend()
-    plt.xticks([int(x) for x in plt.gca().get_xticks() if float(x).is_integer()])
-    plt.grid(True)
-    plt.tight_layout()
-    plt.draw()
-    plt.pause(0.001)
+
+    fig_rivals.add_hline(y=0.5, line_dash="dash", line_color="gray",
+                         annotation_text="50%", annotation_position="right")
+
+    fig_rivals.update_layout(
+        title="📊 Win Rate vs Rivales Anteriores",
+        xaxis_title="Rival desde época",
+        yaxis_title="Win Rate",
+        yaxis=dict(range=[0, 1]),
+        template="plotly_white",
+        height=500,
+        showlegend=True
+    )
+
+    # Guardar gráfica de rivales
+    rivals_plot_file = TRAINING_DATA_DIR / "win_rate_vs_rivals.html"
+    fig_rivals.write_html(str(rivals_plot_file))
 
     # We're also using a learning rate scheduler. Like the gradient clipping,
     # this is a nice-to-have but nothing necessary for PPO to work.
@@ -406,7 +638,7 @@ for e in tqdm(
     logger.info(f"Current learning rate: {scheduler.get_last_lr()[0]}")
 
 logger.info("Training completed.")
-# Prevent matplotlib from closing figures at the end of the script
-plt.ioff()
-plt.show(block=True)
+# Guardar gráfica final del monitor
+training_monitor.plot(save_html=True, filename="training_monitor_final.html")
+logger.info(f"Final training monitor saved to: {TRAINING_DATA_DIR / 'training_monitor_final.html'}")
 
