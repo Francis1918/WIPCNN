@@ -18,7 +18,7 @@ except ImportError:
         import sys
         from pathlib import Path
 
-        # Add parent directory to path for setup_dependencies
+        # Add parent directory to path for utils
         parent_dir = Path(__file__).parent.parent
         if str(parent_dir) not in sys.path:
             sys.path.insert(0, str(parent_dir))
@@ -45,7 +45,7 @@ except ImportError:
             "   QUARTOPY_PATH=/path/to/your/quartopy/project\n"
             "4. Or install quartopy as a package: pip install quartopy\n\n"
             f"📋 Original error: {e}\n\n"
-            "💡 For more help, check setup_dependencies.py"
+            "💡 For more help, check utils/setup_quartopy.py"
         )
         print(error_msg)
         raise ImportError(error_msg) from e
@@ -53,7 +53,7 @@ except ImportError:
         error_msg = (
             f"❌ UNEXPECTED ERROR during quartopy setup: {e}\n\n"
             "🔧 SUGGESTED ACTIONS:\n"
-            "1. Check that setup_dependencies.py exists and is valid\n"
+            "1. Check that utils/setup_quartopy.py exists and is valid\n"
             "2. Verify file permissions in the project directory\n"
             "3. Try running the project with administrator privileges\n"
             "4. Check the utils/logger.py for any issues\n\n"

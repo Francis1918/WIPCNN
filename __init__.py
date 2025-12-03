@@ -6,7 +6,8 @@ Este archivo se ejecuta automáticamente cuando se importa cualquier módulo del
 
 # Configurar dependencias automáticamente
 try:
-    import setup_dependencies
+    from utils import setup_quartopy
+    setup_quartopy.setup(silent=True)
     # No mostrar mensajes aquí para no alterar la salida original
 except Exception:
     # Si falla, se manejará cuando se intente importar quartopy

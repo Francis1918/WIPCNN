@@ -61,9 +61,8 @@ try:
     from quartopy import play_games
 except ImportError:
     # Fallback para dependencias
-    import setup_dependencies
-
-    setup_dependencies.setup_quartopy(silent=False)
+    from utils import setup_quartopy
+    setup_quartopy.setup(silent=False)
     from quartopy import play_games
 
 # Rutas predeterminadas para agentes y resultados (desde .env o valores por defecto)

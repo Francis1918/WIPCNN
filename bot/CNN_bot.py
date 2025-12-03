@@ -36,12 +36,12 @@ def _validate_and_import_quartopy():
     except ImportError as initial_error:
         logger.warning("⚠️ Initial quartopy import failed, attempting dependency setup...")
 
-        # Attempt fallback with setup_dependencies
+        # Attempt fallback with utils.setup_quartopy
         try:
             import sys
             from pathlib import Path
 
-            # Add parent directory to path for setup_dependencies
+            # Add parent directory to path for utils
             parent_dir = Path(__file__).parent.parent
             if str(parent_dir) not in sys.path:
                 sys.path.insert(0, str(parent_dir))
@@ -70,7 +70,7 @@ def _validate_and_import_quartopy():
                 "4. Or install quartopy as a package: pip install quartopy\n\n"
                 f"📋 Original error: {initial_error}\n"
                 f"📋 Setup attempt error: {final_error}\n\n"
-                "💡 For more help, check the project documentation or setup_dependencies.py"
+                "💡 For more help, check the project documentation or utils/setup_quartopy.py"
             )
 
             logger.error(error_msg)

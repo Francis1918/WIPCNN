@@ -30,12 +30,12 @@ def _validate_and_import_quartopy():
     except ImportError as initial_error:
         utils_logger.warning("⚠️ Error al importar quartopy, intentando configurar dependencias...")
 
-        # Attempt fallback with setup_dependencies
+        # Attempt fallback with utils.setup_quartopy
         try:
             import sys
             from pathlib import Path
 
-            # Add parent directory to path for setup_dependencies
+            # Add parent directory to path for utils
             parent_dir = Path(__file__).parent.parent
             if str(parent_dir) not in sys.path:
                 sys.path.insert(0, str(parent_dir))

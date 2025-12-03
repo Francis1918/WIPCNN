@@ -382,8 +382,8 @@ def run_match_parallel_cuda(args):
         try:
             from quartopy import play_games
         except ImportError:
-            import setup_dependencies
-            setup_dependencies.setup_quartopy(silent=True)
+            from utils import setup_quartopy
+            setup_quartopy.setup(silent=True)
             from quartopy import play_games
 
         # Ejecutar partidas
