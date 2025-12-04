@@ -128,10 +128,37 @@ class TorneoQuarto:
         # Sistema Elo
         self.elo = SistemaElo(k_factor=k_factor_elo, elo_inicial=elo_inicial)
 
-    def listar_checkpoints(self) -> list[str]:
+    def listar_checkpoints(self, recursivo: bool = True) -> list[str]:
         """Lista todos los checkpoints disponibles."""
-        # Buscar archivos .pt y .pth
-        checkpoints = list(self.checkpoints_dir.glob("*.pt")) + list(self.checkpoints_dir.glob("*.pth"))
+        # Verificar que el directorio existe
+        if not self.checkpoints_dir.exists():
+            print(f"⚠️ ERROR: El directorio no existe: {self.checkpoints_dir}")
+            return []
+
+        # Buscar archivos .pt y .pth (recursivo o no)
+        pattern_pt = "**/*.pt" if recursivo else "*.pt"
+        pattern_pth = "**/*.pth" if recursivo else "*.pth"
+
+        checkpoints_pt = list(self.checkpoints_dir.glob(pattern_pt))
+        checkpoints_pth = list(self.checkpoints_dir.glob(pattern_pth))
+        checkpoints = checkpoints_pt + checkpoints_pth
+
+        # Debug info
+        print(f"\n📁 Buscando checkpoints en: {self.checkpoints_dir}")
+        print(f"   Búsqueda recursiva: {recursivo}")
+        print(f"   Archivos .pt encontrados: {len(checkpoints_pt)}")
+        print(f"   Archivos .pth encontrados: {len(checkpoints_pth)}")
+
+        if len(checkpoints) == 0:
+            # Listar qué archivos hay en el directorio
+            all_files = list(self.checkpoints_dir.iterdir())
+            print(f"   ⚠️ No se encontraron checkpoints!")
+            print(f"   Contenido del directorio ({len(all_files)} items):")
+            for f in all_files[:10]:
+                print(f"      - {f.name} {'(carpeta)' if f.is_dir() else ''}")
+            if len(all_files) > 10:
+                print(f"      ... y {len(all_files) - 10} más")
+
         checkpoints.sort(key=lambda x: x.stem)
         return [str(cp) for cp in checkpoints]
 
