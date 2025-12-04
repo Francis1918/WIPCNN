@@ -48,6 +48,7 @@ class TrainingMonitor:
     """Monitor de entrenamiento con gráficas interactivas usando Plotly."""
 
     def __init__(self, max_points: int = 10000, save_dir: Path = None):
+        self.max_points = max_points
         self.losses = deque(maxlen=max_points)
         self.loss_steps = deque(maxlen=max_points)
         self.win_rate_random = []  # Win rate vs oponente aleatorio
@@ -67,6 +68,53 @@ class TrainingMonitor:
         self.epochs.append(epoch)
         self.win_rate_random.append(wr_random)
         self.win_rate_weak.append(wr_weak)
+
+    def save_state(self, filename: str = "training_monitor_state.pkl"):
+        """Guarda el estado del monitor para poder reanudar."""
+        if self.save_dir is None:
+            return
+
+        state = {
+            "losses": list(self.losses),
+            "loss_steps": list(self.loss_steps),
+            "win_rate_random": self.win_rate_random,
+            "win_rate_weak": self.win_rate_weak,
+            "epochs": self.epochs,
+            "step_counter": self.step_counter,
+            "max_points": self.max_points
+        }
+
+        filepath = self.save_dir / filename
+        with open(filepath, "wb") as f:
+            pickle.dump(state, f)
+        logger.debug(f"TrainingMonitor state saved to: {filepath}")
+
+    def load_state(self, filename: str = "training_monitor_state.pkl") -> bool:
+        """Carga el estado previo del monitor. Retorna True si se cargó exitosamente."""
+        if self.save_dir is None:
+            return False
+
+        filepath = self.save_dir / filename
+        if not filepath.exists():
+            logger.info("   No se encontró estado previo del monitor de entrenamiento.")
+            return False
+
+        try:
+            with open(filepath, "rb") as f:
+                state = pickle.load(f)
+
+            self.losses = deque(state["losses"], maxlen=self.max_points)
+            self.loss_steps = deque(state["loss_steps"], maxlen=self.max_points)
+            self.win_rate_random = state["win_rate_random"]
+            self.win_rate_weak = state["win_rate_weak"]
+            self.epochs = state["epochs"]
+            self.step_counter = state["step_counter"]
+
+            logger.info(f"   📊 Monitor cargado: {len(self.epochs)} épocas, {self.step_counter} iteraciones")
+            return True
+        except Exception as e:
+            logger.warning(f"   Error al cargar estado del monitor: {e}")
+            return False
 
     def plot(self, save_html: bool = True, filename: str = "training_monitor.html"):
         """Genera y guarda la gráfica interactiva de Plotly."""
@@ -425,6 +473,10 @@ else:
 # Inicializar monitor de entrenamiento con Plotly
 training_monitor = TrainingMonitor(max_points=50000, save_dir=TRAINING_DATA_DIR)
 
+# Cargar estado previo del monitor si estamos reanudando
+if START_EPOCH > 0:
+    training_monitor.load_state()
+
 # Cargar resultados previos si existen
 epochs_results = []
 results_file = TRAINING_DATA_DIR / f"{EXPERIMENT_NAME}.pkl"
@@ -724,6 +776,9 @@ for e in tqdm(
         # Guardar gráfica HTML
         training_monitor.plot(save_html=True, filename="training_monitor.html")
 
+        # Guardar estado del monitor para poder reanudar con las gráficas
+        training_monitor.save_state()
+
         logger.info(f"Win rate vs Random: {wr_random:.2%}, vs Modelo Inicial: {wr_weak:.2%}")
 
     # Extract win rates for each player epoch and each rival
@@ -802,6 +857,7 @@ for e in tqdm(
 logger.info("Training completed.")
 # Guardar gráfica final del monitor
 training_monitor.plot(save_html=True, filename="training_monitor_final.html")
+training_monitor.save_state()  # Guardar estado final
 logger.info(f"Final training monitor saved to: {TRAINING_DATA_DIR / 'training_monitor_final.html'}")
 
 

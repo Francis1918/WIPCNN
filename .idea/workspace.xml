@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint">
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento">
+      <change beforePath="$PROJECT_DIR$/.idea/copilotDiffState.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/copilotDiffState.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/trainRLResumeCopy.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainRLResumeCopy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,6 +105,7 @@
     "Python.tournament_parallel_massive.executor": "Run",
     "Python.trainRL.executor": "Run",
     "Python.trainRLCopy.executor": "Run",
+    "Python.trainRLResumeCopy.executor": "Run",
     "Python.trainRL_improved.executor": "Run",
     "Python.trainRL_resume.executor": "Run",
     "Python.trainRL_resume_improved.executor": "Run",
@@ -210,15 +214,7 @@
       <workItem from="1764733503137" duration="152000" />
       <workItem from="1764766599594" duration="10877000" />
       <workItem from="1764791001906" duration="1315000" />
-      <workItem from="1764794504537" duration="15972000" />
-    </task>
-    <task id="LOCAL-00023" summary="Fix bugs?">
-      <option name="closed" value="true" />
-      <created>1760757867662</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1760757867662</updated>
+      <workItem from="1764794504537" duration="16990000" />
     </task>
     <task id="LOCAL-00024" summary="Fix bugs?">
       <option name="closed" value="true" />
@@ -604,7 +600,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764811887669</updated>
     </task>
-    <option name="localTasksCounter" value="72" />
+    <task id="LOCAL-00072" summary="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento">
+      <option name="closed" value="true" />
+      <created>1764812798596</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1764812798596</updated>
+    </task>
+    <option name="localTasksCounter" value="73" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -622,7 +626,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="WIP implementaciones de una arquitectrura flexible para el entrenamiento" />
     <MESSAGE value="implementaciones de una arquitectrura flexible para el test entre agentes distintos" />
     <MESSAGE value="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento" />
     <MESSAGE value="Bug fixes?" />
@@ -647,7 +650,8 @@
     <MESSAGE value="Creacion de torneo_paralelo.py para hacer las comparaciones entre agentes internos mas rapido." />
     <MESSAGE value="Update con los datos del torneo" />
     <MESSAGE value="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint" />
-    <option name="LAST_COMMIT_MESSAGE" value="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint" />
+    <MESSAGE value="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento" />
+    <option name="LAST_COMMIT_MESSAGE" value="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
@@ -660,6 +664,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$install_pytorch_cuda.coverage" NAME="install_pytorch_cuda Coverage Results" MODIFIED="1760402930067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL_resume_improved.coverage" NAME="trainRL_resume_improved Coverage Results" MODIFIED="1760832171206" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRLCopy.coverage" NAME="trainRLCopy Coverage Results" MODIFIED="1764801702195" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRLResumeCopy.coverage" NAME="trainRLResumeCopy Coverage Results" MODIFIED="1764812745410" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$contest.coverage" NAME="contest Coverage Results" MODIFIED="1760810534150" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/QuartoRL" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$install_pytorch_direct.coverage" NAME="install_pytorch_direct Coverage Results" MODIFIED="1760403722478" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel.coverage" NAME="tournament_parallel Coverage Results" MODIFIED="1760406111244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
