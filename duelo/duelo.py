@@ -327,6 +327,23 @@ def ejecutar_duelo(num_partidas: int = 100, verbose: bool = True) -> dict:
     # Guardar resultados
     guardar_resultado(resultado_final)
 
+    # Mostrar información de modelos cargados (estilo log)
+    print("\n" + "-" * 80)
+    print(f"[INFO] Model loaded successfully from {RUTA_AGENTES}")
+    print(f"  → Agente 1: {agente_1.nombre}")
+    if 'tipo_carga' in agente_1.metadata:
+        print(f"    Tipo: {agente_1.metadata['tipo_carga']}")
+    print(f"  → Agente 2: {agente_2.nombre}")
+    if 'tipo_carga' in agente_2.metadata:
+        print(f"    Tipo: {agente_2.metadata['tipo_carga']}")
+
+    # Mostrar resultados estilo Player 1 vs Player 2
+    print(f"\nPlayer 1 ({agente_1.nombre}) vs Player 2 ({agente_2.nombre}) over {num_partidas} matches")
+    print(f"defaultdict(<function play_games.<locals>.<lambda> at 0x{id(resultado_final):016X}>, {{")
+    print(f"  'Player 1': {victorias_1}, 'Player 2': {victorias_2}, 'Tie': {empates}")
+    print(f"}})")
+    print("-" * 80)
+
     # Mostrar resumen final
     print("\n" + "=" * 60)
     print("RESULTADOS FINALES")

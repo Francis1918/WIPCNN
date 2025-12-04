@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento" />
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Implementacion dle duelo entre agentes de distintas arquitecturas">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/duelo/duelo.py" beforeDir="false" afterPath="$PROJECT_DIR$/duelo/duelo.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -15,6 +19,7 @@
       <list>
         <option value="Jupyter Notebook" />
         <option value="Python Script" />
+        <option value="Python Stub" />
       </list>
     </option>
   </component>
@@ -61,9 +66,13 @@
     "Python.NN_abstract.executor": "Run",
     "Python.RL_functions.executor": "Run",
     "Python.VALIDAR_CORRECCIONES.executor": "Run",
+    "Python.__init__.executor": "Run",
     "Python.a.executor": "Run",
     "Python.actions.executor": "Run",
+    "Python.adaptador_modelo.executor": "Run",
     "Python.auto_checkpoint_monitor.executor": "Run",
+    "Python.base_model.executor": "Run",
+    "Python.cargador_agentes.executor": "Run",
     "Python.cart_p0ole.executor": "Run",
     "Python.check_cuda.executor": "Run",
     "Python.checklist_bitacora_1.executor": "Run",
@@ -74,8 +83,10 @@
     "Python.comprehensive_cleanup.executor": "Run",
     "Python.contest.executor": "Run",
     "Python.debugging.executor": "Run",
+    "Python.duelo.executor": "Run",
     "Python.epoch_group_monitor.executor": "Run",
     "Python.format_matches.executor": "Run",
+    "Python.generic_bot.executor": "Run",
     "Python.human.executor": "Run",
     "Python.install_pytorch_cuda.executor": "Run",
     "Python.install_pytorch_direct.executor": "Run",
@@ -84,9 +95,11 @@
     "Python.model_evaluator.executor": "Run",
     "Python.monitor.executor": "Run",
     "Python.random_bot.executor": "Run",
+    "Python.registry.executor": "Run",
     "Python.run_checkpoint_monitor.executor": "Run",
     "Python.run_trainRL.executor": "Run",
     "Python.setup_dependencies.executor": "Run",
+    "Python.sistema_elo.executor": "Run",
     "Python.test_collector.executor": "Run",
     "Python.test_compare_agents.executor": "Run",
     "Python.torneo.executor": "Run",
@@ -106,6 +119,7 @@
     "Python.trainRL_resume_improved.executor": "Run",
     "Python.try_collector.executor": "Run",
     "Python.update_requirements.executor": "Run",
+    "Python.utilidades.executor": "Run",
     "Python.view_training.executor": "Run",
     "Python.visualize.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -209,23 +223,9 @@
       <workItem from="1764733503137" duration="152000" />
       <workItem from="1764766599594" duration="10877000" />
       <workItem from="1764791001906" duration="1315000" />
-      <workItem from="1764794504537" duration="17332000" />
-    </task>
-    <task id="LOCAL-00025" summary="Fix bugs?">
-      <option name="closed" value="true" />
-      <created>1760759874379</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1760759874379</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Fix bugs?">
-      <option name="closed" value="true" />
-      <created>1760760018943</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1760760018943</updated>
+      <workItem from="1764794504537" duration="17496000" />
+      <workItem from="1764814111912" duration="3004000" />
+      <workItem from="1764853187264" duration="6427000" />
     </task>
     <task id="LOCAL-00027" summary="Fix bugs?">
       <option name="closed" value="true" />
@@ -603,7 +603,23 @@
       <option name="project" value="LOCAL" />
       <updated>1764813761491</updated>
     </task>
-    <option name="localTasksCounter" value="74" />
+    <task id="LOCAL-00074" summary="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento">
+      <option name="closed" value="true" />
+      <created>1764813922800</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1764813922800</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Implementacion dle duelo entre agentes de distintas arquitecturas">
+      <option name="closed" value="true" />
+      <created>1764858067545</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1764858067546</updated>
+    </task>
+    <option name="localTasksCounter" value="76" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -621,7 +637,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implementaciones de una arquitectrura flexible para el test entre agentes distintos" />
     <MESSAGE value="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento" />
     <MESSAGE value="Bug fixes?" />
     <MESSAGE value="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados" />
@@ -646,7 +661,8 @@
     <MESSAGE value="Update con los datos del torneo" />
     <MESSAGE value="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint" />
     <MESSAGE value="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento" />
-    <option name="LAST_COMMIT_MESSAGE" value="hay errores en trainRLCopy.py pero el resume ya se le hizo que detecte y continue desde el ultimo moento" />
+    <MESSAGE value="Implementacion dle duelo entre agentes de distintas arquitecturas" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implementacion dle duelo entre agentes de distintas arquitecturas" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
@@ -669,6 +685,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$RL_functions.coverage" NAME="RL_functions Coverage Results" MODIFIED="1764800564529" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/QuartoRL" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$VALIDAR_CORRECCIONES.coverage" NAME="VALIDAR_CORRECCIONES Coverage Results" MODIFIED="1761236353402" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$try_collector.coverage" NAME="try_collector Coverage Results" MODIFIED="1758291202275" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1764856352739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/duelo" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$a.coverage" NAME="a Coverage Results" MODIFIED="1758234105806" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$monitor.coverage" NAME="monitor Coverage Results" MODIFIED="1760810377920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/checkpoint_monitor" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$checklist_bitacora_1.coverage" NAME="checklist_bitacora_1 Coverage Results" MODIFIED="1764769233042" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/analysis" />
@@ -681,24 +698,32 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$update_requirements.coverage" NAME="update_requirements Coverage Results" MODIFIED="1760392975350" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$model_evaluator.coverage" NAME="model_evaluator Coverage Results" MODIFIED="1760810444526" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/checkpoint_monitor" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$epoch_group_monitor.coverage" NAME="epoch_group_monitor Coverage Results" MODIFIED="1760810507745" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/monitoring" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$adaptador_modelo.coverage" NAME="adaptador_modelo Coverage Results" MODIFIED="1764855976744" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/duelo" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$run_checkpoint_monitor.coverage" NAME="run_checkpoint_monitor Coverage Results" MODIFIED="1760810647424" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$CNN_bot.coverage" NAME="CNN_bot Coverage Results" MODIFIED="1764766775372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$registry.coverage" NAME="registry Coverage Results" MODIFIED="1764854650733" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament_parallel_CUDA_BACKUP.coverage" NAME="tournament_parallel_CUDA_BACKUP Coverage Results" MODIFIED="1759787714191" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$visualize.coverage" NAME="visualize Coverage Results" MODIFIED="1760810451247" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/checkpoint_monitor" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$base_model.coverage" NAME="base_model Coverage Results" MODIFIED="1764854562110" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$checkpoint_manager.coverage" NAME="checkpoint_manager Coverage Results" MODIFIED="1760810735448" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
-    <SUITE FILE_PATH="coverage/hierarchical_SAE$torneo_paralelo.coverage" NAME="torneo_paralelo Coverage Results" MODIFIED="1764810203534" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$torneo_paralelo.coverage" NAME="torneo_paralelo Coverage Results" MODIFIED="1764853392362" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$torneomasivo.coverage" NAME="torneomasivo Coverage Results" MODIFIED="1760410551181" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$debugging.coverage" NAME="debugging Coverage Results" MODIFIED="1758234337640" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$torneo.coverage" NAME="torneo Coverage Results" MODIFIED="1764809124847" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL.coverage" NAME="trainRL Coverage Results" MODIFIED="1764769526852" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$view_training.coverage" NAME="view_training Coverage Results" MODIFIED="1760810714681" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$generic_bot.coverage" NAME="generic_bot Coverage Results" MODIFIED="1764854598776" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/bot" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament.coverage" NAME="tournament Coverage Results" MODIFIED="1759696369722" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$format_matches.coverage" NAME="format_matches Coverage Results" MODIFIED="1760810702962" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$sistema_elo.coverage" NAME="sistema_elo Coverage Results" MODIFIED="1764856000784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/duelo" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$cargador_agentes.coverage" NAME="cargador_agentes Coverage Results" MODIFIED="1764856364021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/duelo" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$cart_p0ole.coverage" NAME="cart_p0ole Coverage Results" MODIFIED="1758291305002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$comprehensive_cleanup.coverage" NAME="comprehensive_cleanup Coverage Results" MODIFIED="1760813617494" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$actions.coverage" NAME="actions Coverage Results" MODIFIED="1758291278846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$logger.coverage" NAME="logger Coverage Results" MODIFIED="1760810744361" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$NN_abstract.coverage" NAME="NN_abstract Coverage Results" MODIFIED="1764766877273" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$utilidades.coverage" NAME="utilidades Coverage Results" MODIFIED="1764855933217" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/duelo" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$duelo.coverage" NAME="duelo Coverage Results" MODIFIED="1764859588993" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/duelo" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$check_cuda.coverage" NAME="check_cuda Coverage Results" MODIFIED="1760810594643" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$cleanup_project.coverage" NAME="cleanup_project Coverage Results" MODIFIED="1760810609243" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
   </component>
