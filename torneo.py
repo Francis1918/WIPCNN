@@ -109,7 +109,7 @@ class TorneoQuarto:
             self,
             checkpoints_dir: str = r"C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\DatosEntrenamientoDev\checkpoints\QuartoCNN1",
             output_dir: str = r"C:\Users\bravo\Documents\Metodos Numericos Pycharm\Mech Interp\torneomasivo\torneo",
-            partidas_por_enfrentamiento: int = 10,
+            partidas_por_enfrentamiento: int = 3,
             temperatura: float = 0.05,
             k_factor_elo: float = 32,
             elo_inicial: float = 1500
