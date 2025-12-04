@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Update con los datos del torneo">
-      <change afterPath="$PROJECT_DIR$/trainRLResumeCopy.py" afterDir="false" />
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TrainRL_resumeCopy.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -213,23 +210,7 @@
       <workItem from="1764733503137" duration="152000" />
       <workItem from="1764766599594" duration="10877000" />
       <workItem from="1764791001906" duration="1315000" />
-      <workItem from="1764794504537" duration="15116000" />
-    </task>
-    <task id="LOCAL-00021" summary="Implementacion del torneo Paralelo con cuda.">
-      <option name="closed" value="true" />
-      <created>1759786226802</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1759786226802</updated>
-    </task>
-    <task id="LOCAL-00022" summary="Fix bugs?">
-      <option name="closed" value="true" />
-      <created>1760757741516</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1760757741516</updated>
+      <workItem from="1764794504537" duration="15972000" />
     </task>
     <task id="LOCAL-00023" summary="Fix bugs?">
       <option name="closed" value="true" />
@@ -607,7 +588,23 @@
       <option name="project" value="LOCAL" />
       <updated>1764810512252</updated>
     </task>
-    <option name="localTasksCounter" value="70" />
+    <task id="LOCAL-00070" summary="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint">
+      <option name="closed" value="true" />
+      <created>1764811822721</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1764811822721</updated>
+    </task>
+    <task id="LOCAL-00071" summary="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint">
+      <option name="closed" value="true" />
+      <created>1764811887669</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1764811887669</updated>
+    </task>
+    <option name="localTasksCounter" value="72" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -625,7 +622,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Referencial, inicio de correcciones criticas e importantes" />
     <MESSAGE value="WIP implementaciones de una arquitectrura flexible para el entrenamiento" />
     <MESSAGE value="implementaciones de una arquitectrura flexible para el test entre agentes distintos" />
     <MESSAGE value="versiones mejoradas del entrenamiento de los agentes en su version desde cero y desde el ultimo entrenamiento" />
@@ -650,7 +646,8 @@
     <MESSAGE value="Bug fixed?" />
     <MESSAGE value="Creacion de torneo_paralelo.py para hacer las comparaciones entre agentes internos mas rapido." />
     <MESSAGE value="Update con los datos del torneo" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update con los datos del torneo" />
+    <MESSAGE value="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint" />
+    <option name="LAST_COMMIT_MESSAGE" value="Creacion de el archivo de entrenamiento que toma el ultimo checkpoint" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />

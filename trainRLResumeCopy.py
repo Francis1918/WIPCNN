@@ -331,20 +331,32 @@ GAMMA = 0.99
 # ###########################
 # FUNCIÓN PARA DETECTAR ÚLTIMO CHECKPOINT
 # ###########################
-def detectar_ultimo_checkpoint(checkpoints_dir: Path, experiment_name: str) -> tuple[int, str | None, list[str]]:
+def detectar_ultimo_checkpoint(training_data_dir: Path, experiment_name: str) -> tuple[int, str | None, list[str]]:
     """
     Detecta el último checkpoint guardado y retorna la época y ruta.
+
+    Busca en: TRAINING_DATA_DIR/checkpoints/QuartoCNN1/
 
     Returns:
         tuple: (última_época, ruta_checkpoint, lista_checkpoints)
                Si no hay checkpoints, retorna (0, None, [])
     """
-    # Buscar checkpoints con el patrón del experimento
-    pattern = checkpoints_dir / "QuartoCNN1" / f"{experiment_name}_epoch_*.pt"
+    # Ruta donde se guardan los checkpoints
+    checkpoints_base = training_data_dir / "checkpoints" / "QuartoCNN1"
+
+    logger.info(f"📁 Buscando checkpoints en: {checkpoints_base}")
+
+    # Buscar checkpoints con el patrón del experimento (con posible prefijo de timestamp)
+    # Patrón: *experiment_name_epoch_*.pt (el * inicial captura cualquier prefijo como timestamp)
+    pattern = checkpoints_base / f"*{experiment_name}_epoch_*.pt"
     checkpoints = glob.glob(str(pattern))
 
+    # También buscar .pth por si acaso
+    pattern_pth = checkpoints_base / f"*{experiment_name}_epoch_*.pth"
+    checkpoints += glob.glob(str(pattern_pth))
+
     if not checkpoints:
-        logger.info("No se encontraron checkpoints previos. Iniciando desde época 0.")
+        logger.info("   No se encontraron checkpoints previos. Iniciando desde época 0.")
         return 0, None, []
 
     # Ordenar por número de época
@@ -356,15 +368,15 @@ def detectar_ultimo_checkpoint(checkpoints_dir: Path, experiment_name: str) -> t
     ultima_epoca = extraer_epoca(checkpoints_sorted[-1])
     ultimo_checkpoint = checkpoints_sorted[-1]
 
-    logger.info(f"Encontrados {len(checkpoints)} checkpoints.")
-    logger.info(f"Último checkpoint: época {ultima_epoca} -> {ultimo_checkpoint}")
+    logger.info(f"   ✅ Encontrados {len(checkpoints)} checkpoints.")
+    logger.info(f"   Último checkpoint: época {ultima_epoca} -> {Path(ultimo_checkpoint).name}")
 
     return ultima_epoca, ultimo_checkpoint, checkpoints_sorted
 
 
 # Detectar checkpoints existentes
 START_EPOCH, ULTIMO_CHECKPOINT, checkpoints_files = detectar_ultimo_checkpoint(
-    CHECKPOINTS_DIR, EXPERIMENT_NAME
+    TRAINING_DATA_DIR, EXPERIMENT_NAME
 )
 
 # ###########################
@@ -378,20 +390,24 @@ checkpoint_name_generator = lambda epoch: f"{EXPERIMENT_NAME}_epoch_{epoch:04d}"
 # Cargar desde checkpoint si existe
 if ULTIMO_CHECKPOINT is not None:
     logger.info(f"🔄 REANUDANDO entrenamiento desde época {START_EPOCH}")
-    logger.info(f"   Cargando checkpoint: {ULTIMO_CHECKPOINT}")
+    logger.info(f"   Cargando checkpoint: {Path(ULTIMO_CHECKPOINT).name}")
 
     # Cargar pesos del modelo
     policy_net.load_state_dict(torch.load(ULTIMO_CHECKPOINT))
     target_net.load_state_dict(policy_net.state_dict())
 
     # El checkpoint de referencia (época 0) para evaluación
-    checkpoint_epoca_0 = CHECKPOINTS_DIR / "QuartoCNN1" / f"{EXPERIMENT_NAME}_epoch_0000.pt"
-    if checkpoint_epoca_0.exists():
-        CHECKPOINT_DEBIL = str(checkpoint_epoca_0)
+    # Buscar con patrón que incluya posible prefijo de timestamp
+    checkpoint_epoca_0_pattern = TRAINING_DATA_DIR / "checkpoints" / "QuartoCNN1" / f"*{EXPERIMENT_NAME}_epoch_0000.pt"
+    checkpoint_epoca_0_matches = glob.glob(str(checkpoint_epoca_0_pattern))
+
+    if checkpoint_epoca_0_matches:
+        CHECKPOINT_DEBIL = checkpoint_epoca_0_matches[0]
+        logger.info(f"   Checkpoint referencia (época 0): {Path(CHECKPOINT_DEBIL).name}")
     else:
         # Si no existe época 0, usar el primer checkpoint disponible
         CHECKPOINT_DEBIL = checkpoints_files[0] if checkpoints_files else None
-        logger.warning(f"Checkpoint época 0 no encontrado. Usando: {CHECKPOINT_DEBIL}")
+        logger.warning(f"   Checkpoint época 0 no encontrado. Usando: {Path(CHECKPOINT_DEBIL).name if CHECKPOINT_DEBIL else 'None'}")
 
     logger.info(f"✅ Modelo cargado exitosamente. Continuando desde época {START_EPOCH + 1}")
 else:
