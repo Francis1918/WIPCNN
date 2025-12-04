@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="evoluciones notables en el entrenamiento esperemos...">
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="possible Fallo?&#10;se continuara con lo planeado ignorare eso">
+      <change afterPath="$PROJECT_DIR$/torneo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
     </list>
@@ -92,6 +93,7 @@
     "Python.setup_dependencies.executor": "Run",
     "Python.test_collector.executor": "Run",
     "Python.test_compare_agents.executor": "Run",
+    "Python.torneo.executor": "Run",
     "Python.torneomasivo.executor": "Run",
     "Python.tournament.executor": "Run",
     "Python.tournament_bracket.executor": "Run",
@@ -121,7 +123,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "PyPlotsConfigurable",
+    "settings.editor.selected.configurable": "memory.settings",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -209,15 +211,7 @@
       <workItem from="1764733503137" duration="152000" />
       <workItem from="1764766599594" duration="10877000" />
       <workItem from="1764791001906" duration="1315000" />
-      <workItem from="1764794504537" duration="9759000" />
-    </task>
-    <task id="LOCAL-00015" summary="Correcciones menores">
-      <option name="closed" value="true" />
-      <created>1758424415541</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1758424415541</updated>
+      <workItem from="1764794504537" duration="12265000" />
     </task>
     <task id="LOCAL-00016" summary="referencia de torneo tradicional">
       <option name="closed" value="true" />
@@ -603,7 +597,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764805490442</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="possible Fallo?&#10;se continuara con lo planeado ignorare eso">
+      <option name="closed" value="true" />
+      <created>1764806459317</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1764806459317</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -621,7 +623,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="referencia de torneo tradicional" />
     <MESSAGE value="Ultimas modificaciones antes de la actualizacion Quarto v1.1" />
     <MESSAGE value="Mejoras en el trainRL_resume.py este inicia dessde la ultima epoca entrenada" />
     <MESSAGE value="Modificaciones en el cambio de ubicaicon de las partidas en el torneo secuencial." />
@@ -646,7 +647,8 @@
     <MESSAGE value="Bug fixed en el mescla de agentes en el entreamiento con la finalidad de mejorar" />
     <MESSAGE value="bug fixed" />
     <MESSAGE value="evoluciones notables en el entrenamiento esperemos..." />
-    <option name="LAST_COMMIT_MESSAGE" value="evoluciones notables en el entrenamiento esperemos..." />
+    <MESSAGE value="possible Fallo?&#10;se continuara con lo planeado ignorare eso" />
+    <option name="LAST_COMMIT_MESSAGE" value="possible Fallo?&#10;se continuara con lo planeado ignorare eso" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
@@ -687,6 +689,7 @@
     <SUITE FILE_PATH="coverage/hierarchical_SAE$checkpoint_manager.coverage" NAME="checkpoint_manager Coverage Results" MODIFIED="1760810735448" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$torneomasivo.coverage" NAME="torneomasivo Coverage Results" MODIFIED="1760410551181" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$debugging.coverage" NAME="debugging Coverage Results" MODIFIED="1758234337640" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hierarchical_SAE$torneo.coverage" NAME="torneo Coverage Results" MODIFIED="1764808512221" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$trainRL.coverage" NAME="trainRL Coverage Results" MODIFIED="1764769526852" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$view_training.coverage" NAME="view_training Coverage Results" MODIFIED="1760810714681" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
     <SUITE FILE_PATH="coverage/hierarchical_SAE$tournament.coverage" NAME="tournament Coverage Results" MODIFIED="1759696369722" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
