@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Update a la Bitacora_1.ipynb">
-      <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -226,15 +226,7 @@
       <workItem from="1764853187264" duration="12179000" />
       <workItem from="1764867835131" duration="3427000" />
       <workItem from="1764882236759" duration="11606000" />
-      <workItem from="1764904295154" duration="4108000" />
-    </task>
-    <task id="LOCAL-00031" summary="Referencial, inicio de correcciones criticas e importantes">
-      <option name="closed" value="true" />
-      <created>1760811381328</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1760811381328</updated>
+      <workItem from="1764904295154" duration="7250000" />
     </task>
     <task id="LOCAL-00032" summary="Referencial, inicio de correcciones criticas e importantes">
       <option name="closed" value="true" />
@@ -620,7 +612,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764945539272</updated>
     </task>
-    <option name="localTasksCounter" value="80" />
+    <task id="LOCAL-00080" summary="Update a la Bitacora_1.ipynb">
+      <option name="closed" value="true" />
+      <created>1764945833556</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1764945833556</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
