@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Update a la Bitacora_1.ipynb">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/analysis/Bitacora_1.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainRL.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/trainRL.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainRL_resume.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/trainRL_resume.py" afterDir="false" />
-    </list>
+    <list default="true" id="67fb9036-7423-44ba-859e-640743672dc3" name="Changes" comment="Cierre de este proyecto" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -235,31 +230,7 @@
       <workItem from="1764867835131" duration="3427000" />
       <workItem from="1764882236759" duration="11606000" />
       <workItem from="1764904295154" duration="9991000" />
-      <workItem from="1764971154027" duration="6918000" />
-    </task>
-    <task id="LOCAL-00033" summary="WIP implementaciones de una arquitectrura flexible para el entrenamiento">
-      <option name="closed" value="true" />
-      <created>1760814836123</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1760814836123</updated>
-    </task>
-    <task id="LOCAL-00034" summary="WIP implementaciones de una arquitectrura flexible para el entrenamiento">
-      <option name="closed" value="true" />
-      <created>1760815309777</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1760815309777</updated>
-    </task>
-    <task id="LOCAL-00035" summary="WIP implementaciones de una arquitectrura flexible para el entrenamiento">
-      <option name="closed" value="true" />
-      <created>1760821852983</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1760821852983</updated>
+      <workItem from="1764971154027" duration="7223000" />
     </task>
     <task id="LOCAL-00036" summary="implementaciones de una arquitectrura flexible para el test entre agentes distintos">
       <option name="closed" value="true" />
@@ -629,7 +600,31 @@
       <option name="project" value="LOCAL" />
       <updated>1764950879217</updated>
     </task>
-    <option name="localTasksCounter" value="82" />
+    <task id="LOCAL-00082" summary="Update a la Bitacora_1.ipynb, cerrando esto del proyecto de interpretabilidad">
+      <option name="closed" value="true" />
+      <created>1764982541549</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1764982541549</updated>
+    </task>
+    <task id="LOCAL-00083" summary="Reubicacion temporarl de archivos del entrenamiento con la arquitectura anterior">
+      <option name="closed" value="true" />
+      <created>1764982569457</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1764982569457</updated>
+    </task>
+    <task id="LOCAL-00084" summary="Cierre de este proyecto">
+      <option name="closed" value="true" />
+      <created>1764982582297</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1764982582297</updated>
+    </task>
+    <option name="localTasksCounter" value="85" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -647,9 +642,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Uso de Bitacora_1.ipynb para evidenciar los cambios y avances solicitados" />
-    <MESSAGE value="modificaciones necesarias" />
-    <MESSAGE value="Bug fixes" />
     <MESSAGE value="Modificaciones y mejoras de trainRLCopy.py" />
     <MESSAGE value="copia de trainRL para implementar las mejoras y correcciones del entrenamiento y visualizacion" />
     <MESSAGE value="Copias de TrainRL y su version de Resume para la implementacion de las mejoraas con otra ruta en especifico para que se pueda hacer comparaciones" />
@@ -672,7 +664,10 @@
     <MESSAGE value="Implementacion dle duelo entre agentes de distintas arquitecturas" />
     <MESSAGE value="mod para ver los resultados" />
     <MESSAGE value="Update a la Bitacora_1.ipynb" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update a la Bitacora_1.ipynb" />
+    <MESSAGE value="Update a la Bitacora_1.ipynb, cerrando esto del proyecto de interpretabilidad" />
+    <MESSAGE value="Reubicacion temporarl de archivos del entrenamiento con la arquitectura anterior" />
+    <MESSAGE value="Cierre de este proyecto" />
+    <option name="LAST_COMMIT_MESSAGE" value="Cierre de este proyecto" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hierarchical_SAE$auto_checkpoint_monitor.coverage" NAME="auto_checkpoint_monitor Coverage Results" MODIFIED="1760810576227" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
